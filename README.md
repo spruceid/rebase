@@ -8,7 +8,7 @@ domains.
 The core of this toolset is a claims engine powered by verifiable credentials
 (rebase-server), and a storage/query engine for publishing them in a way that
 can be storage-agnostic, hash-protected, interoperable, and portable
-(rebase-client).  The latter is described in the [/sdk/README.md](sdk/README.md).
+(rebase-client).  The latter is described in the [/sdk/README.md](sdk/).
 
 ## Known Implementations
 
