@@ -1,14 +1,34 @@
-import type {Claim, ClaimMaker, SignedMessage, SignedToClaim} from '../../claim/index';
+import type {
+    Claim, 
+    // ClaimMaker, 
+    // SignedMessage, 
+    // SignedToClaim
+} from '../../claim/index';
 import {SignerType} from '../../claim/index';
 
-export type ToPost<Info, Message> = (info: Info) => Promise<Message>
-export type PublicWitnessType = 'discord' | 'twitter';
-
-export const exhaustiveCheck = (arg: never) => {
+// Used to typecheck up to date with imported Claim types.
+// Webpack should remove it, or at least could be configured to.
+const exhaustiveCheck = (arg: never) => {
   // Forces the type checker to complain if you've missed a sum type.
   // See https://dev.to/babak/exhaustive-type-checking-with-typescript-4l3f
+  console.error(`Impossible value found: ${arg}`);
 };
 
+// Types of public witness supported in default Rebase settings.
+export type PublicWitnessType = 'discord' | 'twitter';
+
+// A generic interface for public witness postings, includs
+// a posterId (twitter / discord handle) 
+// a signerId (a public key)
+// a type to case switch on.
+export interface PublicWitnessInfo {
+    type: PublicWitnessType,
+    posterId: string,
+    signerId: string,
+}
+
+// String-creation functions shared with the rebase-issuer.
+// Allows for quick recreation and validation of handles etc.
 export function signerPrefix(signerType: SignerType): string {
     let t = signerType;
     switch (signerType) {
@@ -22,28 +42,28 @@ export function signerPrefix(signerType: SignerType): string {
     throw new Error(`Unknown handle type: ${t}`);
 }
 
-export function handlePrefix(handleType: PublicWitnessType): string {
-    let t = handleType;
-    switch (handleType) {
+export function posterPrefix(posterType: PublicWitnessType): string {
+    let t = posterType;
+    switch (posterType) {
         case 'discord':
             return '';
         case 'twitter':
             return '@';
     }
 
-    exhaustiveCheck(handleType);
+    exhaustiveCheck(posterType);
     throw new Error(`Unknown handle type: ${t}`);
 }
 
-export function seperator(handleType: PublicWitnessType): string {
-    let t = handleType;
-    switch (handleType) {
+export function seperator(posterType: PublicWitnessType): string {
+    let t = posterType;
+    switch (posterType) {
         case 'discord':
         case 'twitter':
             return '\n\n';
     }
 
-    exhaustiveCheck(handleType);
+    exhaustiveCheck(posterType);
     throw new Error(`Unknown handle type: ${t}`);
 }
 
@@ -51,33 +71,33 @@ export function signerDisplay(signerType: SignerType): string {
     let t = signerType;
     switch (signerType) {
         case 'eth':
-            return 'Ethereum Address';
+            return 'the Ethereum Address';
         case 'tz':
-            return 'Tezos Address';
+            return 'the Tezos Address';
     }
 
     exhaustiveCheck(signerType);
     throw new Error(`Unknown handle type: ${t}`);
 }
 
-export interface PublicWitnessInfo {
-    type: PublicWitnessType,
-    handle: string,
-    signerId: string,
+// Now put it all togethere.
+export const toUnsignedMessage = (info: PublicWitnessInfo, signerType: SignerType): string => {
+    let {posterId, signerId} = info;
+    return `I attest ${posterPrefix(info.type)}${posterId} is linked to ${signerDisplay(signerType)} ${signerId}${seperator(info.type)}`;
 }
 
-export const toUnsignedMessage = (info: PublicWitnessInfo, signerType: SignerType): string => {
-    let {handle, signerId} = info;
-    return `I attest the account ${handlePrefix(info.type)}${handle} is linked to the ${signerDisplay(signerType)} ${signerId}${seperator(info.type)}`;
-}
-export interface DiscordMessage extends PublicWitnessInfo {
+// Discord Specific
+export interface DiscordInfo extends PublicWitnessInfo {
     type: 'discord',
-    unsignedMessage: string,
-    message: string,
+    signerType: SignerType,
     postId: string,
 }
 
-
+export async function makeDiscordClaim(info: DiscordInfo): Promise<Claim> {
+    // TODO: Implement.
+    console.log(info);
+    return {}
+}
 
 // Twitter Specific
 
