@@ -1,4 +1,4 @@
-export type Claim = {
+export type Credential = {
     '@context': string | object | Array<string | object>,
     id?: string,
     type: string | Array<string>,
@@ -87,28 +87,21 @@ export interface SignedMessage<Message> {
 }
 
 // The over-arching abstraction, composed of...
-export type ClaimMaker<Message> = (message: Message) => Promise<Claim>;
+export type CredentialMaker<Message> = (message: Message) => Promise<Credential>;
 // ...this function follewed by ...
 export type MessageSigner<Message> = (message: Message) => Promise<SignedMessage<Message>>;
 // ...this function.
-export type SignedToClaim<Message> = (signedMessage: SignedMessage<Message>) => Promise<Claim>
+export type SignedToCredential<Message> = (signedMessage: SignedMessage<Message>) => Promise<Credential>
 
 // These are explicitly defined to allow mix 'n match.
-export interface ClaimMakerOpts<Message> {
+export interface CredentialMakerOpts<Message> {
     signMessage: MessageSigner<Message>,
-    toClaim: SignedToClaim<Message>
+    toClaim: SignedToCredential<Message>
 }
 
-export function newClaimMaker<Message>(opts: ClaimMakerOpts<Message>): ClaimMaker<Message> {
+export function newClaimMaker<Message>(opts: CredentialMakerOpts<Message>): CredentialMaker<Message> {
     return async (message: Message) => {
         let signed = await opts.signMessage(message);
         return opts.toClaim(signed);
     };
 }
-
-// Specific claim implementations as sum types.
-// Should track did:pkh:n.
-// Break into own file?
-export type SignerType = 'eth' | 'tz';
-
-

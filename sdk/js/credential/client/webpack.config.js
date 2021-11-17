@@ -39,4 +39,5 @@ module.exports = {
     library: 'rebase_claim',
     path: path.resolve(__dirname, 'dist'),
   },
+  experiments:{ asyncWebAssembly: true }
 };
