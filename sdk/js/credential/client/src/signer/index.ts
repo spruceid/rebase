@@ -1,3 +1,3 @@
-export * from './common';
-export * as Tz from './tz';
-export * as Eth from './eth';
+export * from './signer';
+export * as Tz from './tz/tz';
+export * as Eth from './eth/eth';

@@ -1,1 +1,0 @@
-export type SignerType = 'eth' | 'tz';

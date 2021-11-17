@@ -1,107 +1,77 @@
 export type Credential = {
-    '@context': string | object | Array<string | object>,
-    id?: string,
-    type: string | Array<string>,
-    credentialSubject: {
-        id?: string,
-        [index: string]: any,
-    },
-    issuer?: string | {
-        id: string,
-        [index: string]: any,
-    },
-    issuanceDate?: string,
-    proof?: ClaimProof | Array<ClaimProof>
-    expirationDate?: string,
-    credentialStatus?: {
-        id: string,
-        type: string,
-        [index: string]: any,
-    },
-    termsOfUse?: Array<{
-        id?: string,
-        type: string,
-        [index: string]: any,
-    }>,
-    evidence?: {
-        id?: string,
-        type: Array<string>,
-        [index: string]: any,
-    } | Array<{
-        id?: string,
-        type: Array<string>,
-        [index: string]: any,
-    }>,
-    credentialSchema?: {
-        id: string,
-        type: string,
-        [index: string]: any,
-    } | Array<{
-        id: string,
-        type: string,
-        [index: string]: any,
-    }>
-    refreshService?: {
-        id: string,
-        type: string,
-        [index: string]: any,
-    } | Array<{
-        id: string,
-        type: string,
-        [index: string]: any,
-    }>
+  '@context': string
+  | Record<string, unknown>
+  | Array<string | Record<string, unknown>>;
+  id?: string;
+  type: string | Array<string>;
+  credentialSubject: {
+    id?: string;
+    [index: string]: unknown;
+  };
+  issuer?: string | {
+    id: string;
+    [index: string]: unknown;
+  };
+  issuanceDate?: string;
+  proof?: ClaimProof | Array<ClaimProof>;
+  expirationDate?: string;
+  credentialStatus?: {
+    id: string;
+    type: string;
+    [index: string]: unknown;
+  };
+  termsOfUse?: Array<{
+    id?: string;
+    type: string;
+    [index: string]: unknown;
+  }>;
+  evidence?: {
+    id?: string;
+    type: Array<string>;
+    [index: string]: unknown;
+  } | Array<{
+    id?: string;
+    type: Array<string>;
+    [index: string]: unknown;
+  }>;
+  credentialSchema?: {
+    id: string;
+    type: string;
+    [index: string]: unknown;
+  } | Array<{
+    id: string;
+    type: string;
+    [index: string]: unknown;
+  }>;
+  refreshService?: {
+    id: string;
+    type: string;
+    [index: string]: unknown;
+  } | Array<{
+    id: string;
+    type: string;
+    [index: string]: unknown;
+  }>;
 
-    [index: string]: any
-}
-
-
-export type ClaimProof = {
-    '@context': string | object | Array<string | object>,
-    type: string,
-    proofPurpose?: 'assertionMethod' 
-    | 'authentication'
-    | 'keyAgreement'
-    | 'contractAgreement'
-    | 'capabilityInvocation'
-    | 'capabilityDelegation',
-    proofValue?: string,
-    challenge?: string,
-    creator?: string,
-    verificationMethod?: string,
-    created?: string,
-    domain?: string,
-    nonce?: string,
-    jws?: string,
-    [index: string]: any
+  [index: string]: unknown;
 };
 
-// Generic data structure representing the needed information to make a claim 
-// assumes a signerId (public key in practice)
-// and a signed and unsigned version of the message.
-// Other information for specific claim making can be passed in the message type param.
-export interface SignedMessage<Message> {
-    credentialSubjectId: string,
-    message: Message,
-    signed: string,
-    unsigned: string
-}
-
-// The over-arching abstraction, composed of...
-export type CredentialMaker<Message> = (message: Message) => Promise<Credential>;
-// ...this function follewed by ...
-export type MessageSigner<Message> = (message: Message) => Promise<SignedMessage<Message>>;
-// ...this function.
-export type SignedToCredential<Message> = (signedMessage: SignedMessage<Message>) => Promise<Credential>
-
-// These are explicitly defined to allow mix 'n match.
-export interface CredentialMakerOpts<Message> {
-    signMessage: MessageSigner<Message>,
-    toClaim: SignedToCredential<Message>
-}
-
-export function newClaimMaker<Message>(opts: CredentialMakerOpts<Message>): CredentialMaker<Message> {
-    return async (message: Message) => {
-        let signed = await opts.signMessage(message);
-        return opts.toClaim(signed);
-    };
-}
+export type ClaimProof = {
+  '@context': string | Record<string, unknown> | Array<string | Record<string, unknown>>;
+  type: string;
+  proofPurpose?: 'assertionMethod'
+  | 'authentication'
+  | 'keyAgreement'
+  | 'contractAgreement'
+  | 'capabilityInvocation'
+  | 'capabilityDelegation';
+  proofValue?: string;
+  challenge?: string;
+  creator?: string;
+  verificationMethod?: string;
+  created?: string;
+  domain?: string;
+  nonce?: string;
+  jws?: string;
+  [index: string]: unknown;
+};
