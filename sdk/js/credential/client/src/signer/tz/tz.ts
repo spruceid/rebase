@@ -1,7 +1,8 @@
 import { BeaconWallet } from '@taquito/beacon-wallet';
 import { char2Bytes } from '@taquito/utils';
+import { ProviderBase } from '../common/common';
 
-export interface TzSigner {
+export interface TzSigner extends ProviderBase {
   type: 'tz';
   provider: BeaconWallet;
 }

@@ -1,9 +1,22 @@
-import { RequestSignPayloadInput, SigningType } from '@airgap/beacon-sdk';
+import { SigningType } from '@airgap/beacon-sdk';
 import { TzSigner, getMichelineStringBytes } from './tz/tz';
 import { EthSigner } from './eth/eth';
 
-export type SignerType = 'eth' | 'tz';
+// Should this not be a circular dep? Or embrace the lispiness of JS?
+
 export type Provider = EthSigner | TzSigner;
+
+export async function getDID(provider: Provider): Promise<string> {
+  const t = provider.type;
+  switch (provider.type) {
+    case 'eth':
+      return `did:pkh:eth:${await provider.provider.getAddress()}`;
+    case 'tz':
+      return `did:pkh:tz:${await provider.provider.getPKH()}`;
+    default:
+      throw new Error(`Unknowner signer type, ${t}`);
+  }
+}
 
 export async function signClaim(claim: string, provider: Provider): Promise<string> {
   const t = provider.type;

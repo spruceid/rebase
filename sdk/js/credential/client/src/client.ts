@@ -1,4 +1,8 @@
-import { SignerType, Provider, signClaim as innerSignClaim } from './signer/index';
+import axios from 'axios';
+import {
+  verifyCredential,
+} from 'didkit-wasm';
+import { Provider, signClaim as innerSignClaim, getDID } from './signer/index';
 import {
   ClaimInfo,
   ClaimLocation,
@@ -22,6 +26,10 @@ const defaultIssuer = 'http://localhost:8787/';
 
 const defaultOpts = {
   issuer: defaultIssuer,
+};
+
+type VerifyResult = {
+  errors: Array<string>;
 };
 
 export default class Client {
@@ -54,8 +62,7 @@ export default class Client {
     const signed = await innerSignClaim(unsigned, provider);
     const full = `${unsigned}${signed}`;
     return {
-      // TODO: Impl
-      credentialSubjectId: '',
+      credentialSubjectId: await getDID(provider),
       info: claimInfo,
       signed,
       unsigned,
@@ -77,20 +84,50 @@ export default class Client {
     signedClaim: SignedClaim<ClaimInfo>,
     location: ClaimLocation,
   ): SignedClaim<PublicClaimInfo> => {
-    const {
-      credentialSubjectId, full, signed, unsigned, info,
-    } = signedClaim;
-    const next = this.toPublicClaim(info, location);
+    const info = this.toPublicClaim(signedClaim.info, location);
     return {
-      credentialSubjectId,
-      full,
-      signed,
-      unsigned,
-      info: next,
+      ...signedClaim,
+      ...{ info },
     };
   };
 
-  async issuePublicClaimVC(message: SignedMessage<PublicClaimInfo>): Promise<Credential> {
+  async issuePublicClaimVC(signedClaim: SignedClaim<PublicClaimInfo>): Promise<Credential> {
+    let targetUrl = '';
+    if (typeof this.issuer === 'string') {
+      targetUrl = this.issuer;
+    } else {
+      const temp = this.issuer[signedClaim.info.type];
+      if (!temp) {
+        throw new Error(`No issuer for claim of type: ${signedClaim.info.type}`);
+      }
+      targetUrl = temp;
+    }
 
+    const res = await axios.post(
+      targetUrl,
+      JSON.stringify(signedClaim),
+      { headers: 'application/json' },
+    );
+    if (res.status !== 200) {
+      throw new Error(`Failed request, ${res.statusText}`);
+    }
+
+    const verifyOptionsString = '{}';
+    const verifyResult = JSON.parse(
+      await verifyCredential(JSON.stringify(res.data), verifyOptionsString),
+    ) as VerifyResult;
+
+    if (!verifyResult?.errors) {
+      throw new Error('Invalid result from verify credential');
+    }
+
+    if (verifyResult.errors.length > 0) {
+      const errorMessage = `Unable to verify credential: ${verifyResult.errors.join(
+        ', ',
+      )}`;
+      throw new Error(errorMessage);
+    }
+
+    return res.data as Credential;
   }
 }

@@ -1,5 +1,9 @@
+import { ProviderBase } from '../common/common';
+
 /**
- * Interface for ethereum provider request args.
+ * Interface for ethereum provider request args to the Ethereum RPC node.
+ * See documentation here: https://docs.metamask.io/guide/ethereum-provider.html#ethereum-request-args
+ * or elsewhere for valid arguments.
 */
 export interface EthRequest {
   method: string;
@@ -7,14 +11,15 @@ export interface EthRequest {
 }
 /**
  * Interface for ethereum providers of various sorts.
- * See documentation here: https://docs.metamask.io/guide/ethereum-provider.html#ethereum-request-args
- * or elsewhere for valid arguments.
 */
 export interface EthProvider {
+  // Make RPC requests.
   request(ethRequest: EthRequest): Promise<unknown>;
+  // Get the PKH.
+  getAddress(): Promise<string>;
 }
 
-export interface EthSigner {
+export interface EthSigner extends ProviderBase {
   type: 'eth';
   provider: EthProvider;
 }
