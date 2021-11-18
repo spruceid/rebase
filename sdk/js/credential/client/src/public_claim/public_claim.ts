@@ -123,8 +123,9 @@ export async function issueOpts(
   pkh: string,
   signerType: SignerType,
 ): Promise<PrepareIssueCredentialOpts> {
-  let keyType = ''; let suffix = ''; let
-    pkhPrefix = '';
+  let keyType = '';
+  let suffix = '';
+  let pkhPrefix = '';
   switch (signerType) {
     case 'eth':
       keyType = JSON.stringify({
@@ -166,7 +167,9 @@ export interface DiscordLocation {
   channelId: string;
 }
 
-export function toUnsignedDiscordClaim(
+export const RebaseDiscordVersions = [1];
+
+export function toUnsignedDiscordClaimV1(
   signedClaim: SignedClaim<PublicClaimInfo>,
   issuer: string,
 ): Credential {
@@ -174,7 +177,7 @@ export function toUnsignedDiscordClaim(
     signedClaim.info.location.type !== 'discord'
       || signedClaim.info.type !== 'discord'
   ) {
-    throw new Error('Not a discord message');
+    throw new Error('Not a discord claim');
   }
 
   return {
@@ -182,9 +185,9 @@ export function toUnsignedDiscordClaim(
       'https://www.w3.org/2018/credentials/v1',
       {
         sameAs: 'http://schema.org/sameAs',
-        DiscordVerification: 'https://w3id.org/rebase/DiscordVerification',
+        DiscordVerification: 'https://w3id.org/rebase/v1/DiscordVerification',
         DiscordVerificationContents: {
-          '@id': 'https://w3id.org/rebase/DiscordVerificationContents',
+          '@id': 'https://w3id.org/rebase/v1/DiscordVerificationContents',
           '@context': {
             '@version': 1.1,
             '@protected': true,
@@ -220,4 +223,54 @@ export function toUnsignedDiscordClaim(
 export interface TwitterLocation {
   type: 'twitter';
   postId: string;
+}
+
+export const RebaseTwitterVersions = [1];
+
+export function toUnsignedTwitterClaimV1(
+  signedClaim: SignedClaim<PublicClaimInfo>,
+  issuer: string,
+): Credential {
+  if (
+    signedClaim.info.location.type !== 'twitter'
+      || signedClaim.info.type !== 'twitter'
+  ) {
+    throw new Error('Not a twitter claim');
+  }
+
+  return {
+    '@context': [
+      'https://www.w3.org/2018/credentials/v1',
+      {
+        sameAs: 'http://schema.org/sameAs',
+        TwitterVerification: 'https://w3id.org/rebase/v1/TwitterVerification',
+        TwitterVerificationPublicTweet: {
+          '@id': 'https://w3id.org/rebase/v1/TwitterVerificationPublicTweet',
+          '@context': {
+            '@version': 1.1,
+            '@protected': true,
+            handle: 'https://schema.org/text',
+            timestamp: {
+              '@id': 'https://schema.org/datetime',
+              '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
+            },
+            tweetId: 'https://schema.org/text',
+          },
+        },
+      },
+    ],
+    credentialSubject: {
+      id: signedClaim.credentialSubjectId,
+      sameAs: `https://twitter.com/${signedClaim.info.posterId}`,
+    },
+    evidence: {
+      handle: signedClaim.info.posterId,
+      timestamp: new Date().toISOString(),
+      tweetId: signedClaim.info.signerId,
+      type: ['TwitterVerifciationPublicTweet'],
+    },
+    id: `urn:uuid:${uuidV4()}`,
+    issuer,
+    type: ['VerifiableCredential', 'TwitterVerification'],
+  };
 }

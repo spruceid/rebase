@@ -7,7 +7,7 @@ export type Credential = {
   credentialSubject: {
     id?: string;
     [index: string]: unknown;
-  };
+  } | string | Array<string>;
   issuer?: string | {
     id: string;
     [index: string]: unknown;
