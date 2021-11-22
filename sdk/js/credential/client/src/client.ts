@@ -2,8 +2,9 @@ import axios from 'axios';
 import {
   verifyCredential,
 } from 'didkit-wasm';
+import { authenticator, Kepler, getOrbitId } from 'kepler-sdk';
 import {
-  Provider, signClaim as innerSignClaim, getDID, SignerType,
+  Provider, signClaim as innerSignClaim, getClaimAddress, getDID, SignerType,
 } from './signer/index';
 import {
   ClaimData,
@@ -15,6 +16,7 @@ import {
   toUnsignedClaim,
   BaseLocation,
 } from './public_claim';
+import { TzSigner } from './signer/tz/tz';
 
 // Used to marshal DIDKit's result to.
 type VerifyResult = {
@@ -45,12 +47,15 @@ export interface Opts<ClaimType, ClaimLocation> {
   // RebaseClaimTypes, and will be used accordingly.
   // If not supplied, SpruceID's hosted witness is used.
   issuer?: string | { [index: string]: string };
+  keplerHost?: string;
   locateClaim?: (claim: ClaimLocation) => Promise<string>;
   toUnsignedClaim?: (claim: ClaimData<ClaimType>, signer: SignerType) => string;
 }
 
 // TODO: Change to hosted public verifier once implemented.
-const defaultIssuer = 'http://localhost:8787/';
+const defaultIssuer = 'http://localhost:8787/rebase';
+// TODO: Change to hosted public verifier once implemented.
+const defaultKeplerHost = 'https://localhost:9999';
 
 // If no opts are passed, provides glue code for typing, assumes
 const defaultToUnsignedClaim = (data: ClaimData<unknown>, signer: SignerType): string => {
@@ -60,6 +65,7 @@ const defaultToUnsignedClaim = (data: ClaimData<unknown>, signer: SignerType): s
 
 const defaultOpts = {
   issuer: defaultIssuer,
+  keplerHost: defaultKeplerHost,
   toUnsignedClaim: defaultToUnsignedClaim,
 };
 
@@ -68,6 +74,10 @@ export default class Client<
   ClaimLocation extends BaseLocation<ClaimType>,
 > {
   issuer: string | { [index: string]: string };
+
+  keplerHost: string;
+
+  keplerMap: Record<string, Kepler> = {};
 
   toUnsignedClaim: (data: ClaimData<ClaimType>, signer: SignerType) => string;
 
@@ -87,7 +97,12 @@ export default class Client<
       throw new Error('Invalid Configuration: No toUnsignedClaim function');
     }
 
+    if (!next?.keplerHost) {
+      throw new Error('Invalid Configuration: No kepler host');
+    }
+
     this.issuer = next.issuer;
+    this.keplerHost = next.keplerHost;
     this.toUnsignedClaim = next.toUnsignedClaim;
   }
 
@@ -134,7 +149,7 @@ export default class Client<
     };
   };
 
-  async issuePublicClaimVC(
+  async claimToCredential(
     signedClaim: SignedClaim<PublicClaimData<ClaimType, ClaimLocation>>,
   ): Promise<Credential> {
     let targetUrl = '';
@@ -149,7 +164,11 @@ export default class Client<
       if (!temp) {
         throw new Error(`No issuer for claim of type: ${signedClaim.data.type}`);
       }
-      targetUrl = temp;
+      targetUrl = `${
+        temp.endsWith('/')
+          ? temp.slice(0, -1)
+          : temp
+      }/v${signedClaim.data.version}/${signedClaim.data.type}`;
     }
 
     const res = await axios.post(
@@ -178,6 +197,70 @@ export default class Client<
     }
 
     return res.data as Credential;
+  }
+
+  async saveSignedClaim(
+    signedClaim: SignedClaim<ClaimData<ClaimType>>,
+    location: ClaimLocation,
+    provider: Provider,
+  ): Promise<{
+      credential: Credential;
+      cid: string;
+    }> {
+    const addr = await getClaimAddress(provider);
+    if (signedClaim.data.signerId !== addr) {
+      throw new Error('signedClaim.data.signerId must match the provider claim address');
+    }
+
+    const next = this.toSignedPublicClaim(signedClaim, location);
+    const cred = await this.claimToCredential(next);
+
+    if (!this.keplerMap[addr]) {
+      const t = next.signerType;
+      switch (next.signerType) {
+        case 'eth':
+          // TODO: IMPLEMENT!
+          throw new Error('IMPLEMENT');
+        case 'tz': {
+          const p = provider as TzSigner;
+          this.keplerMap[next.credentialSubjectId] = new Kepler(
+            this.keplerHost,
+            await authenticator(p.provider.client, this.keplerHost),
+          );
+          break;
+        }
+        default:
+          throw new Error(`Unrecognized signer type ${t}`);
+      }
+    }
+
+    const k = this.keplerMap[addr];
+    if (!k) {
+      throw new Error(`No Kepler instance found for signer: ${addr}`);
+    }
+
+    // TODO: Make sure that signerId can universally be a pkh.
+    const id = await getOrbitId(
+      addr, {
+        domain: this.keplerHost,
+        index: 0,
+      },
+    );
+
+    let res = await k.put(id, cred);
+    if (!(res.status === 200 || res.status === 404)) {
+      throw new Error(`Failed to save to orbit: ${res.statusText}`);
+    }
+
+    if (res.status === 404) {
+      res = await k.createOrbit(cred);
+      if (!res.ok || res.status !== 200) {
+        throw new Error(`Failed to create orbit: ${res.statusText}`);
+      }
+    }
+
+    const cid = await res.text();
+    return { credential: cred, cid };
   }
 }
 

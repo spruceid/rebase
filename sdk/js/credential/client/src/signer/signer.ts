@@ -6,16 +6,20 @@ import { EthSigner } from './eth/eth';
 
 export type Provider = EthSigner | TzSigner;
 
-export async function getDID(provider: Provider): Promise<string> {
+export async function getClaimAddress(provider: Provider): Promise<string> {
   const t = provider.type;
   switch (provider.type) {
     case 'eth':
-      return `did:pkh:eth:${await provider.provider.getAddress()}`;
+      return provider.provider.getAddress();
     case 'tz':
-      return `did:pkh:tz:${await provider.provider.getPKH()}`;
+      return provider.provider.getPKH();
     default:
       throw new Error(`Unknowner signer type, ${t}`);
   }
+}
+
+export async function getDID(provider: Provider): Promise<string> {
+  return `did:pkh:${provider.type}:${await getClaimAddress(provider)}`;
 }
 
 export async function signClaim(claim: string, provider: Provider): Promise<string> {
