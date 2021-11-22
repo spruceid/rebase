@@ -3,10 +3,6 @@ import {
   // prepareIssueCredential,
 } from 'didkit-wasm';
 
-import {
-  Kepler, authenticator, Action, getOrbitId,
-} from 'kepler-sdk';
-
 import { SignerType } from '../signer';
 import { Credential } from '../credential';
 

@@ -8,6 +8,9 @@ import asyncHandler from 'express-async-handler';
 // TODO: Import from NPM instead of locally.
 import { Credential } from '../../../sdk/js/credential/client/src/credential';
 
+import { makeWitness } from '../../../sdk/js/credential/client/src/public_claim/public_claim';
+import { RebaseClaimType } from '../../../sdk/js/credential/client/src/public_claim/rebase/rebase_types';
+
 // import {
 //   PublicClaimData,
 //   DiscordLocation,
@@ -18,6 +21,17 @@ import { Credential } from '../../../sdk/js/credential/client/src/credential';
 // } from '../../../sdk/js/credential/client/src/public_claim/public_claim';
 
 config();
+
+const defaultHandler = makeWitness({
+  issuer: process.env['REBASE_ISSUER'] || '',
+  twitter: {
+    apiKey: process.env['REBASE_TWITTER_API'] || '',
+  },
+  discord: {
+    apiKey: process.env['REBASE_DISCORD_API'] || '',
+  },
+});
+
 
 /**
  * DIDKitVerifyResult is used to properly type the result of verifyCredential from DIDKit.
@@ -66,6 +80,10 @@ export type RebaseHandler = (
   body: unknown
 ) => Promise<RebaseHandlerResult>;
 
+// TODO: Work from here:
+// const defaultRebaseHandler = (credentialType: string, _version: number, body: unknown): Promise<RebaseHandlerResult> => {
+
+// };
 /**
  * HandlerMap relates the handlers to namespaces. By default, only 'rebase' is supplied.
  * Routes are expected to be in the form /:namespace/:version/:credentialType
@@ -111,7 +129,9 @@ const defaultOpts = {
     console.log(`Issuer listening on port: ${port}`);
   },
   // TODO: Impl!
-  handlerMap: {},
+  handlerMap: {
+    // rebase:
+  },
 };
 
 function setOpts(opts: undefined | Opts): FullOpts {
