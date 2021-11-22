@@ -8,17 +8,11 @@ import asyncHandler from 'express-async-handler';
 // TODO: Import from NPM instead of locally.
 import { Credential } from '../../../sdk/js/credential/client/src/credential';
 
-import { makeWitness } from '../../../sdk/js/credential/client/src/public_claim/public_claim';
-import { RebaseClaimType } from '../../../sdk/js/credential/client/src/public_claim/rebase/rebase_types';
+import {
+  makeWitness,
+} from '../../../sdk/js/credential/client/src/public_claim/public_claim';
 
-// import {
-//   PublicClaimData,
-//   DiscordLocation,
-//   TwitterLocation,
-//   RebaseDiscordVersions,
-//   RebaseTwitterVersions,
-//   SignedClaim,
-// } from '../../../sdk/js/credential/client/src/public_claim/public_claim';
+import { RebaseClaimType, isRebaseClaimType } from '../../../sdk/js/credential/client/src/public_claim/rebase/rebase_types';
 
 config();
 
@@ -31,7 +25,6 @@ const defaultHandler = makeWitness({
     apiKey: process.env['REBASE_DISCORD_API'] || '',
   },
 });
-
 
 /**
  * DIDKitVerifyResult is used to properly type the result of verifyCredential from DIDKit.
@@ -57,7 +50,7 @@ export interface SuccessResult {
 export interface FailureResult {
   success: false;
   status: number;
-  error: string;
+  error: Error;
 }
 
 /**
@@ -75,15 +68,30 @@ export type RebaseHandlerResult = SuccessResult | FailureResult;
  * By default, will be of type SignedClaim<PublicClaimData>, but can be customized.
  */
 export type RebaseHandler = (
+  body: unknown,
   credentialType: string,
-  version: number,
-  body: unknown
+  version?: number,
 ) => Promise<RebaseHandlerResult>;
 
 // TODO: Work from here:
-// const defaultRebaseHandler = (credentialType: string, _version: number, body: unknown): Promise<RebaseHandlerResult> => {
+const defaultRebaseHandler = (
+  body: unknown,
+  credentialType: string,
+  version?: number,
+): RebaseHandlerResult => {
+  if (!isRebaseClaimType(credentialType as RebaseClaimType)) {
+    return {
+      success: false,
+      status: 400,
+      error: new Error(`Unknown credentialType: ${credentialType}`),
+    };
+  }
+  const t = credentialType as RebaseClaimType;
+  switch (t) {
+      
+  }
+};
 
-// };
 /**
  * HandlerMap relates the handlers to namespaces. By default, only 'rebase' is supplied.
  * Routes are expected to be in the form /:namespace/:version/:credentialType
@@ -179,7 +187,7 @@ type ExpressHandler = (request: Request, response: Response) => Promise<void>;
 interface ParamsObj {
   credentialType: string;
   namespace: string;
-  version: number;
+  version?: number;
 }
 
 // Get params and parse version from Request.params
@@ -189,11 +197,15 @@ function fromParams(params: Record<string, string>): ParamsObj {
     && params['credentialType']
     && params['version']
   ) {
-    return {
+    const result: ParamsObj = {
       credentialType: params['credentialType'],
       namespace: params['namespace'],
-      version: parseInt(params['version'].substring(1), 10),
     };
+    const versionStr = params['version'];
+    if (versionStr) {
+      result.version = parseInt(versionStr, 10);
+    }
+    return result;
   }
 
   if (!params['credentialType']) {
@@ -210,13 +222,19 @@ const makeHandleIssue = (opts: FullOpts): ExpressHandler => async (
   request: Request,
   response: Response,
 ) => {
-  const { namespace, version, credentialType } = fromParams(request.params);
+  const paramsObj = fromParams(request.params);
+  const { namespace, credentialType } = paramsObj;
   const h = opts.handlerMap[namespace];
   if (!h) {
     response.status(400).json({ error: `No handler found for namespace '${namespace}'` });
     return;
   }
-  const result = await h(credentialType, version, request.body);
+  let result;
+  if (paramsObj.version) {
+    result = await h(request.body, credentialType, paramsObj.version);
+  } else {
+    result = await h(request.body, credentialType);
+  }
 
   if (result.success) {
     response.status(200).json(result.credential);
@@ -236,7 +254,8 @@ export function newIssuer(opts?: Opts): ExpressServer {
   const fullOpts = setOpts(opts);
   app.use(express.json());
   app.post('/verify', asyncHandler(handleVerifyCredential));
-  app.post('/:namespace/:version/:credentialType', asyncHandler(makeHandleIssue(fullOpts)));
+  app.post('/:namespace/:credentialType', asyncHandler(makeHandleIssue(fullOpts)));
+  app.post('/:namespace/:credentialType/:version', asyncHandler(makeHandleIssue(fullOpts)));
   return app;
 }
 

@@ -3,7 +3,7 @@ import {
   // prepareIssueCredential,
 } from 'didkit-wasm';
 
-import { SignerType } from '../signer';
+import { isSignerType, SignerType } from '../signer';
 import { Credential } from '../credential';
 
 import { exhaustiveCheck } from '../utils/utils';
@@ -16,10 +16,129 @@ import {
   ClaimData, SignedClaim, PublicClaimData,
 } from './common/common';
 
-import { RebaseClaimType } from './rebase/rebase_types';
+import { RebaseClaimType, isRebaseClaimType } from './rebase/rebase_types';
 
 export type RebaseClaim = ClaimData<RebaseClaimType>;
 export type RebasePublicClaim = PublicClaimData<RebaseClaimType, RebaseClaimLocation>;
+
+export function validateRebaseLocation(
+  location: Record<string, unknown>,
+  type: RebaseClaimType,
+): RebaseClaimLocation {
+  if (!location['type'] || typeof location['type'] !== 'string' || !isRebaseClaimType(location['type'] as RebaseClaimType)) {
+    throw new Error('location.type must be a RebaseClaimType');
+  }
+
+  if (!isRebaseClaimType(type)) {
+    throw new Error('ClaimData.type must be a RebaseClaimType');
+  }
+
+  if (location['type'] !== type) {
+    throw new Error('location.type does not match ClaimData.type');
+  }
+
+  const t = location['type'];
+  switch (t) {
+    case 'DiscordVerification':
+      if (!location['messageId'] || typeof location['messageId'] !== 'string') {
+        throw new Error(`For type ${t}, location must have property messageId of type string`);
+      }
+
+      if (!location['channelId'] || typeof location['channelId'] !== 'string') {
+        throw new Error(`For type ${t}, location must have property channelId of type string`);
+      }
+
+      return {
+        type: t,
+        channelId: location['channelId'],
+        messageId: location['messageId'],
+      };
+    case 'TwitterVerification':
+      if (!location['postId'] || typeof location['postId'] !== 'string') {
+        throw new Error(`For type ${t}, location must have property channelId of type string`);
+      }
+
+      return {
+        type: t,
+        postId: location['postId'],
+      };
+
+    default:
+  }
+
+  exhaustiveCheck(t);
+  throw new Error(`Unknown location type: ${location['type']}`);
+}
+
+export function validateRebaseSignedClaim(u: unknown): SignedClaim<RebasePublicClaim> {
+  if (!u || typeof u !== 'object' || Array.isArray(u)) {
+    throw new Error('SignedClaim is not of primative type Record<string, any>');
+  }
+
+  const m = u as Record<string, unknown>;
+  // Top-level checks
+  if (!m['credentialSubjectId'] || typeof m['credentialSubjectId'] !== 'string') {
+    throw new Error('SignedClaim.credentialSubjectId is required and must be a string');
+  }
+  if (!m['full'] || typeof m['full'] !== 'string') {
+    throw new Error('SignedClaim.full is required and must be a string');
+  }
+  if (!m['signed'] || typeof m['signed'] !== 'string') {
+    throw new Error('SignedClaim.signed is required and must be a string');
+  }
+  if (!m['unsigned'] || typeof m['unsigned'] !== 'string') {
+    throw new Error('SignedClaim.unsigned is required and must be a string');
+  }
+  if (!m['signerType'] || typeof m['signerType'] !== 'string' || !isSignerType(m['signerType'] as SignerType)) {
+    throw new Error('SignedClaim.signerType must be a valid signerType');
+  }
+  if (!m['data'] || typeof m['data'] !== 'object' || Array.isArray(m['data'])) {
+    throw new Error('SignedClaim.data is not of primative type Record<string, any>');
+  }
+
+  const data = m['data'] as Record<string, unknown>;
+  // Data checks
+  if (!data['posterId'] || typeof data['posterId'] !== 'string') {
+    throw new Error('SignedClaim.data.posterId is required and must be a string');
+  }
+  if (!data['signerId'] || typeof data['signerId'] !== 'string') {
+    throw new Error('SignedClaim.data.signerId is required and must be a string');
+  }
+  if (data['version'] && typeof data['version'] !== 'number') {
+    throw new Error('SignedClaim.data.version if provided must be a number');
+  }
+  if (!data['type'] || typeof data['type'] !== 'string' || !isRebaseClaimType(data['type'] as RebaseClaimType)) {
+    throw new Error('SignedClaim.data.type must be of type RebaseClaimType');
+  }
+  if (!data['location'] || typeof data['location'] !== 'object' || Array.isArray(data['location'])) {
+    throw new Error('SignedClaim.data.location is not of primative type Record<string, any>');
+  }
+
+  const location = validateRebaseLocation(
+    data['location'] as Record<string, unknown>,
+    data['type'] as RebaseClaimType,
+  );
+
+  const result: SignedClaim<RebasePublicClaim> = {
+    credentialSubjectId: m['credentialSubjectId'],
+    data: {
+      location,
+      posterId: data['posterId'],
+      signerId: data['signerId'],
+      type: data['type'] as RebaseClaimType,
+    },
+    full: m['full'],
+    signed: m['signed'],
+    signerType: m['signerType'] as SignerType,
+    unsigned: m['unsigned'],
+  };
+
+  if (data['version']) {
+    result.data.version = data['version'] as number;
+  }
+
+  return result;
+}
 
 // The default implementation of public claim to verifiable credential workflow used by Client.
 // This implementation is meant to interact with the companion server library.

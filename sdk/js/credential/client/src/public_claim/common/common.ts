@@ -5,7 +5,7 @@ export interface ClaimData<T> {
   type: T;
   posterId: string;
   signerId: string;
-  version: number;
+  version?: number;
 }
 
 // BaseLocation type must match ClaimData type
@@ -24,9 +24,9 @@ export interface PublicClaimData<Type, Location> extends ClaimData<Type> {
 export interface SignedClaim<Data> {
   credentialSubjectId: string;
   data: Data;
+  full: string;
+  signed: string;
   // TODO: Generalize over!
   signerType: SignerType;
-  signed: string;
   unsigned: string;
-  full: string;
 }
