@@ -1,54 +1,28 @@
-import { v4 as uuidV4 } from 'uuid';
 import {
   JWKFromTezos,
   // prepareIssueCredential,
 } from 'didkit-wasm';
-import type {
-  Credential,
-} from '../credential';
 
 import { SignerType } from '../signer';
+import { Credential } from '../credential';
 
 import { exhaustiveCheck } from '../utils/utils';
 
-// Types of public witness supported in default Rebase settings.
-export type PublicWitnessType = 'discord' | 'twitter';
+import { DiscordLocation, DiscordLocatorOpts, toUnsignedDiscordCredentialV1 } from './discord/discord';
+import {
+  locateTwitterClaim, TwitterLocation, TwitterLocatorOpts, toUnsignedTwitterCredentialV1,
+} from './twitter/twitter';
+import {
+  ClaimData, SignedClaim, PublicClaimData,
+} from './common/common';
 
-export function isPublicWitnessType(s: PublicWitnessType): boolean {
-  switch (s) {
-    case 'discord':
-    case 'twitter':
-      return true;
-    default:
-  }
+import { RebaseClaimType } from './rebase/rebase_types';
 
-  exhaustiveCheck(s);
-  return false;
-}
+export type RebaseClaim = ClaimData<RebaseClaimType>;
+export type RebasePublicClaim = PublicClaimData<RebaseClaimType, RebaseClaimLocation>;
 
-export interface ClaimInfo {
-  type: PublicWitnessType;
-  posterId: string;
-  signerId: string;
-}
-
-export type ClaimLocation = DiscordLocation | TwitterLocation;
-
-export interface PublicClaimInfo extends ClaimInfo {
-  location: ClaimLocation;
-}
-
-// Generic data structure representing the needed information to make a claim
-// assumes a signerId (public key in practice)
-// and a signed and unsigned version of the message.
-// Other information for specific claim making can be passed in the message type param.
-export interface SignedClaim<Info> {
-  credentialSubjectId: string;
-  info: Info;
-  signed: string;
-  unsigned: string;
-  full: string;
-}
+// The default implementation of public claim to verifiable credential workflow used by Client.
+// This implementation is meant to interact with the companion server library.
 
 // String-creation functions shared with the rebase-issuer.
 // Allows for quick recreation and validation of handles etc.
@@ -66,30 +40,30 @@ export function signerPrefix(signerType: SignerType): string {
   throw new Error(`Unknown handle type: ${t}`);
 }
 
-export function posterPrefix(posterType: PublicWitnessType): string {
-  const t = posterType;
-  switch (posterType) {
-    case 'discord':
+export function posterPrefix(claim: RebaseClaim): string {
+  const t = claim.type;
+  switch (claim.type) {
+    case 'DiscordVerification':
       return '';
-    case 'twitter':
+    case 'TwitterVerification':
       return '@';
     default:
   }
 
-  exhaustiveCheck(posterType);
+  exhaustiveCheck(claim.type);
   throw new Error(`Unknown handle type: ${t}`);
 }
 
-export function seperator(posterType: PublicWitnessType): string {
-  const t = posterType;
-  switch (posterType) {
-    case 'discord':
-    case 'twitter':
+export function seperator(claim: RebaseClaim): string {
+  const t = claim.type;
+  switch (claim.type) {
+    case 'DiscordVerification':
+    case 'TwitterVerification':
       return '\n\n';
     default:
   }
 
-  exhaustiveCheck(posterType);
+  exhaustiveCheck(claim.type);
   throw new Error(`Unknown handle type: ${t}`);
 }
 
@@ -107,11 +81,14 @@ export function signerDisplay(signerType: SignerType): string {
   throw new Error(`Unknown handle type: ${t}`);
 }
 
-// Now put it all together.
-export function toUnsignedClaim(info: ClaimInfo, signerType: SignerType): string {
-  const { posterId, signerId } = info;
-  return `I attest ${posterPrefix(info.type)}${posterId} is linked to ${signerDisplay(signerType)} ${signerId}${seperator(info.type)}`;
+export function toUnsignedClaim(
+  data: ClaimData<RebaseClaimType>,
+  signerType: SignerType,
+): string {
+  const { posterId, signerId } = data;
+  return `I attest ${posterPrefix(data)}${posterId} is linked to ${signerDisplay(signerType)} ${signerId}${seperator(data)}`;
 }
+// Local signing functions:
 
 export interface PrepareIssueCredentialOpts {
   proofOptions: string;
@@ -160,117 +137,89 @@ export async function issueOpts(
   };
 }
 
-// Discord Specific
-export interface DiscordLocation {
-  type: 'discord';
-  messageId: string;
-  channelId: string;
+// default locateClaim:
+
+// Location types which match RebaseClaimType
+export type RebaseClaimLocation = DiscordLocation | TwitterLocation;
+
+export interface RebaseClaimIssuerOpts {
+  issuer: string;
+  discord: DiscordLocatorOpts;
+  twitter: TwitterLocatorOpts;
 }
 
-export const RebaseDiscordVersions = [1];
+export type RebaseClaimLocator = (signedClaim: SignedClaim<RebasePublicClaim>) => Promise<string>;
 
-export function toUnsignedDiscordClaimV1(
-  signedClaim: SignedClaim<PublicClaimInfo>,
-  issuer: string,
-): Credential {
-  if (
-    signedClaim.info.location.type !== 'discord'
-      || signedClaim.info.type !== 'discord'
-  ) {
-    throw new Error('Not a discord claim');
-  }
+function makeRebaseClaimLocator(
+  opts: RebaseClaimIssuerOpts,
+): RebaseClaimLocator {
+  return (signedClaim: SignedClaim<RebasePublicClaim>) => {
+    const t = signedClaim.data.type;
+    switch (signedClaim.data.type) {
+      case 'DiscordVerification':
+      // TODO: Implement!
+        throw new Error('IMPLEMENT');
+      case 'TwitterVerification':
+        if (signedClaim.data.location.type === 'TwitterVerification') {
+          return locateTwitterClaim(
+            signedClaim.data as PublicClaimData<'TwitterVerification', TwitterLocation>,
+            opts.twitter.apiKey,
+          );
+        }
+        throw new Error('Mismatched location and claim type');
+      default:
+    }
 
-  return {
-    '@context': [
-      'https://www.w3.org/2018/credentials/v1',
-      {
-        sameAs: 'http://schema.org/sameAs',
-        DiscordVerification: 'https://w3id.org/rebase/v1/DiscordVerification',
-        DiscordVerificationContents: {
-          '@id': 'https://w3id.org/rebase/v1/DiscordVerificationContents',
-          '@context': {
-            '@version': 1.1,
-            '@protected': true,
-            handle: 'https://schema.org/text',
-            timestamp: {
-              '@id': 'https://schema.org/datetime',
-              '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
-            },
-            channelId: 'https://schema.org/text',
-            messageId: 'https://schema.org/text',
-          },
-        },
-      },
-    ],
-    credentialSubject: {
-      id: signedClaim.credentialSubjectId,
-      sameAs: `urn:discord:${signedClaim.info.posterId}`,
-    },
-    evidence: {
-      channelId: signedClaim.info.location.channelId,
-      handle: signedClaim.info.posterId,
-      messageId: signedClaim.info.location.messageId,
-      timestamp: new Date().toISOString(),
-      type: ['DiscordVerificationContents'],
-    },
-    id: `urn:uuid:${uuidV4()}`,
-    issuer,
-    type: ['VerifiableCredential', 'DiscordVerification'],
+    exhaustiveCheck(signedClaim.data.type);
+    throw new Error(`Unknown claim type: ${t}`);
   };
 }
 
-// Twitter Specific
-export interface TwitterLocation {
-  type: 'twitter';
-  postId: string;
+export type RebaseClaimWitness = (signedClaim: SignedClaim<RebasePublicClaim>)
+=> Promise<Credential>;
+
+function makeRebaseClaimWitness(locator: RebaseClaimLocator, issuer: string): RebaseClaimWitness {
+  return async (signedClaim: SignedClaim<RebasePublicClaim>): Promise<Credential> => {
+    if (signedClaim.full !== `${signedClaim.unsigned}${signedClaim.signed}`) {
+      throw new Error('SignedMessage.full must be the concatination of .unsigned and .signed');
+    }
+
+    if (toUnsignedClaim(signedClaim.data, signedClaim.signerType) !== signedClaim.unsigned) {
+      throw new Error('SignedMessage.unsigned should match toUnsignedClaim(signedClaim.data, signedClaim.signerType)');
+    }
+
+    const retrievedClaim = await locator(signedClaim);
+    if (signedClaim.full !== retrievedClaim) {
+      throw new Error('Signed message does not match located public claim text');
+    }
+
+    // TODO: Impl switch on signerType here to validate!
+
+    const t = signedClaim.data.type;
+    switch (signedClaim.data.type) {
+      case 'DiscordVerification':
+        // TODO: Switch on version (?)
+        // TODO: Sign it here (?)
+        return toUnsignedDiscordCredentialV1(
+          signedClaim as SignedClaim<PublicClaimData<RebaseClaimType, DiscordLocation>>,
+          issuer,
+        );
+      case 'TwitterVerification':
+        // TODO: Switch on version (?)
+        // TODO: Sign it here (?)
+        return toUnsignedTwitterCredentialV1(
+          signedClaim as SignedClaim<PublicClaimData<RebaseClaimType, TwitterLocation>>,
+          issuer,
+        );
+      default:
+    }
+
+    exhaustiveCheck(signedClaim.data.type);
+    throw new Error(`Unknown claim type: ${t}`);
+  };
 }
 
-export const RebaseTwitterVersions = [1];
-
-export function toUnsignedTwitterClaimV1(
-  signedClaim: SignedClaim<PublicClaimInfo>,
-  issuer: string,
-): Credential {
-  if (
-    signedClaim.info.location.type !== 'twitter'
-      || signedClaim.info.type !== 'twitter'
-  ) {
-    throw new Error('Not a twitter claim');
-  }
-
-  return {
-    '@context': [
-      'https://www.w3.org/2018/credentials/v1',
-      {
-        sameAs: 'http://schema.org/sameAs',
-        TwitterVerification: 'https://w3id.org/rebase/v1/TwitterVerification',
-        TwitterVerificationPublicTweet: {
-          '@id': 'https://w3id.org/rebase/v1/TwitterVerificationPublicTweet',
-          '@context': {
-            '@version': 1.1,
-            '@protected': true,
-            handle: 'https://schema.org/text',
-            timestamp: {
-              '@id': 'https://schema.org/datetime',
-              '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
-            },
-            tweetId: 'https://schema.org/text',
-          },
-        },
-      },
-    ],
-    credentialSubject: {
-      id: signedClaim.credentialSubjectId,
-      sameAs: `https://twitter.com/${signedClaim.info.posterId}`,
-    },
-    evidence: {
-      handle: signedClaim.info.posterId,
-      timestamp: new Date().toISOString(),
-      tweetId: signedClaim.info.signerId,
-      type: ['TwitterVerifciationPublicTweet'],
-    },
-    id: `urn:uuid:${uuidV4()}`,
-    issuer,
-    type: ['VerifiableCredential', 'TwitterVerification'],
-  };
+export function makeWitness(opts: RebaseClaimIssuerOpts): RebaseClaimWitness {
+  const locator = makeRebaseClaimLocator(opts);
+  return makeRebaseClaimWitness(locator, opts.issuer);
 }

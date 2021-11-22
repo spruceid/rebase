@@ -9,7 +9,7 @@ import asyncHandler from 'express-async-handler';
 import { Credential } from '../../../sdk/js/credential/client/src/credential';
 
 // import {
-//   PublicClaimInfo,
+//   PublicClaimData,
 //   DiscordLocation,
 //   TwitterLocation,
 //   RebaseDiscordVersions,
@@ -58,7 +58,7 @@ export type RebaseHandlerResult = SuccessResult | FailureResult;
  * in the resulting credential.
  * @param version is the version of the credential to be issued.
  * @param body is the request body of client.
- * By default, will be of type SignedClaim<PublicClaimInfo>, but can be customized.
+ * By default, will be of type SignedClaim<PublicClaimData>, but can be customized.
  */
 export type RebaseHandler = (
   credentialType: string,
