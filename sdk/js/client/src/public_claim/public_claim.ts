@@ -1,7 +1,7 @@
 import {
   JWKFromTezos,
   // prepareIssueCredential,
-} from 'didkit-wasm';
+} from '@spruceid/didkit-wasm';
 
 import { isSignerType, SignerType } from '../signer';
 import { Credential } from '../credential';
@@ -21,6 +21,13 @@ import { RebaseClaimType, isRebaseClaimType } from './rebase/rebase_types';
 export type RebaseClaim = ClaimData<RebaseClaimType>;
 export type RebasePublicClaim = PublicClaimData<RebaseClaimType, RebaseClaimLocation>;
 
+/**
+ * validateRebaseLocation is used to santize inputs and verify they conform to the
+ * expected type, basically runtime reflection.
+ * @param location an unknown object tested to be a RebaseClaimLocation
+ * @param type the type from the RebaseClaimData
+ * @returns a valid RebaseClaimLocation or throws if location is invalid.
+ */
 export function validateRebaseLocation(
   location: Record<string, unknown>,
   type: RebaseClaimType,
@@ -70,12 +77,18 @@ export function validateRebaseLocation(
   throw new Error(`Unknown location type: ${location['type']}`);
 }
 
-export function validateRebaseSignedClaim(u: unknown): SignedClaim<RebasePublicClaim> {
-  if (!u || typeof u !== 'object' || Array.isArray(u)) {
+/**
+ * validateRebaseSignedClaim is used to santize inputs and verify they conform to the
+ * expected type, basically runtime reflection.
+ * @param signedClaim unknown input to be tested to see if it's a SignedClaim<RebasePublicClaim>
+ * @returns SignedClaim<RebasePublicClaim> if valid, or throws if invalid.
+ */
+export const validateRebaseSignedClaim = (signedClaim: unknown): SignedClaim<RebasePublicClaim> => {
+  if (!signedClaim || typeof signedClaim !== 'object' || Array.isArray(signedClaim)) {
     throw new Error('SignedClaim is not of primative type Record<string, any>');
   }
 
-  const m = u as Record<string, unknown>;
+  const m = signedClaim as Record<string, unknown>;
   // Top-level checks
   if (!m['credentialSubjectId'] || typeof m['credentialSubjectId'] !== 'string') {
     throw new Error('SignedClaim.credentialSubjectId is required and must be a string');
@@ -138,7 +151,7 @@ export function validateRebaseSignedClaim(u: unknown): SignedClaim<RebasePublicC
   }
 
   return result;
-}
+};
 
 // The default implementation of public claim to verifiable credential workflow used by Client.
 // This implementation is meant to interact with the companion server library.

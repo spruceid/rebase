@@ -35,8 +35,8 @@ module.exports = {
       }),
   ],
   output: {
-    filename: 'rebase_claim.js',
-    library: 'rebase_claim',
+    filename: 'index.js',
+    library: 'index',
     path: path.resolve(__dirname, 'dist'),
   },
   experiments:{ asyncWebAssembly: true }

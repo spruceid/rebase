@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {
   verifyCredential,
-} from 'didkit-wasm';
+} from '@spruceid/didkit-wasm';
 import { authenticator, Kepler, getOrbitId } from 'kepler-sdk';
 import {
   Provider, signClaim as innerSignClaim, getClaimAddress, getDID, SignerType,
@@ -158,7 +158,7 @@ export default class Client<
         this.issuer.endsWith('/')
           ? this.issuer.slice(0, -1)
           : this.issuer
-      }/v${signedClaim.data.version}/${signedClaim.data.type}`;
+      }/${signedClaim.data.type}`;
     } else {
       const temp = this.issuer[signedClaim.data.type];
       if (!temp) {
@@ -168,7 +168,11 @@ export default class Client<
         temp.endsWith('/')
           ? temp.slice(0, -1)
           : temp
-      }/v${signedClaim.data.version}/${signedClaim.data.type}`;
+      }/${signedClaim.data.type}`;
+    }
+
+    if (typeof signedClaim.data.version === 'number') {
+      targetUrl = `${targetUrl}/${signedClaim.data.version}`;
     }
 
     const res = await axios.post(

@@ -1,18 +1,22 @@
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import type { Express as ExpressServer } from 'express';
 
 import { config } from 'dotenv';
 import { verifyCredential } from '@spruceid/didkit-wasm-node';
 import asyncHandler from 'express-async-handler';
 
+// // TODO: Import from NPM instead of locally.
+// import { Credential } from '../../../client/src/credential';
+
 // TODO: Import from NPM instead of locally.
-import { Credential } from '../../../sdk/js/credential/client/src/credential';
-
 import {
+  Credential,
   makeWitness,
-} from '../../../sdk/js/credential/client/src/public_claim/public_claim';
-
-import { RebaseClaimType, isRebaseClaimType } from '../../../sdk/js/credential/client/src/public_claim/rebase/rebase_types';
+  validateRebaseSignedClaim,
+  RebaseClaimType,
+  isRebaseClaimType,
+} from 'rebase-claim-client';
 
 config();
 
@@ -65,7 +69,7 @@ export type RebaseHandlerResult = SuccessResult | FailureResult;
  * in the resulting credential.
  * @param version is the version of that credential's specification or schema to be issued.
  * @param body is the request body of client.
- * By default, will be of type SignedClaim<PublicClaimData>, but can be customized.
+ * By default, will be of type SignedClaim<RebasePublicClaim>, but can be customized.
  */
 export type RebaseHandler = (
   body: unknown,
@@ -73,12 +77,11 @@ export type RebaseHandler = (
   version?: number,
 ) => Promise<RebaseHandlerResult>;
 
-// TODO: Work from here:
-const defaultRebaseHandler = (
+const defaultRebaseHandler = async (
   body: unknown,
   credentialType: string,
-  version?: number,
-): RebaseHandlerResult => {
+  _version?: number,
+): Promise<RebaseHandlerResult> => {
   if (!isRebaseClaimType(credentialType as RebaseClaimType)) {
     return {
       success: false,
@@ -86,9 +89,30 @@ const defaultRebaseHandler = (
       error: new Error(`Unknown credentialType: ${credentialType}`),
     };
   }
-  const t = credentialType as RebaseClaimType;
-  switch (t) {
-      
+  try {
+    const signedClaim = validateRebaseSignedClaim(body);
+    try {
+      const cred = await defaultHandler(signedClaim);
+      return {
+        success: true,
+        status: 200,
+        credential: cred,
+      };
+    } catch (err) {
+      const e = err as Error;
+      return {
+        success: false,
+        status: 500,
+        error: new Error(`Failed to issue credential: ${e.message}`),
+      };
+    }
+  } catch (err) {
+    const e = err as Error;
+    return {
+      success: false,
+      status: 400,
+      error: new Error(`Invalid body: ${e.message}`),
+    };
   }
 };
 
@@ -138,7 +162,7 @@ const defaultOpts = {
   },
   // TODO: Impl!
   handlerMap: {
-    // rebase:
+    rebase: defaultRebaseHandler,
   },
 };
 
@@ -252,6 +276,11 @@ const makeHandleIssue = (opts: FullOpts): ExpressHandler => async (
 export function newIssuer(opts?: Opts): ExpressServer {
   const app = express();
   const fullOpts = setOpts(opts);
+  if (fullOpts.corsWildcard) {
+    app.use(cors({
+      origin: '*',
+    }));
+  }
   app.use(express.json());
   app.post('/verify', asyncHandler(handleVerifyCredential));
   app.post('/:namespace/:credentialType', asyncHandler(makeHandleIssue(fullOpts)));
