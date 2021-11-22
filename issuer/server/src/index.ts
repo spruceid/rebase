@@ -41,8 +41,8 @@ type DIDKitVerifyResult = {
 };
 
 /**
- * SuccessResult is what a RebaseHandler should return in case of a successful issuence.
- * Configures the response served by Express
+ * SuccessResult is what a RebaseHandler should return in case of a successful issuance.
+ * Configures the response to be served by Express
  */
 export interface SuccessResult {
   success: true;
@@ -51,8 +51,8 @@ export interface SuccessResult {
 }
 
 /**
- * FailureResult is what a RebaseHandler should return in case of a successful issuence.
- * Configures the response served by Express
+ * FailureResult is what a RebaseHandler should return in case of an unsuccessful issuance.
+ * Configures the response to be served by Express
  */
 export interface FailureResult {
   success: false;
@@ -66,11 +66,11 @@ export interface FailureResult {
 export type RebaseHandlerResult = SuccessResult | FailureResult;
 
 /**
- * RebaseHandler is the function invoked when a request for issuence is made
+ * RebaseHandler is the function invoked when a request for issuance is made
  * @param credentialType is the type of claim to be witnessed and credential to be issued
  * example: TwitterVerification. In the default configuration corresponds to a @context schema
  * in the resulting credential.
- * @param version is the version of the credential to be issued.
+ * @param version is the version of that credential's specification or schema to be issued.
  * @param body is the request body of client.
  * By default, will be of type SignedClaim<PublicClaimData>, but can be customized.
  */
@@ -172,7 +172,7 @@ const handleVerifyCredential = async (
   }
 };
 
-// The type of handler express-async-handler expects, used internally.
+// The type of handler that express-async-handler expects, used internally.
 type ExpressHandler = (request: Request, response: Response) => Promise<void>;
 
 // Used to generalize over the routing structure.
