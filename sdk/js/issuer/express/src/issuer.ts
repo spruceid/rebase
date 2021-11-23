@@ -6,17 +6,13 @@ import { config } from 'dotenv';
 import { verifyCredential } from '@spruceid/didkit-wasm-node';
 import asyncHandler from 'express-async-handler';
 
-// // TODO: Import from NPM instead of locally.
-// import { Credential } from '../../../client/src/credential';
-
 // TODO: Import from NPM instead of locally.
 import {
-  Credential,
-  makeWitness,
-  validateRebaseSignedClaim,
-  RebaseClaimType,
-  isRebaseClaimType,
+  Credential as RebaseCred,
+  PublicClaim as RebasePC,
 } from 'rebase-claim-client';
+
+const { makeWitness, isRebaseClaimType, validateRebaseSignedClaim } = RebasePC;
 
 config();
 
@@ -44,7 +40,7 @@ type DIDKitVerifyResult = {
 export interface SuccessResult {
   success: true;
   status: 200;
-  credential: Credential;
+  credential: RebaseCred.Credential;
 }
 
 /**
@@ -82,7 +78,7 @@ const defaultRebaseHandler = async (
   credentialType: string,
   _version?: number,
 ): Promise<RebaseHandlerResult> => {
-  if (!isRebaseClaimType(credentialType as RebaseClaimType)) {
+  if (!isRebaseClaimType(credentialType as RebasePC.RebaseClaimType)) {
     return {
       success: false,
       status: 400,
