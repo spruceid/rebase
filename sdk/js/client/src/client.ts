@@ -3,9 +3,11 @@ import {
   verifyCredential,
 } from '@spruceid/didkit-wasm';
 import { authenticator, Kepler, getOrbitId } from 'kepler-sdk';
+
 import {
   Provider, signClaim as innerSignClaim, getClaimAddress, getDID, SignerType,
 } from './signer/index';
+
 import {
   ClaimData,
   RebaseClaimLocation,
@@ -275,5 +277,6 @@ export default class Client<
  */
 export const defaultClient = (): Client<RebaseClaimType, RebaseClaimLocation> => new Client({
   issuer: defaultIssuer,
+  keplerHost: defaultKeplerHost,
   toUnsignedClaim,
 });
