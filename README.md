@@ -15,7 +15,7 @@ TODO: EXPAND!
 3 Types of Schema / Credential Flows:
 1) Self attested: This schema has no `proof`, it's just an attestation made by the owner of a particular key. The basic profile in TZProfiles is an example.
 
-2) Cross Key: This flow generates it's `proof` from it's `subject`, so while the `proof` is present in the schema, the user will only pass a `subject`. It takes two `signer`s, generates a statement attesting to the linking of the two `signer`s, signs the statement with each `signer`, then embeds that signed statment into a VC signed by the other. The result is two cross signed VCs. This becomes interesting when paired with Kepler for purposes of discovery.
+2) Cross Key: This flow generates it's `proof` from it's `subject`, so while the `proof` is present in the schema, the user will only pass a `subject`. It takes two `signer`s, generates a statement attesting to the linking of the two `signer`s, signs the statement with each `signer`, then embeds that signed statment into two VCs, one signed by each key (A total of 4 signatures). The result is two cross signed VCs. This becomes interesting when paired with Kepler for purposes of discovery.
 
 3) Publically Witnessed: This flow requires the user to present both a `subject` and `proof`. The flow has been abstracted so that the user provides a `subject` and `signer` for a `post`, then the user publically posts the `post`, getting a `post_location`. Then, by providing the `subject` and `post_location` to a public witness using this library, the public witness can verify the claim and issue a VC.
 
