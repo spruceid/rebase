@@ -6,18 +6,22 @@ Rebase is written in Rust with WASM as a first-class compilation target allowing
 
 Rebase uses schemas to define supported claims and maintain consistency in the Verifiable Credentials it produces. These schemas are used to meet the specification and can be used to generate basic HTML pages for LD schemes.
 
-These schemas define a `subject` and optionally a `proof` that are used to contstruct the Verifiable Credential in a given flow. These appear in the `@context` of the output Verifiable Credential but are also used for flow specific validation.
+These schemas define a `subject` and optionally a `proof` that are used to contstruct the Verifiable Credential in a given flow. These appear in the `@context` of the output Verifiable Credential but are also used for flow specific validation. 
+
+Schemas are combined with signers to create concrete VC creation and validation flows. Schemas describe what a VC represents. Signers describe how to create and check existing VCs. As new schemas are added they can be used with all existing signers and vice versa.
 
 The common use of this library is to create either clients or witness services used to link identities between providers in a public, self-soveriegn way.
+
+## 
 
 TODO: EXPAND!
 
 3 Types of Schema / Credential Flows:
 1) Self attested: This schema has no `proof`, it's just an attestation made by the owner of a particular key. The basic profile in TZProfiles is an example.
 
-2) Cross Key: This flow generates it's `proof` from it's `subject`, so while the `proof` is present in the schema, the user will only pass a `subject`. It takes two `signer`s, generates a statement attesting to the linking of the two `signer`s, signs the statement with each `signer`, then embeds that signed statment into two VCs, one signed by each key (A total of 4 signatures). The result is two cross signed VCs. This becomes interesting when paired with Kepler for purposes of discovery.
+2) Cross Key: This flow generates it's `proof` from it's `subject`, so while the `proof` is present in the schema, the user will only pass a `subject`. It takes two `signer`s, generates a statement attesting to the linking of the two `signer`s, signs the statement with each `signer`, then embeds that signed statment into two VCs, one signed by each key (A total of 4 signatures). The result is two cross signed VCs. This becomes interesting when paired with Kepler for purposes of discovery. The template of the signed string, parsing rules, and signature validation is described by the schema.
 
-3) Publically Witnessed: This flow requires the user to present both a `subject` and `proof`. The flow has been abstracted so that the user provides a `subject` and `signer` for a `post`, then the user publically posts the `post`, getting a `post_location`. Then, by providing the `subject` and `post_location` to a public witness using this library, the public witness can verify the claim and issue a VC.
+3) Publically Witnessed: This flow requires the user to present both a `subject` and `proof`. The flow has been abstracted so that the user provides a `subject` and `signer` for a `post`, then the user publically posts the `post`, getting a `post_location`. Then, by providing the `subject` and `post_location` to a public witness using this library, the public witness can verify the claim and issue a VC. Similar to the cross key, the schema `post`s template, how to parse it, and how to check the signature.
 
 # Psuedo Code:
 
