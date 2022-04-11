@@ -1,3 +1,5 @@
+use ssi::vc::{Credential, LinkedDataProofOptions};
+
 pub enum Ethereum {
     // EIP712,
     PlainText,
@@ -41,9 +43,7 @@ impl SignerType {
             SignerType::Ethereum(Ethereum::PlainText) => {
                 Err("Plain text signing of VCs in Ethereum is not implemented".to_string())
             }
-            SignerType::Tezos(Tezos::PlainText) => {
-                Ok(format!("did:pkh:tz:{}", id))
-            }
+            SignerType::Tezos(Tezos::PlainText) => Ok(format!("did:pkh:tz:{}", id)),
         }
     }
 }
@@ -52,6 +52,8 @@ pub trait SignerMethods {
     // TODO: Add async-trait and make these async.
     // sign takes plain text and returns the corresponding signature
     fn sign(&self, plain_text: &str) -> String;
+    // sign takes a mutable reference to an incomplete VC and signs it.
+    fn sign_vc(&self, vc: &mut Credential, proof: Option<LinkedDataProofOptions>);
     // id returns the identifier for the given signer, such as a public key hash.
     fn id(&self) -> String;
 }
@@ -81,6 +83,10 @@ where
 
     pub fn sign(&self, text: &str) -> String {
         self.opts.sign(text)
+    }
+
+    pub fn sign_vc(&self, vc: &mut Credential, proof: Option<LinkedDataProofOptions>) {
+        self.opts.sign_vc(vc, proof)
     }
 
     pub fn as_did(&self) -> Result<String, String> {

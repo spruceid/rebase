@@ -1,6 +1,10 @@
 use crate::schema_type::SchemaType;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use ssi::{
+    one_or_many::OneOrMany,
+    vc::{Evidence, LinkedDataProofOptions}
+};
 
 // TODO: Move to own dir, maybe w/ schema?
 #[derive(Deserialize, Serialize)]
@@ -42,5 +46,14 @@ impl SchemaType for BasicProfile {
             "website": self.website,
         }))
         .map_err(|e| format!("{}", e))?)
+    }
+
+    fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, String> {
+        Ok(None)
+    }
+
+    fn proof(&self) -> Result<Option<LinkedDataProofOptions>, String> {
+        // TODO: Impl?
+        Ok(None)
     }
 }

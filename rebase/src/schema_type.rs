@@ -1,7 +1,10 @@
 use crate::signer::{Signer, SignerMethods};
 use chrono::{SecondsFormat, Utc};
 use serde_json::json;
-use ssi::vc::Credential;
+use ssi::{
+    one_or_many::OneOrMany,
+    vc::{Credential, Evidence, LinkedDataProofOptions}
+};
 use uuid::Uuid;
 
 pub trait SchemaType {
@@ -15,18 +18,20 @@ pub trait SchemaType {
 
     // Returns the object used in credentialSubject
     // TODO: Use this error
-    fn credential_subject(&self, signer_id: &str) -> Result<String, String>;
+    fn credential_subject(&self, signer_did: &str) -> Result<String, String>;
+
+    // Returns the evide
+    // TODO: Use this error
+    fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, String>;
 
     // TODO: Use this error
-    // fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, String>;
-
-    // TODO: Use this error
-    // fn proof(&self) -> Result<Option<OneOrMany<Proof>>, String>;
+    fn proof(&self) -> Result<Option<LinkedDataProofOptions>, String>;
 
     // Return the complete, signed credential
     // TODO: Use this error
     fn to_credential<T: SignerMethods>(&self, signer: Signer<T>) -> Result<Credential, String> {
         let did = signer.as_did()?;
+
         let mut vc: Credential = serde_json::from_value(json!({
             "@context": self.context()?,
             "id": format!("urn:uuid:{}", Uuid::new_v4().to_string()),
@@ -37,8 +42,10 @@ pub trait SchemaType {
         }))
         .map_err(|e| e.to_string())?;
 
-        // TODO: Impl
-    
+        vc.evidence = self.evidence()?;
+
+        signer.sign_vc(&mut vc, self.proof()?);
+
         Ok(vc)
     }
 }
