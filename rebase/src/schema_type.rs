@@ -3,7 +3,7 @@ use chrono::{SecondsFormat, Utc};
 use serde_json::json;
 use ssi::{
     one_or_many::OneOrMany,
-    vc::{Credential, Evidence, LinkedDataProofOptions}
+    vc::{Credential, Evidence}
 };
 use uuid::Uuid;
 
@@ -24,9 +24,6 @@ pub trait SchemaType {
     // TODO: Use this error
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, String>;
 
-    // TODO: Use this error
-    fn proof(&self) -> Result<Option<LinkedDataProofOptions>, String>;
-
     // Return the complete, signed credential
     // TODO: Use this error
     fn to_credential<T: SignerMethods>(&self, signer: Signer<T>) -> Result<Credential, String> {
@@ -44,7 +41,7 @@ pub trait SchemaType {
 
         vc.evidence = self.evidence()?;
 
-        signer.sign_vc(&mut vc, self.proof()?);
+        signer.sign_vc(&mut vc)?;
 
         Ok(vc)
     }
