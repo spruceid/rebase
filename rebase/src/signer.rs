@@ -1,4 +1,9 @@
-use ssi::vc::{Credential, LinkedDataProofOptions};
+use ssi::vc::{Credential, LinkedDataProofOptions, URI};
+
+pub enum Ed25519 {
+    // TODO: Change name?
+    WebJWK,
+}
 
 pub enum Ethereum {
     // EIP712,
@@ -11,6 +16,7 @@ pub enum Tezos {
 }
 
 pub enum SignerType {
+    Ed25519(Ed25519),
     Ethereum(Ethereum),
     Tezos(Tezos),
 }
@@ -18,6 +24,7 @@ pub enum SignerType {
 impl SignerType {
     pub fn name(&self) -> String {
         match self {
+            SignerType::Ed25519(Ed25519::WebJWK) => "Ed25519 Key".to_string(),
             SignerType::Ethereum(_) => "Ethereum Address".to_string(),
             SignerType::Tezos(_) => "Tezos Address".to_string(),
         }
@@ -26,6 +33,10 @@ impl SignerType {
     // TODO: Replace with this error
     pub fn valid_id(&self, _id: &str) -> Result<(), String> {
         match self {
+            SignerType::Ed25519(_) => {
+                // TODO: Something with id.
+                Ok(())
+            }
             SignerType::Ethereum(_) => {
                 // TODO: Something with id.
                 Ok(())
@@ -46,6 +57,7 @@ impl SignerType {
                 Err("Plain text signing of VCs in Ethereum is not implemented".to_string())
             }
             SignerType::Tezos(Tezos::PlainText) => Ok(format!("did:pkh:tz:{}", id)),
+            SignerType::Ed25519(Ed25519::WebJWK) => Ok(format!("did:web:{}", id)),
         }
     }
 
@@ -54,19 +66,29 @@ impl SignerType {
     fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, String> {
         self.valid_id(id)?;
         match self {
+            SignerType::Ed25519(signer_type) => match signer_type {
+                 Ed25519::WebJWK => Ok(Some(LinkedDataProofOptions {
+                    verification_method: Some(URI::String(format!(
+                        "{}#controller",
+                        self.as_did(&id)?
+                    ))),
+                    ..Default::default()
+                })),
+            }
             SignerType::Ethereum(_) => {
                 // TODO: impl.
                 Err("impl".to_string())
             }
             SignerType::Tezos(signer_type) => match signer_type {
-                Tezos::PlainText => {
-                    Ok(Some(LinkedDataProofOptions {
-                        verification_method: Some(format!("{}#TezosMethod2021", self.as_did(&id)?)),
-                        ..Default::default()
-                    }))
-                },
-                _ => Err("impl".to_string())
-            }
+                Tezos::PlainText => Ok(Some(LinkedDataProofOptions {
+                    verification_method: Some(URI::String(format!(
+                        "{}#TezosMethod2021",
+                        self.as_did(&id)?
+                    ))),
+                    ..Default::default()
+                })),
+                // _ => Err("impl".to_string()),
+            },
         }
     }
 }
@@ -78,7 +100,11 @@ pub trait SignerMethods {
     fn sign(&self, plain_text: &str) -> Result<String, String>;
     // sign_vc takes a mutable reference to an incomplete VC and signs it.
     // TODO: Replace with this error
-    fn sign_vc(&self, vc: &mut Credential, proof: Option<LinkedDataProofOptions>) -> Result<(), String>;
+    fn sign_vc(
+        &self,
+        vc: &mut Credential,
+        proof: Option<LinkedDataProofOptions>,
+    ) -> Result<(), String>;
     // id returns the identifier for the given signer, such as a public key hash.
     fn id(&self) -> String;
 }
