@@ -14,6 +14,9 @@ pub enum SignerError {
     #[error("failed to sign credential, {0}")]
     SignCredential(String),
 
+    #[error("given message a signature did not correspond to given key")]
+    InvalidSignature
+
     // TODO: Remove!
     #[error("this feature is unimplemented")]
     Unimplemented
@@ -21,7 +24,7 @@ pub enum SignerError {
 
 pub enum Ed25519 {
     // TODO: Change name?
-    WebJWK,
+    DIDWebJWK,
 }
 
 pub enum Ethereum {
@@ -43,7 +46,7 @@ pub enum SignerType {
 impl SignerType {
     pub fn name(&self) -> String {
         match self {
-            SignerType::Ed25519(Ed25519::WebJWK) => "Ed25519 Key".to_string(),
+            SignerType::Ed25519(Ed25519::DIDWebJWK) => "Ed25519 Key".to_string(),
             SignerType::Ethereum(_) => "Ethereum Address".to_string(),
             SignerType::Tezos(_) => "Tezos Address".to_string(),
         }
@@ -51,8 +54,8 @@ impl SignerType {
 
     pub fn valid_id(&self, _id: &str) -> Result<(), SignerError> {
         match self {
-            SignerType::Ed25519(_) => {
-                // TODO: Something with id.
+            SignerType::Ed25519(Ed25519::DIDWebJWK) => {
+                // TODO: Verify it is actually a did.
                 Ok(())
             }
             SignerType::Ethereum(_) => {
@@ -74,7 +77,7 @@ impl SignerType {
                 Err(SignerError::Unimplemented)
             }
             SignerType::Tezos(Tezos::PlainText) => Ok(format!("did:pkh:tz:{}", id)),
-            SignerType::Ed25519(Ed25519::WebJWK) => Ok(format!("did:web:{}", id)),
+            SignerType::Ed25519(Ed25519::DIDWebJWK) => Ok(id.clone().to_owned()),
         }
     }
 
@@ -83,7 +86,7 @@ impl SignerType {
         self.valid_id(id)?;
         match self {
             SignerType::Ed25519(signer_type) => match signer_type {
-                 Ed25519::WebJWK => Ok(Some(LinkedDataProofOptions {
+                 Ed25519::DIDWebJWK => Ok(Some(LinkedDataProofOptions {
                     verification_method: Some(URI::String(format!(
                         "{}#controller",
                         self.as_did(&id)?
@@ -106,6 +109,11 @@ impl SignerType {
                 // _ => Err("impl".to_string()),
             },
         }
+    }
+
+    fn valid_signature(message: &str, signature: &str, id: &str) -> Result<(), SignerError> {
+        // TODO: Implement
+        Err(SignerError::Unimplemented)
     }
 }
 
