@@ -1,4 +1,4 @@
-use crate::schema_type::SchemaType;
+use crate::schema::schema_type::{SchemaError, SchemaType};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
@@ -13,7 +13,7 @@ pub struct BasicProfile {
 }
 
 impl SchemaType for BasicProfile {
-    fn context(&self) -> Result<String, String> {
+    fn context(&self) -> Result<String, SchemaError> {
         Ok(serde_json::from_value(json!([
             "https://www.w3.org/2018/credentials/v1",
             {
@@ -24,29 +24,27 @@ impl SchemaType for BasicProfile {
               // TODO: Establish new place for this URL to point.
               "BasicProfile": "https://tzprofiles.com/BasicProfile",
           },
-        ]))
-        .map_err(|e| format!("{}", e))?)
+        ]))?)
     }
 
-    fn vc_types(&self) -> Result<Vec<String>, String> {
+    fn types(&self) -> Result<Vec<String>, SchemaError> {
         Ok(vec![
             "VerifiableCredential".to_string(),
             "BasicProfile".to_string(),
         ])
     }
 
-    fn credential_subject(&self, subject_did: &str) -> Result<String, String> {
+    fn subject(&self, subject_did: &str) -> Result<String, SchemaError> {
         Ok(serde_json::from_value(json!({
             "id": subject_did.to_string(),
             "alias": self.alias,
             "description": self.description,
             "logo": self.logo,
             "website": self.website,
-        }))
-        .map_err(|e| format!("{}", e))?)
+        }))?)
     }
 
-    fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, String> {
+    fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, SchemaError> {
         Ok(None)
     }
 }

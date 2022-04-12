@@ -10,4 +10,5 @@ chrono = { version = "0.4", features = ["serde", "wasmbind"] }
 serde = "1"
 serde_json = "1"
 ssi = "0.4"
+thiserror = "1"
 uuid = { version = "0.8", features = ["serde", "v4", "stdweb"] }

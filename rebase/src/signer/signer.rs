@@ -1,4 +1,23 @@
 use ssi::vc::{Credential, LinkedDataProofOptions, URI};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum SignerError {
+    #[error("invalid id for {signer_type:?}, {reason:?}")]
+    InvalidId {
+        signer_type: String,
+        reason: String
+    },
+    #[error("failed to sign bytes, {0}")]
+    Sign(String),
+
+    #[error("failed to sign credential, {0}")]
+    SignCredential(String),
+
+    // TODO: Remove!
+    #[error("this feature is unimplemented")]
+    Unimplemented
+}
 
 pub enum Ed25519 {
     // TODO: Change name?
@@ -30,8 +49,7 @@ impl SignerType {
         }
     }
 
-    // TODO: Replace with this error
-    pub fn valid_id(&self, _id: &str) -> Result<(), String> {
+    pub fn valid_id(&self, _id: &str) -> Result<(), SignerError> {
         match self {
             SignerType::Ed25519(_) => {
                 // TODO: Something with id.
@@ -48,22 +66,20 @@ impl SignerType {
         }
     }
 
-    // TODO: Replace with this error
-    pub fn as_did(&self, id: &str) -> Result<String, String> {
+    pub fn as_did(&self, id: &str) -> Result<String, SignerError> {
         self.valid_id(id)?;
         match self {
             // TODO: Support EIP712
             SignerType::Ethereum(Ethereum::PlainText) => {
-                Err("Plain text signing of VCs in Ethereum is not implemented".to_string())
+                Err(SignerError::Unimplemented)
             }
             SignerType::Tezos(Tezos::PlainText) => Ok(format!("did:pkh:tz:{}", id)),
             SignerType::Ed25519(Ed25519::WebJWK) => Ok(format!("did:web:{}", id)),
         }
     }
 
-    // TODO: Replace with this error
     // proof returns the linked data proof options for a given signer type
-    fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, String> {
+    fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, SignerError> {
         self.valid_id(id)?;
         match self {
             SignerType::Ed25519(signer_type) => match signer_type {
@@ -77,7 +93,7 @@ impl SignerType {
             }
             SignerType::Ethereum(_) => {
                 // TODO: impl.
-                Err("impl".to_string())
+                Err(SignerError::Unimplemented)
             }
             SignerType::Tezos(signer_type) => match signer_type {
                 Tezos::PlainText => Ok(Some(LinkedDataProofOptions {
@@ -96,15 +112,13 @@ impl SignerType {
 pub trait SignerMethods {
     // TODO: Add async-trait and make these async.
     // sign takes plain text and returns the corresponding signature
-    // TODO: Replace with this error
-    fn sign(&self, plain_text: &str) -> Result<String, String>;
+    fn sign(&self, plain_text: &str) -> Result<String, SignerError>;
     // sign_vc takes a mutable reference to an incomplete VC and signs it.
-    // TODO: Replace with this error
     fn sign_vc(
         &self,
         vc: &mut Credential,
         proof: Option<LinkedDataProofOptions>,
-    ) -> Result<(), String>;
+    ) -> Result<(), SignerError>;
     // id returns the identifier for the given signer, such as a public key hash.
     fn id(&self) -> String;
 }
@@ -120,8 +134,7 @@ impl<T> Signer<T>
 where
     T: SignerMethods,
 {
-    // TODO: Replace with this error
-    pub fn new(opts: T, signer_type: SignerType) -> Result<Self, String> {
+    pub fn new(opts: T, signer_type: SignerType) -> Result<Self, SignerError> {
         let id = opts.id();
         signer_type.valid_id(&id)?;
         Ok(Signer {
@@ -132,18 +145,15 @@ where
         })
     }
 
-    // TODO: Replace with this error
-    pub fn sign(&self, text: &str) -> Result<String, String> {
+    pub fn sign(&self, text: &str) -> Result<String, SignerError> {
         self.opts.sign(text)
     }
 
-    // TODO: Replace with this error
-    pub fn sign_vc(&self, vc: &mut Credential) -> Result<(), String> {
+    pub fn sign_vc(&self, vc: &mut Credential) -> Result<(), SignerError> {
         self.opts.sign_vc(vc, self.signer_type.proof(&self.id)?)
     }
 
-    // TODO: Replace with this error
-    pub fn as_did(&self) -> Result<String, String> {
+    pub fn as_did(&self) -> Result<String, SignerError> {
         self.signer_type.as_did(&self.id)
     }
 }

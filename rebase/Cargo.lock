@@ -1697,6 +1697,7 @@ dependencies = [
  "serde",
  "serde_json",
  "ssi",
+ "thiserror",
  "uuid",
 ]
 
