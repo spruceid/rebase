@@ -15,7 +15,7 @@ pub enum SignerError {
     SignCredential(String),
 
     #[error("given message a signature did not correspond to given key")]
-    InvalidSignature
+    InvalidSignature,
 
     // TODO: Remove!
     #[error("this feature is unimplemented")]
