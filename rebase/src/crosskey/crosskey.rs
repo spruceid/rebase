@@ -1,20 +1,31 @@
-use crate::signer::signer::{Signer, SignerError, SignerMethods};
+use crate::schema::{crosskey::Crosskey, schema_type::SchemaError, schema_type::SchemaType};
+use crate::signer::signer::{Signer, SignerMethods};
+use ssi::vc::Credential;
 
 pub fn crosskey_claim<T: SignerMethods, U: SignerMethods>(
     first: &Signer<T>,
     second: &Signer<U>,
-    message_generator: impl Fn(&Signer<T>, &Signer<U>) -> String,
+    statement_generator: impl Fn(&Signer<T>, &Signer<U>) -> String,
+) -> Result<(String, String), SchemaError> {
+    let statement = statement_generator(first, second);
+    let signature = second.sign(&statement)?;
+    Ok((statement, signature))
+}
+
+pub fn crosskey_credential<T: SignerMethods, U: SignerMethods>(
+    first: &Signer<T>,
+    second: &Signer<U>,
+    statement_generator: impl Fn(&Signer<T>, &Signer<U>) -> String,
     delimitor: &str,
-) -> Result<String, SignerError> {
-    let message = message_generator(first, second);
-    let sig1 = first.sign(&message)?;
-    let sig2 = second.sign(&message)?;
-    Ok(format!("{}{}{}{}{}", message, delimitor, sig1, delimitor, sig2))
+) -> Result<Credential, SchemaError> {
+    let (statement, signature) = crosskey_claim(first, second, statement_generator)?;
+    let schema = Crosskey::new(statement, delimitor.to_owned(), signature, second)?;
+    Ok(schema.credential(first)?)
 }
 
 const DEFAULT_DELIMITER: &str = "\n";
 
-pub fn default_message<T: SignerMethods, U: SignerMethods>(
+pub fn default_statement<T: SignerMethods, U: SignerMethods>(
     first: &Signer<T>,
     second: &Signer<U>,
 ) -> String {
@@ -24,9 +35,9 @@ pub fn default_message<T: SignerMethods, U: SignerMethods>(
     )
 }
 
-pub fn default_crosskey_claim<T: SignerMethods, U: SignerMethods>(
+pub fn default_crosskey_credential<T: SignerMethods, U: SignerMethods>(
     first: &Signer<T>,
-    second: &Signer<U>
-) -> Result<String, SignerError> {
-    crosskey_claim(first, second, default_message, DEFAULT_DELIMITER)
+    second: &Signer<U>,
+) -> Result<Credential, SchemaError> {
+    crosskey_credential(first, second, default_statement, DEFAULT_DELIMITER)
 }

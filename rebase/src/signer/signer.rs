@@ -1,6 +1,8 @@
 use ssi::vc::{Credential, LinkedDataProofOptions, URI};
 use thiserror::Error;
 
+// TODO: Reformat to Trait rather than Enum
+
 #[derive(Error, Debug)]
 pub enum SignerError {
     #[error("invalid id for {signer_type:?}, {reason:?}")]
@@ -14,7 +16,7 @@ pub enum SignerError {
     #[error("failed to sign credential, {0}")]
     SignCredential(String),
 
-    #[error("given message a signature did not correspond to given key")]
+    #[error("given message and signature did not correspond to given key")]
     InvalidSignature,
 
     // TODO: Remove!
@@ -111,7 +113,7 @@ impl SignerType {
         }
     }
 
-    fn valid_signature(message: &str, signature: &str, id: &str) -> Result<(), SignerError> {
+    pub fn valid_signature(&self, message: &str, signature: &str, id: &str) -> Result<(), SignerError> {
         // TODO: Implement
         Err(SignerError::Unimplemented)
     }
@@ -163,5 +165,9 @@ where
 
     pub fn as_did(&self) -> Result<String, SignerError> {
         self.signer_type.as_did(&self.id)
+    }
+
+    pub fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SignerError> {
+        self.signer_type.valid_signature(statement, signature, &self.id)
     }
 }
