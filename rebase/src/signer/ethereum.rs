@@ -10,8 +10,8 @@ pub enum Ethereum {
 impl SignerType for Ethereum {
     fn name(&self) -> String {
         match self {
-            Ethereum::PlainText => "Ed25519 Key".to_string()
-        } 
+            Ethereum::PlainText => "Ed25519 Key".to_string(),
+        }
     }
 
     fn valid_id(&self, id: &str) -> Result<(), SignerError> {
@@ -21,15 +21,23 @@ impl SignerType for Ethereum {
 
     fn as_did(&self, id: &str) -> Result<String, SignerError> {
         // TODO: IMPLEMENT
-        Err(SignerError::Unimplemented)
+        self.valid_id(id)?;
+        Ok(format!("did:pkh:eth:{}", id))
     }
 
     fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, SignerError> {
         // TODO: IMPLEMENT
+        self.valid_id(id)?;
         Err(SignerError::Unimplemented)
     }
 
-    fn valid_signature(&self, statement: &str, signature: &str, id: &str) -> Result<(), SignerError> {
+    fn valid_signature(
+        &self,
+        statement: &str,
+        signature: &str,
+        id: &str,
+    ) -> Result<(), SignerError> {
+        self.valid_id(id)?;
         // TODO: IMPLEMENT
         Err(SignerError::Unimplemented)
     }

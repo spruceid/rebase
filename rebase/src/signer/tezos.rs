@@ -41,6 +41,7 @@ impl SignerType for Tezos {
         signature: &str,
         id: &str,
     ) -> Result<(), SignerError> {
+        self.valid_id(id)?;
         // TODO: IMPLEMENT
         Err(SignerError::Unimplemented)
     }

@@ -20,7 +20,7 @@ pub fn crosskey_credential<T: SignerType, U: SignerType>(
     delimitor: &str,
 ) -> Result<Credential, SchemaError> {
     let (statement, signature) = crosskey_claim(first, second, statement_generator)?;
-    let schema = Crosskey::new(statement, delimitor.to_owned(), signature, second)?;
+    let schema = Crosskey::new(delimitor.to_owned(), signature, statement, second, first)?;
     Ok(schema.credential(first)?)
 }
 
