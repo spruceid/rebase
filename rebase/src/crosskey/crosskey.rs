@@ -2,6 +2,8 @@ use crate::schema::{crosskey::Crosskey, schema_type::SchemaError, schema_type::S
 use crate::signer::signer::{Signer, SignerMethods};
 use ssi::vc::Credential;
 
+// TODO: RESTORE ONCE SIGNER TYPE FINALIZED.
+/*
 pub fn crosskey_claim<T: SignerMethods, U: SignerMethods>(
     first: &Signer<T>,
     second: &Signer<U>,
@@ -41,3 +43,4 @@ pub fn default_crosskey_credential<T: SignerMethods, U: SignerMethods>(
 ) -> Result<Credential, SchemaError> {
     crosskey_credential(first, second, default_statement, DEFAULT_DELIMITER)
 }
+*/

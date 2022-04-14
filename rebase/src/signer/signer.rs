@@ -1,4 +1,4 @@
-use ssi::vc::{Credential, LinkedDataProofOptions, URI};
+use ssi::vc::{Credential, LinkedDataProofOptions};
 use thiserror::Error;
 
 // TODO: Reformat to Trait rather than Enum
@@ -24,99 +24,46 @@ pub enum SignerError {
     Unimplemented
 }
 
-pub enum Ed25519 {
-    // TODO: Change name?
-    DIDWebJWK,
-}
+pub trait SignerType {
+    fn name(&self) -> String;
 
-pub enum Ethereum {
-    // EIP712,
-    PlainText,
-}
+    fn valid_id(&self, _id: &str) -> Result<(), SignerError>; 
 
-pub enum Tezos {
-    // TODO: Change name?
-    PlainText,
-}
-
-pub enum SignerType {
-    Ed25519(Ed25519),
-    Ethereum(Ethereum),
-    Tezos(Tezos),
-}
-
-impl SignerType {
-    pub fn name(&self) -> String {
-        match self {
-            SignerType::Ed25519(Ed25519::DIDWebJWK) => "Ed25519 Key".to_string(),
-            SignerType::Ethereum(_) => "Ethereum Address".to_string(),
-            SignerType::Tezos(_) => "Tezos Address".to_string(),
-        }
-    }
-
-    pub fn valid_id(&self, _id: &str) -> Result<(), SignerError> {
-        match self {
-            SignerType::Ed25519(Ed25519::DIDWebJWK) => {
-                // TODO: Verify it is actually a did.
-                Ok(())
-            }
-            SignerType::Ethereum(_) => {
-                // TODO: Something with id.
-                Ok(())
-            }
-            SignerType::Tezos(_) => {
-                // TODO: Something with id.
-                Ok(())
-            }
-        }
-    }
-
-    pub fn as_did(&self, id: &str) -> Result<String, SignerError> {
-        self.valid_id(id)?;
-        match self {
-            // TODO: Support EIP712
-            SignerType::Ethereum(Ethereum::PlainText) => {
-                Err(SignerError::Unimplemented)
-            }
-            SignerType::Tezos(Tezos::PlainText) => Ok(format!("did:pkh:tz:{}", id)),
-            SignerType::Ed25519(Ed25519::DIDWebJWK) => Ok(id.clone().to_owned()),
-        }
-    }
+    fn as_did(&self, id: &str) -> Result<String, SignerError>;
 
     // proof returns the linked data proof options for a given signer type
-    fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, SignerError> {
-        self.valid_id(id)?;
-        match self {
-            SignerType::Ed25519(signer_type) => match signer_type {
-                 Ed25519::DIDWebJWK => Ok(Some(LinkedDataProofOptions {
-                    verification_method: Some(URI::String(format!(
-                        "{}#controller",
-                        self.as_did(&id)?
-                    ))),
-                    ..Default::default()
-                })),
-            }
-            SignerType::Ethereum(_) => {
-                // TODO: impl.
-                Err(SignerError::Unimplemented)
-            }
-            SignerType::Tezos(signer_type) => match signer_type {
-                Tezos::PlainText => Ok(Some(LinkedDataProofOptions {
-                    verification_method: Some(URI::String(format!(
-                        "{}#TezosMethod2021",
-                        self.as_did(&id)?
-                    ))),
-                    ..Default::default()
-                })),
-                // _ => Err("impl".to_string()),
-            },
-        }
-    }
+    fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, SignerError>;
 
-    pub fn valid_signature(&self, message: &str, signature: &str, id: &str) -> Result<(), SignerError> {
-        // TODO: Implement
-        Err(SignerError::Unimplemented)
-    }
+    // {
+    //     self.valid_id(id)?;
+    //     match self {
+    //         SignerType::Ed25519(signer_type) => match signer_type {
+    //              Ed25519::DIDWebJWK => Ok(Some(LinkedDataProofOptions {
+    //                 verification_method: Some(URI::String(format!(
+    //                     "{}#controller",
+    //                     self.as_did(&id)?
+    //                 ))),
+    //                 ..Default::default()
+    //             })),
+    //         }
+    //         SignerType::Ethereum(_) => {
+    //             // TODO: impl.
+    //             Err(SignerError::Unimplemented)
+    //         }
+    //         SignerType::Tezos(signer_type) => match signer_type {
+    //             Tezos::PlainText => Ok(Some(LinkedDataProofOptions {
+    //                 verification_method: Some(URI::String(format!(
+    //                     "{}#TezosMethod2021",
+    //                     self.as_did(&id)?
+    //                 ))),
+    //                 ..Default::default()
+    //             })),
+    //             // _ => Err("impl".to_string()),
+    //         },
+    //     }
+    // }
+
+    fn valid_signature(&self, statement: &str, signature: &str, id: &str) -> Result<(), SignerError>;
 }
 
 pub trait SignerMethods {
@@ -133,18 +80,19 @@ pub trait SignerMethods {
     fn id(&self) -> String;
 }
 
-pub struct Signer<T: SignerMethods> {
+pub struct Signer<T: SignerMethods, U: SignerType> {
     pub id: String,
     pub name: String,
-    pub signer_type: SignerType,
+    pub signer_type: U,
     opts: T,
 }
 
-impl<T> Signer<T>
+impl<T, U> Signer<T, U>
 where
     T: SignerMethods,
+    U: SignerType
 {
-    pub fn new(opts: T, signer_type: SignerType) -> Result<Self, SignerError> {
+    pub fn new(opts: T, signer_type: U) -> Result<Self, SignerError> {
         let id = opts.id();
         signer_type.valid_id(&id)?;
         Ok(Signer {
