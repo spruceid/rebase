@@ -23,7 +23,7 @@ pub enum SchemaError {
 
 pub trait SchemaType {
     // Return the complete, signed credential
-    fn credential<T: SignerMethods, U: SignerType>(&self, signer: &Signer<T, U>) -> Result<Credential, SchemaError> {
+    fn credential<T: SignerType>(&self, signer: &dyn Signer<T>) -> Result<Credential, SchemaError> {
         let did = signer.as_did()?;
 
         let mut vc: Credential = serde_json::from_value(json!({
@@ -37,7 +37,7 @@ pub trait SchemaType {
 
         vc.evidence = self.evidence()?;
 
-        signer.sign_vc(&mut vc)?;
+        signer.sign_vc(&mut vc, signer.signer_type().proof(&signer.id())?)?;
 
         Ok(vc)
     }

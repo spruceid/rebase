@@ -1,5 +1,5 @@
 use crate::signer::signer::{SignerError, SignerType};
-use ssi::vc::LinkedDataProofOptions;
+use ssi::vc::{LinkedDataProofOptions, URI};
 
 pub enum Tezos {
     // TODO: Change name?
@@ -9,8 +9,8 @@ pub enum Tezos {
 impl SignerType for Tezos {
     fn name(&self) -> String {
         match self {
-            &Tezos::PlainText => "Tezos Address".to_string()
-        } 
+            &Tezos::PlainText => "Tezos Address".to_string(),
+        }
     }
 
     fn valid_id(&self, id: &str) -> Result<(), SignerError> {
@@ -19,19 +19,29 @@ impl SignerType for Tezos {
     }
 
     fn as_did(&self, id: &str) -> Result<String, SignerError> {
-        // TODO: IMPLEMENT
-        Err(SignerError::Unimplemented)
+        self.valid_id(id)?;
+        Ok(format!("did:pkh:tz:{}", id))
     }
 
     fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, SignerError> {
+        match self {
+            Tezos::PlainText => Ok(Some(LinkedDataProofOptions {
+                verification_method: Some(URI::String(format!(
+                    "{}#TezosMethod2021",
+                    self.as_did(&id)?
+                ))),
+                ..Default::default()
+            })),
+        }
+    }
+
+    fn valid_signature(
+        &self,
+        statement: &str,
+        signature: &str,
+        id: &str,
+    ) -> Result<(), SignerError> {
         // TODO: IMPLEMENT
         Err(SignerError::Unimplemented)
     }
-
-    fn valid_signature(&self, statement: &str, signature: &str, id: &str) -> Result<(), SignerError> {
-        // TODO: IMPLEMENT
-        Err(SignerError::Unimplemented)
-    }
-
 }
-

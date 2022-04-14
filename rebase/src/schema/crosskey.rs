@@ -1,5 +1,5 @@
 use crate::schema::schema_type::{SchemaError, SchemaType};
-use crate::signer::signer::{Signer, SignerMethods, SignerType};
+use crate::signer::signer::{Signer, SignerType};
 use ssi::{
     one_or_many::OneOrMany,
     vc::{Evidence},
@@ -12,11 +12,11 @@ pub struct Crosskey {
 }
 
 impl Crosskey {
-    pub fn new<T: SignerMethods, U: SignerType>(
+    pub fn new<T: SignerType>(
         statement: String,
         delimitor: String,
         signature: String,
-        signer: &Signer<T, U>,
+        signer: &dyn Signer<T>,
         
     ) -> Result<Self, SchemaError> {
         signer.valid_signature(&statement, &signature)?;

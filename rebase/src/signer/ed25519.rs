@@ -1,5 +1,5 @@
 use crate::signer::signer::{SignerError, SignerType};
-use ssi::vc::LinkedDataProofOptions;
+use ssi::vc::{LinkedDataProofOptions, URI};
 
 pub enum Ed25519 {
     // TODO: Change name?
@@ -19,16 +19,29 @@ impl SignerType for Ed25519 {
     }
 
     fn as_did(&self, id: &str) -> Result<String, SignerError> {
-        // TODO: IMPLEMENT
-        Err(SignerError::Unimplemented)
+        match self {
+            Ed25519::DIDWebJWK => {
+                self.valid_id(id)?;
+                Ok(id.to_owned())
+            }
+        }
     }
 
     fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, SignerError> {
-        // TODO: IMPLEMENT
-        Err(SignerError::Unimplemented)
+        match self {
+            Ed25519::DIDWebJWK => Ok(Some(LinkedDataProofOptions {
+                verification_method: Some(URI::String(format!("{}#controller", self.as_did(&id)?))),
+                ..Default::default()
+            })),
+        }
     }
 
-    fn valid_signature(&self, statement: &str, signature: &str, id: &str) -> Result<(), SignerError> {
+    fn valid_signature(
+        &self,
+        statement: &str,
+        signature: &str,
+        id: &str,
+    ) -> Result<(), SignerError> {
         // TODO: IMPLEMENT
         Err(SignerError::Unimplemented)
     }
