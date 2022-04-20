@@ -13,7 +13,7 @@ impl SignerType for Tezos {
         }
     }
 
-    fn valid_id(&self, id: &str) -> Result<(), SignerError> {
+    fn valid_id(&self, _id: &str) -> Result<(), SignerError> {
         // TODO: IMPLEMENT
         Err(SignerError::Unimplemented)
     }
@@ -37,8 +37,8 @@ impl SignerType for Tezos {
 
     fn valid_signature(
         &self,
-        statement: &str,
-        signature: &str,
+        _statement: &str,
+        _signature: &str,
         id: &str,
     ) -> Result<(), SignerError> {
         self.valid_id(id)?;
