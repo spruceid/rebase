@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
 
-// TODO: Move to own dir, maybe w/ schema?
 #[derive(Deserialize, Serialize)]
 pub struct BasicProfile {
     pub alias: String,

@@ -2,7 +2,6 @@ use crate::schema::{crosskey::Crosskey, schema_type::SchemaError, schema_type::S
 use crate::signer::signer::{Signer, SignerType};
 use ssi::vc::Credential;
 
-// TODO: RESTORE ONCE SIGNER TYPE FINALIZED.
 pub fn crosskey_claim<T: SignerType, U: SignerType>(
     first: &dyn Signer<T>,
     second: &dyn Signer<U>,

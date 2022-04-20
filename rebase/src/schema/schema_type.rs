@@ -1,5 +1,5 @@
 // TODO: Make this less ugly.
-use crate::signer::signer::{Signer, SignerError, SignerMethods, SignerType};
+use crate::signer::signer::{Signer, SignerError, SignerType};
 use chrono::{SecondsFormat, Utc};
 use serde_json::{json, Error as SeralizeError};
 use ssi::{
@@ -11,10 +11,6 @@ use uuid::Uuid;
 
 #[derive(Error, Debug)]
 pub enum SchemaError {
-    #[error("could not create credential context, {0}")]
-    Context(String),
-    #[error("could not create credential evidence, {0}")]
-    Evidence(String),
     #[error("{0}")]
     Serialize(#[from] SeralizeError),
     #[error("{0}")]

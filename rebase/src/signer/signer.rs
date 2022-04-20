@@ -37,20 +37,6 @@ pub trait SignerType {
     ) -> Result<(), SignerError>;
 }
 
-pub trait SignerMethods {
-    // TODO: Add async-trait and make these async.
-    // sign takes plain text and returns the corresponding signature
-    fn sign(&self, plain_text: &str) -> Result<String, SignerError>;
-    // sign_vc takes a mutable reference to an incomplete VC and signs it.
-    fn sign_vc(
-        &self,
-        vc: &mut Credential,
-        proof: Option<LinkedDataProofOptions>,
-    ) -> Result<(), SignerError>;
-    // id returns the identifier for the given signer, such as a public key hash.
-    fn id(&self) -> String;
-}
-
 pub trait Signer<T>
 where
     T: SignerType,
