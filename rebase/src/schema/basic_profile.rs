@@ -7,6 +7,7 @@ use ssi::{one_or_many::OneOrMany, vc::Evidence};
 pub struct BasicProfile {
     pub alias: String,
     pub description: String,
+    // TODO: Type as URL?
     pub website: String,
     pub logo: String,
 }
