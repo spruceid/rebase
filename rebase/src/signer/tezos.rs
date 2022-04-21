@@ -1,5 +1,8 @@
 use crate::signer::signer::{SignerError, SignerType};
-use ssi::vc::{LinkedDataProofOptions, URI};
+use ssi::{
+    one_or_many::OneOrMany,
+    vc::{Credential, LinkedDataProofOptions, Proof, URI},
+};
 
 pub enum Tezos {
     // TODO: Change name?
@@ -23,17 +26,21 @@ impl SignerType for Tezos {
         Ok(format!("did:pkh:tz:{}", id))
     }
 
-    fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, SignerError> {
-        match self {
-            Tezos::PlainText => Ok(Some(LinkedDataProofOptions {
-                verification_method: Some(URI::String(format!(
-                    "{}#TezosMethod2021",
-                    self.as_did(&id)?
-                ))),
-                ..Default::default()
-            })),
-        }
-    }
+    // TODO: Move to Signer
+    // fn proof(&self, id: &str, vc: &Credential) -> Result<Option<OneOrMany<Proof>>, SignerError> {
+    //     let ldpo = match self {
+    //         Tezos::PlainText => LinkedDataProofOptions {
+    //             verification_method: Some(URI::String(format!(
+    //                 "{}#TezosMethod2021",
+    //                 self.as_did(&id)?
+    //             ))),
+    //             ..Default::default()
+    //         },
+    //     };
+
+    //     // TODO: Use VC to generate the proof.
+    //     Err(SignerError::Unimplemented)
+    // }
 
     fn valid_signature(
         &self,

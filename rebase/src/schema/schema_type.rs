@@ -1,5 +1,6 @@
 // TODO: Make this less ugly.
 use crate::signer::signer::{Signer, SignerError, SignerType};
+use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
 use serde_json::{json, Error as SeralizeError};
 use ssi::{
@@ -17,6 +18,7 @@ pub enum SchemaError {
     Signer(#[from] SignerError),
 }
 
+#[async_trait]
 pub trait SchemaType {
     // Return the complete, signed credential
     fn credential<T: SignerType>(&self, signer: &dyn Signer<T>) -> Result<Credential, SchemaError> {
@@ -33,7 +35,7 @@ pub trait SchemaType {
 
         vc.evidence = self.evidence()?;
 
-        signer.sign_vc(&mut vc, signer.signer_type().proof(&signer.id())?)?;
+        signer.sign_vc(&mut vc).await?;
 
         Ok(vc)
     }

@@ -1,7 +1,9 @@
 use crate::signer::signer::{Signer, SignerError, SignerType};
+use did_web::DIDWeb;
 use ssi::{
     jwk::JWK,
-    vc::{Credential, LinkedDataProofOptions, URI},
+    one_or_many::OneOrMany,
+    vc::{Credential, LinkedDataProofOptions, Proof, URI},
 };
 
 #[derive(Clone)]
@@ -34,12 +36,24 @@ impl Signer<SignerTypes> for Ed25519 {
     }
 
     // TODO: IMPL
-    fn sign_vc(
-        &self,
-        vc: &mut Credential,
-        proof: Option<LinkedDataProofOptions>,
-    ) -> Result<(), SignerError> {
+    fn sign_vc(&self, vc: &mut Credential) -> Result<(), SignerError> {
         Err(SignerError::Unimplemented)
+    }
+
+    fn proof(&self, vc: &Credential) -> Result<Option<OneOrMany<Proof>>, SignerError> {
+        let lpdo = match self.signer_type {
+            SignerTypes::DIDWebJWK => LinkedDataProofOptions {
+                verification_method: Some(URI::String(format!(
+                    "{}#controller",
+                    self.signer_type.as_did(&self.id)?
+                ))),
+                ..Default::default()
+            },
+        };
+
+        Ok(Some(OneOrMany::One(
+            vc.generate_proof(&self.key, &lpdo, &DIDWeb).await?,
+        )))
     }
 
     fn id(&self) -> String {
@@ -67,16 +81,6 @@ impl SignerType for SignerTypes {
         self.valid_id(id)?;
         match self {
             SignerTypes::DIDWebJWK => Ok(id.to_owned()),
-        }
-    }
-
-    fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, SignerError> {
-        self.valid_id(id)?;
-        match self {
-            SignerTypes::DIDWebJWK => Ok(Some(LinkedDataProofOptions {
-                verification_method: Some(URI::String(format!("{}#controller", self.as_did(&id)?))),
-                ..Default::default()
-            })),
         }
     }
 

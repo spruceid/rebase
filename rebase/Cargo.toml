@@ -6,7 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-trait = "0.1.53"
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
+did-web = "0.1.2"
 serde = "1"
 serde_json = "1"
 ssi = "0.4"

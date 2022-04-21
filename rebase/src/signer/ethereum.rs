@@ -1,5 +1,8 @@
 use crate::signer::signer::{SignerError, SignerType};
-use ssi::vc::LinkedDataProofOptions;
+// use ssi::{
+//     one_or_many::OneOrMany,
+//     vc::{Credential, Proof},
+// };
 
 // TODO: Add EIP712 support to enable "sign_vc"
 pub enum Ethereum {
@@ -25,11 +28,12 @@ impl SignerType for Ethereum {
         Ok(format!("did:pkh:eth:{}", id))
     }
 
-    fn proof(&self, id: &str) -> Result<Option<LinkedDataProofOptions>, SignerError> {
-        // TODO: IMPLEMENT
-        self.valid_id(id)?;
-        Err(SignerError::Unimplemented)
-    }
+    // TODO: Move to Signer
+    // fn proof(&self, id: &str, vc: &Credential) -> Result<Option<OneOrMany<Proof>>, SignerError> {
+    // //     // TODO: IMPLEMENT
+    //     self.valid_id(id)?;
+    //     Err(SignerError::Unimplemented)
+    // }
 
     fn valid_signature(
         &self,
