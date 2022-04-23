@@ -33,12 +33,12 @@ impl Ed25519 {
 #[async_trait(?Send)]
 impl Signer<SignerTypes> for Ed25519 {
     // TODO: IMPL
-    async fn sign(&self, plain_text: &str) -> Result<String, SignerError> {
+    async fn sign(&self, _plain_text: &str) -> Result<String, SignerError> {
         Err(SignerError::Unimplemented)
     }
 
     // TODO: IMPL
-    async fn sign_vc(&self, vc: &mut Credential) -> Result<(), SignerError> {
+    async fn sign_vc(&self, _vc: &mut Credential) -> Result<(), SignerError> {
         Err(SignerError::Unimplemented)
     }
 
@@ -64,11 +64,6 @@ impl Signer<SignerTypes> for Ed25519 {
 
     fn signer_type(&self) -> SignerTypes {
         self.signer_type.clone()
-    }
-
-    async fn valid_signature(&self, _statement: &str, _signature: &str) -> Result<(), SignerError> {
-        // TODO Impl!
-        Err(SignerError::InvalidSignature)
     }
 }
 

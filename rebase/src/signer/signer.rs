@@ -66,18 +66,9 @@ where
         self.signer_type().as_did(&self.id()).await
     }
 
-    async fn valid_signature(
-        &self,
-        statement: &str,
-        signature: &str,
-    ) -> Result<(), SignerError>;
-
-    // TODO: RESTORE ONCE FUTURE ISSUES ARE RESOLVED.
-    /*
-    async fn valid_signature(&self, statement: String, signature: String) -> Result<(), SignerError> {
+    async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SignerError> {
         self.signer_type()
-            .valid_signature(&statement, &signature, &self.id())
+            .valid_signature(statement, signature, &self.id())
             .await
     }
-    */
 }
