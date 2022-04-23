@@ -12,14 +12,14 @@ pub struct Crosskey {
 }
 
 impl Crosskey {
-    pub fn new<T: SignerType, U: SignerType>(
+    pub async fn new<T: SignerType, U: SignerType>(
         delimitor: String,
         signature: String,
         statement: String,
         statement_signer: &dyn Signer<T>,
         vc_signer: &dyn Signer<U>,
     ) -> Result<Self, SchemaError> {
-        statement_signer.valid_signature(&statement, &signature)?;
+        statement_signer.valid_signature(&statement, &signature).await?;
         Ok(Crosskey {
             delimitor,
             signature,

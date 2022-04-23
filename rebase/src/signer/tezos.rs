@@ -1,14 +1,16 @@
+use async_trait::async_trait;
 use crate::signer::signer::{SignerError, SignerType};
-use ssi::{
-    one_or_many::OneOrMany,
-    vc::{Credential, LinkedDataProofOptions, Proof, URI},
-};
+// use ssi::{
+//     one_or_many::OneOrMany,
+//     vc::{Credential, LinkedDataProofOptions, Proof, URI},
+// };
 
 pub enum Tezos {
     // TODO: Change name?
     PlainText,
 }
 
+#[async_trait(?Send)]
 impl SignerType for Tezos {
     fn name(&self) -> String {
         match self {
@@ -16,13 +18,13 @@ impl SignerType for Tezos {
         }
     }
 
-    fn valid_id(&self, _id: &str) -> Result<(), SignerError> {
+    async fn valid_id(&self, _id: &str) -> Result<(), SignerError> {
         // TODO: IMPLEMENT
         Err(SignerError::Unimplemented)
     }
 
-    fn as_did(&self, id: &str) -> Result<String, SignerError> {
-        self.valid_id(id)?;
+    async fn as_did(&self, id: &str) -> Result<String, SignerError> {
+        self.valid_id(id).await?;
         Ok(format!("did:pkh:tz:{}", id))
     }
 
@@ -42,13 +44,13 @@ impl SignerType for Tezos {
     //     Err(SignerError::Unimplemented)
     // }
 
-    fn valid_signature(
+    async fn valid_signature(
         &self,
         _statement: &str,
         _signature: &str,
         id: &str,
     ) -> Result<(), SignerError> {
-        self.valid_id(id)?;
+        self.valid_id(id).await?;
         // TODO: IMPLEMENT
         Err(SignerError::Unimplemented)
     }

@@ -1,3 +1,5 @@
+
+use async_trait::async_trait;
 use crate::signer::signer::{SignerError, SignerType};
 // use ssi::{
 //     one_or_many::OneOrMany,
@@ -10,6 +12,7 @@ pub enum Ethereum {
     PlainText,
 }
 
+#[async_trait(?Send)]
 impl SignerType for Ethereum {
     fn name(&self) -> String {
         match self {
@@ -17,14 +20,14 @@ impl SignerType for Ethereum {
         }
     }
 
-    fn valid_id(&self, _id: &str) -> Result<(), SignerError> {
+    async fn valid_id(&self, _id: &str) -> Result<(), SignerError> {
         // TODO: IMPLEMENT
         Err(SignerError::Unimplemented)
     }
 
-    fn as_did(&self, id: &str) -> Result<String, SignerError> {
+    async fn as_did(&self, id: &str) -> Result<String, SignerError> {
         // TODO: IMPLEMENT
-        self.valid_id(id)?;
+        self.valid_id(id).await?;
         Ok(format!("did:pkh:eth:{}", id))
     }
 
@@ -35,13 +38,13 @@ impl SignerType for Ethereum {
     //     Err(SignerError::Unimplemented)
     // }
 
-    fn valid_signature(
+    async fn valid_signature(
         &self,
         _statement: &str,
         _signature: &str,
         id: &str,
     ) -> Result<(), SignerError> {
-        self.valid_id(id)?;
+        self.valid_id(id).await?;
         // TODO: IMPLEMENT
         Err(SignerError::Unimplemented)
     }

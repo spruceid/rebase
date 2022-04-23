@@ -18,11 +18,11 @@ pub enum SchemaError {
     Signer(#[from] SignerError),
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 pub trait SchemaType {
     // Return the complete, signed credential
-    fn credential<T: SignerType>(&self, signer: &dyn Signer<T>) -> Result<Credential, SchemaError> {
-        let did = signer.as_did()?;
+    async fn credential<T: SignerType>(&self, signer: &dyn Signer<T>) -> Result<Credential, SchemaError> {
+        let did = signer.as_did().await?;
 
         let mut vc: Credential = serde_json::from_value(json!({
             "@context": self.context()?,

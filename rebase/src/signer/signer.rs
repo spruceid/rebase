@@ -27,13 +27,13 @@ pub enum SignerError {
     Unimplemented,
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 pub trait SignerType {
     fn name(&self) -> String;
 
     async fn valid_id(&self, _id: &str) -> Result<(), SignerError>;
 
-    fn as_did(&self, id: &str) -> Result<String, SignerError>;
+    async fn as_did(&self, id: &str) -> Result<String, SignerError>;
 
     async fn valid_signature(
         &self,
@@ -43,7 +43,7 @@ pub trait SignerType {
     ) -> Result<(), SignerError>;
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 pub trait Signer<T>
 where
     T: SignerType,
@@ -62,14 +62,14 @@ where
     async fn proof(&self, credential: &Credential)
         -> Result<Option<OneOrMany<Proof>>, SignerError>;
 
-    fn as_did(&self) -> Result<String, SignerError> {
-        self.signer_type().as_did(&self.id())
+    async fn as_did(&self) -> Result<String, SignerError> {
+        self.signer_type().as_did(&self.id()).await
     }
 
     async fn valid_signature(
         &self,
-        statement: String,
-        signature: String,
+        statement: &str,
+        signature: &str,
     ) -> Result<(), SignerError>;
 
     // TODO: RESTORE ONCE FUTURE ISSUES ARE RESOLVED.
