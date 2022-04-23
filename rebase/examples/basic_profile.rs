@@ -4,8 +4,10 @@ use rebase::schema::schema_type::SchemaType;
 use serde_json::to_string;
 use ssi::jwk::JWK;
 use std::env;
+use tokio;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let key_path = env::args().skip(1).next().unwrap();
 
     let key = key_from_path(key_path).unwrap();
@@ -16,6 +18,7 @@ fn main() {
         key,
         rebase::signer::ed25519::SignerTypes::DIDWebJWK,
     )
+    .await
     .unwrap();
 
     let schema = rebase::schema::basic_profile::BasicProfile {
@@ -25,7 +28,7 @@ fn main() {
         logo: "example.jpg".to_string(),
     };
 
-    let credential = schema.credential(&signer).unwrap();
+    let credential = schema.credential(&signer).await.unwrap();
 
     println!("{}", to_string(&credential).unwrap())
 }
