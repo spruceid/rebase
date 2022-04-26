@@ -13,8 +13,8 @@ pub struct BasicProfile {
 }
 
 impl SchemaType for BasicProfile {
-    fn context(&self) -> Result<String, SchemaError> {
-        Ok(serde_json::from_value(json!([
+    fn context(&self) -> Result<serde_json::Value, SchemaError> {
+        Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
             {
               "alias": "https://schema.org/name",
@@ -24,7 +24,7 @@ impl SchemaType for BasicProfile {
               // TODO: Establish new place for this URL to point.
               "BasicProfile": "https://tzprofiles.com/BasicProfile",
           },
-        ]))?)
+        ]))
     }
 
     fn types(&self) -> Result<Vec<String>, SchemaError> {
@@ -34,14 +34,14 @@ impl SchemaType for BasicProfile {
         ])
     }
 
-    fn subject(&self, subject_did: &str) -> Result<String, SchemaError> {
-        Ok(serde_json::from_value(json!({
+    fn subject(&self, subject_did: &str) -> Result<serde_json::Value, SchemaError> {
+        Ok(json!({
             "id": subject_did.to_string(),
             "alias": self.alias,
             "description": self.description,
             "logo": self.logo,
             "website": self.website,
-        }))?)
+        }))
     }
 
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, SchemaError> {

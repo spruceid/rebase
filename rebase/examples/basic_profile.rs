@@ -4,18 +4,23 @@ use rebase::schema::schema_type::SchemaType;
 use serde_json::to_string;
 use ssi::jwk::JWK;
 use std::env;
+use std::fs::File;
+use std::io::prelude::*;
 use tokio;
 
 #[tokio::main]
 async fn main() {
     let key_path = env::args().skip(1).next().unwrap();
 
-    let key = key_from_path(key_path).unwrap();
+    let key = key_from_path(&key_path).unwrap();
 
-    let id = "did:web:example.com".to_string();
+    // TODO: Change to a passed in variable to support local hosting
+    let id = "did:web:f81b-2601-285-8280-60d0-d1bb-b9ee-393f-4a06.ngrok.io".to_string();
+
     let signer = rebase::signer::ed25519::Ed25519::new(
         id,
         key,
+        "controller".to_string(),
         rebase::signer::ed25519::SignerTypes::DIDWebJWK,
     )
     .await
@@ -33,6 +38,9 @@ async fn main() {
     println!("{}", to_string(&credential).unwrap())
 }
 
-fn key_from_path(path: String) -> Result<JWK, String> {
-    Err("Unimplemented!".to_string())
+fn key_from_path(path: &str) -> Result<JWK, String> {
+    let mut f = File::open(path).map_err(|e| format!("{}", e))?;
+    let mut c = String::new();
+    f.read_to_string(&mut c).map_err(|e| format!("{}", e))?;
+    Ok(serde_json::from_str(&c).map_err(|e| format!("{}", e))?)
 }

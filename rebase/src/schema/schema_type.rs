@@ -21,7 +21,10 @@ pub enum SchemaError {
 #[async_trait(?Send)]
 pub trait SchemaType {
     // Return the complete, signed credential
-    async fn credential<T: SignerType>(&self, signer: &dyn Signer<T>) -> Result<Credential, SchemaError> {
+    async fn credential<T: SignerType>(
+        &self,
+        signer: &dyn Signer<T>,
+    ) -> Result<Credential, SchemaError> {
         let did = signer.as_did().await?;
 
         let mut vc: Credential = serde_json::from_value(json!({
@@ -40,14 +43,16 @@ pub trait SchemaType {
         Ok(vc)
     }
 
+    // TODO: Better type?
     // Return the @context contents based enum variant
-    fn context(&self) -> Result<String, SchemaError>;
+    fn context(&self) -> Result<serde_json::Value, SchemaError>;
 
     // Returns the evide
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, SchemaError>;
 
+    // TODO: Better type?
     // Returns the object used in credentialSubject
-    fn subject(&self, signer_did: &str) -> Result<String, SchemaError>;
+    fn subject(&self, signer_did: &str) -> Result<serde_json::Value, SchemaError>;
 
     // Return the types used in credential building.
     fn types(&self) -> Result<Vec<String>, SchemaError>;

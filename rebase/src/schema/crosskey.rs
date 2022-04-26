@@ -31,13 +31,13 @@ impl Crosskey {
 }
 
 impl SchemaType for Crosskey {
-    fn context(&self) -> Result<String, SchemaError> {
-        Ok(serde_json::from_value(json!([
+    fn context(&self) -> Result<serde_json::Value, SchemaError> {
+        Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
             // NOTE: THIS URL CONTAINES INFO FOR SAME AS:
             // TODO: Change to better URL
             "https://tzprofiles.com/2021/ethereum-address-control-v1.jsonld",
-        ]))?)
+        ]))
     }
 
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, SchemaError> {
@@ -45,11 +45,11 @@ impl SchemaType for Crosskey {
         Ok(None)
     }
 
-    fn subject(&self, _signer_did: &str) -> Result<String, SchemaError> {
-        Ok(serde_json::from_value(json!({
+    fn subject(&self, _signer_did: &str) -> Result<serde_json::Value, SchemaError> {
+        Ok(json!({
             "address": self.vc_id,
             "sameAs": self.statement_id
-        }))?)
+        }))
     }
 
     fn types(&self) -> Result<Vec<String>, SchemaError> {
