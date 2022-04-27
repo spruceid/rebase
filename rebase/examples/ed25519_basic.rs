@@ -15,7 +15,7 @@ async fn main() {
     let key = key_from_path(&key_path).unwrap();
 
     // TODO: Change to a passed in variable to support local hosting
-    let id = "did:web:f81b-2601-285-8280-60d0-d1bb-b9ee-393f-4a06.ngrok.io".to_string();
+    let id = "did:web:41f6-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io".to_string();
 
     let signer = rebase::signer::ed25519::Ed25519::new(
         id,
