@@ -55,3 +55,43 @@ The result of the above command should include a line that looks like:
 ```
 Forwarding                    https://72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io -> http://localhost:8000
 ```
+
+The URL (in this example `https://72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io`) is key. As alluded to in the (did:web document)[], several fields need to be changed in `.well-known/did.json` to use this URL. Using the example URL an edit would look something like:
+```diff
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    {
+      "Ed25519VerificationKey2018": "https://w3id.org/security#Ed25519VerificationKey2018",
+      "publicKeyJwk": {
+        "@id": "https://w3id.org/security#publicKeyJwk",
+        "@type": "@json"
+      }
+    }
+  ],
+-  "id": "did:key:z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf",
++  "id": "did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io",
+  "verificationMethod": [
+    {
+-      "id": "did:key:z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf#z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf",
++      "id": "did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io#controller",
+      "type": "Ed25519VerificationKey2018",
+-      "controller": "did:key:z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf",
++      "controller": "did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io",
+      "publicKeyJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "e3QlvNPlFtj7_9hSU_s8pM44rbMIbr3PvKSgCfSvD04"
+      }
+    }
+  ],
+  "authentication": [
+-    "did:key:z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf#z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf"
++    "did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io"
+  ],
+  "assertionMethod": [
+-    "did:key:z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf#z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf"
++    "did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io"
+  ]
+}
+```
