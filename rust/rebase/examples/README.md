@@ -87,11 +87,23 @@ The URL (in this example `https://72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ng
   ],
   "authentication": [
 -    "did:key:z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf#z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf"
-+    "did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io"
++    "did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io#controller"
   ],
   "assertionMethod": [
 -    "did:key:z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf#z6MknmAuwpaLVrYGTYCtodTj6KoitVNxGz5wzAwHNmEQYcsf"
-+    "did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io"
++    "did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io#controller"
   ]
 }
 ```
+
+This is the reason we need `ngrok`, to meet the URL requirements of `did` documents and avoid specifying a port. There are other ways around this problem, but this works for an example.
+
+Now, leaving `ngrok` and our web server still running, from `rebase/rust/rebase`, one directory higher than this document, we can run:
+
+```bash
+cargo run --example ed25519_basic -- 72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io
+```
+
+The terminal will print the issued credential.
+
+TODO: Add outputting the Credential to a file and show verifying it with didkit.

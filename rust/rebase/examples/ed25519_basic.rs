@@ -10,12 +10,12 @@ use tokio;
 
 #[tokio::main]
 async fn main() {
-    let key_path = env::args().skip(1).next().unwrap();
+    let url = env::args().skip(1).next().unwrap();
 
-    let key = key_from_path(&key_path).unwrap();
+    let key = key_from_path("./examples/temp/ed25519_basic/keys/controller.jwk").unwrap();
 
     // TODO: Change to a passed in variable to support local hosting
-    let id = "did:web:41f6-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io".to_string();
+    let id = format!("did:web:{}", url);
 
     let signer = rebase::signer::ed25519::Ed25519::new(
         id,
