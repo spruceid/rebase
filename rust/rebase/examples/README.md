@@ -24,6 +24,12 @@ Because Rebase is built on top of [didkit]() the credentials it creates are [DID
 
 ## Basic
 
+This example showcases the most basic type of claim. This claim simply asserts that it was signed by a particular key, implying ownership or affirmation by the controller of that key. 
+
+An example usecase of this type of claim could be social media posts. The authorship of the posts becomes independently verifiable and completely portable. 
+
+To run this example, we will create a key capable of signing Verifiable Credentials and a small, local webserver to run the `did:web` resolution. At the end, we will have self-signed Verifiable Credential that we will check with `didkit`.
+
 First, from this `examples` directory, run
 
 ```bash
@@ -35,6 +41,8 @@ This simple script will create a `./temp/ed25519_basic` directory and populate i
 `keys/controller.jwk`: The [JWK]() format of the ed25519 key pair to be used to create and resolve credentials.
 
 `.well-known/did.json`: The [DID document]() output from `controller.jwk`, described more fully in the [did:web help document](https://spruceid.dev/docs/didkit/did-web/). This file includes the public key found in `controller.jwk`, is what will be served by the file server when someone resolves the created credential. It's placed in the `.well-known` directory because we'll run the webserver from `./temp/ed25519_basic` and `did:web` normally looks for this pattern.
+
+`credentials`: This directory will be populated by running the actual Rust example.
 
 Second, we'll set up the web server. In this example, we'll use a python server, but any local file server would work.
 
@@ -56,7 +64,38 @@ The result of the above command should include a line that looks like:
 Forwarding                    https://72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io -> http://localhost:8000
 ```
 
-The URL (in this example `https://72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io`) is key. As alluded to in the (did:web document)[], several fields need to be changed in `.well-known/did.json` to use this URL. Using the example URL an edit would look something like:
+The URL (in this example `https://72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io`) is key. 
+
+Now, leaving `ngrok` and our web server still running, from `rebase/rust/rebase`, one directory higher than this document, we can run:
+
+```bash
+cargo run --example ed25519_basic -- 72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io
+```
+
+The terminal will print the issued credential, and also write it to `./examples/temp/ed25519_basic/credentials/vc.json`. As long as our web server and ngrok service are running we can verify the credential with didkit. From where we ran the `cargo` example (`rebase/rust/rebase`) we can run:
+
+```bash
+didkit vc-verify-credential \ 
+-v did:web:72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io#controller \
+-p assertionMethod \ 
+< ./examples/temp/ed25519_basic/credentials/vc.json
+```
+
+The result should be:
+```bash
+{"checks":["proof"],"warnings":[],"errors":[]}%
+```
+
+This demonstrates that the issued credential can be independently verified. In production settings, the `did:web:<URL>`'s `<URL>` would the `https` address of a publically avaiable webserver, allowing anyone, anywhere with an internet connection to trustlessly verify the credential was signed by the expected key. Pretty cool, but how does it work underneath?
+
+
+TODO: Add step by step explanation of `.sh` and `.rs` files. 
+
+SAVED COPY FOR EXPLANATION
+As alluded to in the (did:web document)[], several fields need to be changed in `.well-known/did.json` to use this URL. Using the example URL an edit would look something like:
+
+This is the reason we need `ngrok`, to meet the URL requirements of `did` documents and avoid specifying a port. There are other ways around this problem, but this works for an example.
+
 ```diff
 {
   "@context": [
@@ -96,14 +135,3 @@ The URL (in this example `https://72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ng
 }
 ```
 
-This is the reason we need `ngrok`, to meet the URL requirements of `did` documents and avoid specifying a port. There are other ways around this problem, but this works for an example.
-
-Now, leaving `ngrok` and our web server still running, from `rebase/rust/rebase`, one directory higher than this document, we can run:
-
-```bash
-cargo run --example ed25519_basic -- 72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io
-```
-
-The terminal will print the issued credential.
-
-TODO: Add outputting the Credential to a file and show verifying it with didkit.
