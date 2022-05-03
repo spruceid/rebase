@@ -6,7 +6,7 @@ use serde_json::to_string;
 use ssi::jwk::JWK;
 use std::env;
 use std::fs::{File, OpenOptions};
-use std::io::prelude::*;
+use std::io::{prelude::*, stdin, stdout, Write};
 use tokio;
 
 #[derive(Deserialize, Serialize)]
@@ -99,6 +99,22 @@ fn fmt_did(url: String) -> Result<(), String> {
     Ok(())
 }
 
+fn get_line() -> Result<String, String> {
+    let _ = stdout().flush();
+
+    let mut s = String::new();
+    stdin().read_line(&mut s).map_err(|e| format!("{}", e))?;
+
+    if let Some('\n') = s.chars().next_back() {
+        s.pop();
+    }
+    if let Some('\r') = s.chars().next_back() {
+        s.pop();
+    }
+
+    Ok(s)
+}
+
 #[tokio::main]
 async fn main() {
     let url = env::args().skip(1).next().unwrap();
@@ -116,12 +132,16 @@ async fn main() {
     .await
     .unwrap();
 
-    let schema = rebase::schema::basic_profile::BasicProfile {
-        alias: "foo".to_string(),
-        description: "bar".to_string(),
-        website: "https://www.example.com".to_string(),
-        logo: "example.jpg".to_string(),
-    };
+    println!("Let's make a post, then save it out as a Verifiable Credential!");
+    println!("Enter the title of your post:");
+
+    let title = get_line().unwrap();
+
+    println!("Good, now for the body of the post:");
+
+    let body = get_line().unwrap();
+
+    let schema = rebase::schema::basic_post::BasicPost { title, body };
 
     let credential = schema.credential(&signer).await.unwrap();
     let s = to_string(&credential).unwrap();
@@ -132,7 +152,6 @@ async fn main() {
         .write(true)
         .truncate(true)
         .open("./examples/temp/ed25519_basic/credentials/vc.json")
-        .map_err(|e| format!("{}", e))
         .unwrap();
 
     f.write_all(s.as_bytes()).unwrap()

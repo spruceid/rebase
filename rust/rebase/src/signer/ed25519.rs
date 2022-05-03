@@ -1,7 +1,7 @@
 use crate::signer::signer::{Signer, SignerError, SignerType};
 use async_trait::async_trait;
 use did_web::DIDWeb;
-use ed25519_dalek::{Signer as InnerSigner};
+// use ed25519_dalek::{Signer as InnerSigner};
 use ssi::{
     jwk::JWK,
     one_or_many::OneOrMany,
