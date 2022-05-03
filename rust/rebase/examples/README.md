@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Rebase is a library for dealing with [Verifiable Credentials](), which are cryptographically verifiable. Most crpytographic keys in use are tied to currencies, so mocking them for the purposes of cli examples can be tricky. For this reason, we're going to stick to ed25519 keys and signing for example purposes. This is still a useful endevour because such keys can be used in "witness" services, a key piece of Rebase architecture.
+Rebase is a library for dealing with [Verifiable Credentials](), which are cryptographically verifiable. Many crpytographic keys in commonx use are tied to currencies, so mocking them for the purposes of examples can be tricky. For this reason, we're going to stick to ed25519 keys. This is still a useful endevour because such keys are used in "witness" services, a key piece of Rebase architecture.
 
 Once the WASM portions of the library are complete, look forward to more robust, easier to try examples involving crypto wallets!
 
@@ -65,6 +65,7 @@ The result of the above command should include a line that looks like:
 ```
 Forwarding                    https://72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io -> http://localhost:8000
 ```
+(NOTE: the URL will be different for your own instance of ngrok)
 
 The URL (in this example `https://72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io`) is key. 
 
@@ -73,6 +74,7 @@ Now, leaving `ngrok` and our web server still running, from `rebase/rust/rebase`
 ```bash
 cargo run --example ed25519_basic -- 72a8-2601-285-8280-60d0-94f1-6502-1176-cd2f.ngrok.io
 ```
+(NOTE: the URL will be different for your own instance of ngrok)
 
 You will be prompted to enter a title and body for a "post", which will be the contents embedded in the credential. It isn't actually being posted anywhere, just saved to the local file system. 
 
