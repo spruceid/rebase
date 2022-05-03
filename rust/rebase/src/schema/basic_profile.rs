@@ -10,6 +10,7 @@ pub struct BasicProfile {
     // TODO: Type as URL?
     pub website: String,
     pub logo: String,
+    pub subject_id: String
 }
 
 impl SchemaType for BasicProfile {
@@ -22,7 +23,7 @@ impl SchemaType for BasicProfile {
               "website": "https://schema.org/url",
               "logo": "https://schema.org/logo",
               // TODO: Establish new place for this URL to point.
-              "BasicProfile": "https://tzprofiles.com/BasicProfile",
+              "BasicProfile": "https://example.com/BasicProfile",
           },
         ]))
     }
@@ -34,9 +35,9 @@ impl SchemaType for BasicProfile {
         ])
     }
 
-    fn subject(&self, subject_did: &str) -> Result<serde_json::Value, SchemaError> {
+    fn subject(&self) -> Result<serde_json::Value, SchemaError> {
         Ok(json!({
-            "id": subject_did.to_string(),
+            "id": self.subject_id,
             "alias": self.alias,
             "description": self.description,
             "logo": self.logo,
