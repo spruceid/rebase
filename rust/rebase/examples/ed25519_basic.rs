@@ -66,7 +66,6 @@ fn get_key() -> Result<JWK, String> {
         .map_err(|e| format!("{}", e))?;
     let mut c = String::new();
     f.read_to_string(&mut c).map_err(|e| format!("{}", e))?;
-    println!("{}", &c);
     Ok(serde_json::from_str(&c).map_err(|e| format!("{}", e))?)
 }
 
