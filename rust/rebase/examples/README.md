@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Rebase is a library for dealing with [Verifiable Credentials](), which are cryptographically verifiable. Many crpytographic keys in commonx use are tied to currencies, so mocking them for the purposes of examples can be tricky. For this reason, we're going to stick to ed25519 keys. This is still a useful endevour because such keys are used in "witness" services, a key piece of Rebase architecture.
+Rebase is a library for working with [Verifiable Credentials](https://www.w3.org/TR/vc-data-model/), which are cryptographically verifiable. Many crpytographic keys in commonx use are tied to currencies, so mocking them for the purposes of examples can be tricky. For this reason, we're going to stick to ed25519 keys. This is still a useful endevour because such keys are used in "witness" services, a key piece of Rebase architecture.
 
 Once the WASM portions of the library are complete, look forward to more robust, easier to try examples involving crypto wallets!
 
@@ -18,7 +18,7 @@ Finally, you'll need a way to point at that server without refering to the port 
 
 ## Background
 
-Because Rebase is built on top of [didkit]() the credentials it creates are [DID documents]() which happen to be [Verifiable Credentials](). There are many type of [DID methods]() used to resolve the veracity of compliant credentials, ranging from those based on cryptocurrency wallet signatures to more abstract approaches like `did:web` used in these examples. To allow users to quickly try Rebase these examples use [did:web](https://spruceid.dev/docs/didkit/did-web/) methods and [ed25519]() keys that the user generates using `didkit`. 
+Because Rebase is built on top of [didkit](https://spruceid.dev/docs/didkit/) the credentials it creates are [DID documents](https://www.w3.org/TR/did-core/) which happen to be [Verifiable Credentials](https://www.w3.org/TR/vc-data-model/). There are many type of [DID methods](https://www.w3.org/TR/did-spec-registries/) used to resolve the veracity of compliant credentials, ranging from those based on cryptocurrency wallet signatures to more abstract approaches like `did:web` used in these examples. To allow users to quickly try Rebase these examples use [did:web](https://spruceid.dev/docs/didkit/did-web/) methods and [ed25519](https://ed25519.cr.yp.to/) keys that the user generates using `didkit`. 
 
 `did:web` is a resolution method that allows the consumer of a Verifiable Credential to look up the corresponding public key through an http request. It is described in detail [here](https://spruceid.dev/docs/didkit/did-web/). We will be setting up a local server to make a public key available for `did:web` resolution, then using the corresponding private key to issue credentials. These credentials will be verifiable so long as the server which `did:web` resolves to is available.
 
@@ -40,9 +40,9 @@ First, from this `examples` directory, run
 
 This simple script will create a `./temp/ed25519_basic` directory and populate it with a couple of neccessary files and directories:
 
-`keys/controller.jwk`: The [JWK]() format of the ed25519 key pair to be used to create and resolve credentials.
+`keys/controller.jwk`: The [JWK](https://datatracker.ietf.org/doc/html/rfc7517) format of the ed25519 key pair to be used to create and resolve credentials.
 
-`.well-known/did.json`: The [DID document]() output from `controller.jwk`, described more fully in the [did:web help document](https://spruceid.dev/docs/didkit/did-web/). This file includes the public key found in `controller.jwk`, is what will be served by the file server when someone resolves the created credential. It's placed in the `.well-known` directory because we'll run the webserver from `./temp/ed25519_basic` and `did:web` normally looks for this pattern.
+`.well-known/did.json`: The [DID document](https://www.w3.org/TR/did-core/) output from `controller.jwk`, described more fully in the [did:web help document](https://spruceid.dev/docs/didkit/did-web/). This file includes the public key found in `controller.jwk`, is what will be served by the file server when someone resolves the created credential. It's placed in the `.well-known` directory because we'll run the webserver from `./temp/ed25519_basic` and `did:web` normally looks for this pattern.
 
 `credentials`: This directory will be populated by running the actual Rust example.
 
@@ -171,7 +171,7 @@ let id = format!("did:web:{}", &url);
 let key = get_key().unwrap();
 ```
 
-We get the url passed in by the caller, which will be used for did resolution and we build a `did:web` identifier using it, then we open the key file from the file system and serialize it into the [ssi]() library's [JWK representation]() using the local `get_key` function.
+We get the url passed in by the caller, which will be used for did resolution and we build a `did:web` identifier using it, then we open the key file from the file system and serialize it into the [ssi](https://github.com/spruceid/ssi/blob/main/src/jwk.rs) library's [JWK representation](https://openid.net/specs/draft-jones-json-web-key-03.html) using the local `get_key` function.
 
 The next one is a little more interesting:
 
