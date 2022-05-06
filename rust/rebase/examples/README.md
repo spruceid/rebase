@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Rebase is a library for working with [Verifiable Credentials](https://www.w3.org/TR/vc-data-model/), which are cryptographically verifiable. Many crpytographic keys in commonx use are tied to currencies, so mocking them for the purposes of examples can be tricky. For this reason, we're going to stick to ed25519 keys. This is still a useful endevour because such keys are used in "witness" services, a key piece of Rebase architecture.
+Rebase is a library for working with [Verifiable Credentials](https://www.w3.org/TR/vc-data-model/). Many crpytographic keys used to sign Verifiable Credentials are tied to cryptocurrencies, so mocking them for the purposes of examples can be tricky. For this reason, we're going to stick to ed25519 keys. This is still a useful endevour because such keys are used in "witness" services, a key piece of Rebase architecture.
 
 Once the WASM portions of the library are complete, look forward to more robust, easier to try examples involving crypto wallets!
 
