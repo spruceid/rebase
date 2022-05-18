@@ -1,6 +1,6 @@
 extern crate rebase;
 
-use rebase::crosskey::crosskey::{default_crosskey_credential, validate_inner_signature};
+use rebase::schema::self_signed::{default_self_signed_credential, verify_inner_signature};
 use serde_json::to_string;
 use ssi::jwk::JWK;
 use std::env;
@@ -11,23 +11,23 @@ use tokio;
 mod util;
 
 fn get_key1() -> Result<JWK, String> {
-    util::get_key("./examples/temp/ed25519_crosskey/keys/key1.jwk")
+    util::get_key("./examples/temp/ed25519_self_signed/keys/key1.jwk")
 }
 
 fn get_key2() -> Result<JWK, String> {
-    util::get_key("./examples/temp/ed25519_crosskey/keys/key2.jwk")
+    util::get_key("./examples/temp/ed25519_self_signed/keys/key2.jwk")
 }
 
 fn fmt_did1(url: &str) -> Result<(), String> {
     util::fmt_did(
-        "./examples/temp/ed25519_crosskey/serve/key1/.well-known/did.json",
+        "./examples/temp/ed25519_self_signed/serve/key1/.well-known/did.json",
         url,
     )
 }
 
 fn fmt_did2(url: &str) -> Result<(), String> {
     util::fmt_did(
-        "./examples/temp/ed25519_crosskey/serve/key2/.well-known/did.json",
+        "./examples/temp/ed25519_self_signed/serve/key2/.well-known/did.json",
         url,
     )
 }
@@ -56,7 +56,7 @@ async fn main() {
             .await
             .unwrap();
 
-    let credential = default_crosskey_credential(&signer1, &signer2)
+    let credential = default_self_signed_credential(&signer1, &signer2)
         .await
         .unwrap();
 
@@ -68,7 +68,7 @@ async fn main() {
         .create(true)
         .write(true)
         .truncate(true)
-        .open("./examples/temp/ed25519_crosskey/credentials/vc.json")
+        .open("./examples/temp/ed25519_self_signed/credentials/vc.json")
         .unwrap();
 
     f.write_all(s.as_bytes()).unwrap();
@@ -76,5 +76,5 @@ async fn main() {
     // TODO: Inspect inner Credential to validate inner siganture.
     println!("TODO: validate inner signature");
 
-    validate_inner_signature(credential).await.unwrap();
+    verify_inner_signature(credential).await.unwrap();
 }

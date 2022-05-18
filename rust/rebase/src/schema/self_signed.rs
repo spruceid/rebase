@@ -1,9 +1,84 @@
-use crate::schema::{crosskey::Crosskey, schema_type::SchemaError, schema_type::SchemaType};
+use crate::schema::schema_type::{SchemaError, SchemaType};
 use crate::signer::signer::{Signer, SignerType, DID as SignerDID, EIP115, PKH as SignerPKH};
 use crate::witness::signer_type::SignerTypes;
-use ssi::{one_or_many::OneOrMany, vc::Credential};
+use serde_json::json;
+use ssi::{
+    one_or_many::OneOrMany,
+    vc::{Credential, Evidence},
+};
 
-pub async fn crosskey_claim<T: SignerType, U: SignerType>(
+pub struct SelfSigned {
+    pub signature: String,
+    // The statement signer as a DID
+    pub statement: String,
+    pub statement_id: String,
+    pub vc_id: String,
+}
+
+impl SelfSigned {
+    pub async fn new<T: SignerType, U: SignerType>(
+        signature: String,
+        statement: String,
+        statement_generator: &impl Fn(&dyn Signer<T>, &dyn Signer<U>) -> String,
+        statement_signer: &dyn Signer<T>,
+        vc_signer: &dyn Signer<U>,
+    ) -> Result<Self, SchemaError> {
+        let s = statement_generator(statement_signer, vc_signer);
+        if statement != s {
+            return Err(SchemaError::MismatchedStatement(format!(
+                "credential statement: '{}' generated from arguments: '{}'",
+                statement, s
+            )));
+        }
+
+        statement_signer
+            .valid_signature(&statement, &signature)
+            .await?;
+        Ok(SelfSigned {
+            signature,
+            statement,
+            statement_id: statement_signer.id(),
+            vc_id: vc_signer.id(),
+        })
+    }
+}
+
+impl SchemaType for SelfSigned {
+    fn context(&self) -> Result<serde_json::Value, SchemaError> {
+        Ok(json!([
+            "https://www.w3.org/2018/credentials/v1",
+            {
+                "CrosskeyControl": "https://example.com/CrosskeyControl",
+                "controller": "https://example.com/controller",
+                "sameAs": "https://example.com/sameAs",
+                "statement": "https://example.com/statement",
+                "signature": "https://example.com/signature",
+            }
+        ]))
+    }
+
+    fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, SchemaError> {
+        Ok(None)
+    }
+
+    fn subject(&self) -> Result<serde_json::Value, SchemaError> {
+        Ok(json!({
+            "controller": self.vc_id,
+            "sameAs": self.statement_id,
+            "statement": self.statement,
+            "signature": self.signature,
+        }))
+    }
+
+    fn types(&self) -> Result<Vec<String>, SchemaError> {
+        Ok(serde_json::from_value(json!([
+            "VerifiableCredential",
+            "CrosskeyControl",
+        ]))?)
+    }
+}
+
+pub async fn self_signed_claim<T: SignerType, U: SignerType>(
     statement_generator: &impl Fn(&dyn Signer<T>, &dyn Signer<U>) -> String,
     statement_signer: &dyn Signer<T>,
     vc_signer: &dyn Signer<U>,
@@ -14,15 +89,15 @@ pub async fn crosskey_claim<T: SignerType, U: SignerType>(
     Ok((statement, signature))
 }
 
-pub async fn crosskey_credential<T: SignerType, U: SignerType>(
+pub async fn self_signed_credential<T: SignerType, U: SignerType>(
     statement_generator: impl Fn(&dyn Signer<T>, &dyn Signer<U>) -> String,
     statement_signer: &dyn Signer<T>,
     vc_signer: &dyn Signer<U>,
 ) -> Result<Credential, SchemaError> {
     let (statement, signature) =
-        crosskey_claim(&statement_generator, statement_signer, vc_signer).await?;
+        self_signed_claim(&statement_generator, statement_signer, vc_signer).await?;
 
-    let schema = Crosskey::new(
+    let schema = SelfSigned::new(
         signature,
         statement,
         &statement_generator,
@@ -47,14 +122,14 @@ pub fn default_statement<T: SignerType, U: SignerType>(
     )
 }
 
-pub async fn default_crosskey_credential<T: SignerType, U: SignerType>(
+pub async fn default_self_signed_credential<T: SignerType, U: SignerType>(
     statement_signer: &dyn Signer<T>,
     vc_signer: &dyn Signer<U>,
 ) -> Result<Credential, SchemaError> {
-    crosskey_credential(&default_statement, statement_signer, vc_signer).await
+    self_signed_credential(&default_statement, statement_signer, vc_signer).await
 }
 
-pub async fn validate_inner_signature(c: Credential) -> Result<(), SchemaError> {
+pub async fn verify_inner_signature(c: Credential) -> Result<(), SchemaError> {
     match c.credential_subject {
         OneOrMany::One(x) => match x.property_set {
             None => Err(SchemaError::BadSubject("expected property set".to_string())),

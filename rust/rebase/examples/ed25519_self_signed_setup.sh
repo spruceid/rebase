@@ -4,8 +4,8 @@ then
     exit
 fi
 
-mkdir -p ./temp/ed25519_crosskey/serve/key1/.well-known
-cd ./temp/ed25519_crosskey
+mkdir -p ./temp/ed25519_self_signed/serve/key1/.well-known
+cd ./temp/ed25519_self_signed
 mkdir -p ./serve/key2/.well-known
 mkdir -p keys
 mkdir -p credentials
