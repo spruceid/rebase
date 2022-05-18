@@ -7,6 +7,7 @@ use ssi::{one_or_many::OneOrMany, vc::Evidence};
 pub struct BasicPost {
     pub title: String,
     pub body: String,
+    pub subject_id: String,
 }
 
 impl SchemaType for BasicPost {
@@ -29,9 +30,9 @@ impl SchemaType for BasicPost {
         ])
     }
 
-    fn subject(&self, subject_did: &str) -> Result<serde_json::Value, SchemaError> {
+    fn subject(&self) -> Result<serde_json::Value, SchemaError> {
         Ok(json!({
-            "id": subject_did.to_string(),
+            "id": self.subject_id,
             "title": self.title,
             "body": self.body,
         }))
