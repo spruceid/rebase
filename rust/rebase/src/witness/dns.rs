@@ -2,11 +2,11 @@ use crate::schema::schema_type::{SchemaError, SchemaType};
 use crate::signer::signer::{SignerError, SignerType, DID as SignerDID};
 use crate::witness::{
     signer_type::SignerTypes,
-    witness::{Generator, Proof, WitnessError},
+    witness::{Generator, Proof, Statement, WitnessError},
 };
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
 use std::collections::HashMap;
@@ -16,13 +16,14 @@ use url::Url;
 // TODO: Add Serde
 // TODO: Support the more specific TZProfiles attestation. Requires TZProfiles specific text.
 
+#[derive(Deserialize, Serialize)]
 pub struct Claim {
     pub domain: String,
     pub prefix: String,
     pub key_type: SignerDID,
 }
 
-impl Proof for Claim {
+impl Statement for Claim {
     fn signer_type(&self) -> Result<SignerTypes, SignerError> {
         SignerTypes::new(&self.key_type)
     }
@@ -41,6 +42,8 @@ impl Proof for Claim {
         "=".to_string()
     }
 }
+
+impl Proof for Claim {}
 
 pub struct Schema {
     pub domain: String,

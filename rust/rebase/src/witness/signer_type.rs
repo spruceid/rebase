@@ -4,6 +4,7 @@ use crate::signer::{
     signer::{SignerError, SignerType, DID as SignerDID, PKH as SignerPKH},
 };
 use crate::witness::witness::WitnessError;
+
 use async_trait::async_trait;
 
 pub enum SignerTypes {

@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use ssi::jwk::JWK;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 
@@ -55,11 +54,12 @@ pub enum Context {
     Struct(ContextKey),
 }
 
-pub fn get_key(path: &str) -> Result<JWK, String> {
+pub fn get_key(path: &str) -> Result<String, String> {
     let mut f = File::open(path).map_err(|e| format!("{}", e))?;
     let mut c = String::new();
     f.read_to_string(&mut c).map_err(|e| format!("{}", e))?;
-    Ok(serde_json::from_str(&c).map_err(|e| format!("{}", e))?)
+    // Ok(serde_json::from_str(&c).map_err(|e| format!("{}", e))?)
+    Ok(c)
 }
 
 pub fn fmt_did(path: &str, url: &str) -> Result<(), String> {

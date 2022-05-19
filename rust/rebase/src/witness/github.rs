@@ -2,7 +2,7 @@ use crate::schema::schema_type::{SchemaError, SchemaType};
 use crate::signer::signer::{SignerError, SignerType, DID as SignerDID};
 use crate::witness::{
     signer_type::SignerTypes,
-    witness::{Generator, Proof, WitnessError},
+    witness::{Generator, Proof, Statement, WitnessError},
 };
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
@@ -17,16 +17,13 @@ use url::Url;
 // TODO: Move to own dir, maybe w/ schema?
 // TODO: Add Serde
 // TODO: Support the more specific TZProfiles attestation. Requires TZProfiles specific text.
-
-pub struct Claim {
-    pub gist_id: String,
-    pub gist_url: String,
-    pub gist_version: String,
+#[derive(Deserialize, Serialize)]
+pub struct Opts {
     pub handle: String,
     pub key_type: SignerDID,
 }
 
-impl Proof for Claim {
+impl Statement for Opts {
     fn signer_type(&self) -> Result<SignerTypes, SignerError> {
         SignerTypes::new(&self.key_type)
     }
@@ -35,7 +32,7 @@ impl Proof for Claim {
         let signer_type = self.signer_type()?;
 
         Ok(format!(
-            "I am attesting that this GitHub handle {} is linked to the {} {}\n\n",
+            "I am attesting that this GitHub handle {} is linked to the {} {}",
             self.handle,
             signer_type.name(),
             signer_type.statement_id()?
@@ -47,10 +44,31 @@ impl Proof for Claim {
     }
 }
 
+#[derive(Deserialize, Serialize)]
+pub struct Claim {
+    pub gist_id: String,
+    pub statement_opts: Opts,
+}
+
+impl Statement for Claim {
+    fn signer_type(&self) -> Result<SignerTypes, SignerError> {
+        self.statement_opts.signer_type()
+    }
+
+    fn generate_statement(&self) -> Result<String, WitnessError> {
+        self.statement_opts.generate_statement()
+    }
+
+    fn delimitor(&self) -> String {
+        self.statement_opts.delimitor()
+    }
+}
+
+// TODO: Can we just derive this?
+impl Proof for Claim {}
+
 pub struct Schema {
     pub gist_id: String,
-    pub gist_url: String,
-    pub gist_version: String,
     pub handle: String,
     pub key_type: SignerDID,
     pub statement: String,
@@ -75,7 +93,7 @@ impl SchemaType for Schema {
                             "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
                         },
                         "gistId": "https://example.com/gistId",
-                        "gistVersion":  "https://example.com/gistVersion",
+                        // "gistVersion":  "https://example.com/gistVersion",
                         "handle": "https://example.com/handle"
                     }
                 }
@@ -98,11 +116,6 @@ impl SchemaType for Schema {
         evidence_map.insert(
             "gistId".to_string(),
             serde_json::Value::String(self.gist_id.clone()),
-        );
-
-        evidence_map.insert(
-            "gistVersion".to_string(),
-            serde_json::Value::String(self.gist_version.clone()),
         );
 
         let evidence = Evidence {
@@ -135,7 +148,8 @@ impl SchemaType for Schema {
 }
 
 pub struct ClaimGenerator {
-    pub api_key: String,
+    // TODO: Remove?
+    pub user_agent: String,
 }
 
 #[derive(Deserialize, Debug, Serialize)]
@@ -173,7 +187,7 @@ impl Generator<Claim, Schema> for ClaimGenerator {
         let mut headers = HeaderMap::new();
         headers.insert(
             USER_AGENT,
-            format!("Spruce Systems").parse().map_err(|_| {
+            format!("{}", self.user_agent).parse().map_err(|_| {
                 WitnessError::BadLookup("could not generate header for lookup".to_string())
             })?,
         );
@@ -188,14 +202,15 @@ impl Generator<Claim, Schema> for ClaimGenerator {
             .await
             .map_err(|e| WitnessError::BadLookup(e.to_string()))?;
 
-        if proof.handle.to_lowercase() != res.owner.login.to_lowercase() {
+        if proof.statement_opts.handle.to_lowercase() != res.owner.login.to_lowercase() {
             return Err(WitnessError::BadLookup(format!(
                 "handle mismatch, expected: {}, got: {}",
-                proof.handle.to_lowercase(),
+                proof.statement_opts.handle.to_lowercase(),
                 res.owner.login.to_lowercase()
             )));
         };
-
+        let s = serde_json::to_string(&res.files)
+            .map_err(|e| WitnessError::SchemaError(SchemaError::Serialize(e)))?;
         for (_k, v) in res.files {
             let object = match v.as_object() {
                 None => continue,
@@ -219,7 +234,8 @@ impl Generator<Claim, Schema> for ClaimGenerator {
         }
 
         Err(WitnessError::BadLookup(
-            "Failed to find properly formatted gist".to_string(),
+            // "Failed to find properly formatted gist".to_string(),
+            format!("Failed to find files in: {}", s),
         ))
     }
 
@@ -231,10 +247,9 @@ impl Generator<Claim, Schema> for ClaimGenerator {
     ) -> Result<Schema, WitnessError> {
         Ok(Schema {
             gist_id: proof.gist_id.clone(),
-            gist_url: proof.gist_url.clone(),
-            gist_version: proof.gist_version.clone(),
-            handle: proof.handle.clone(),
-            key_type: proof.key_type.clone(),
+            // gist_version: proof.gist_version.clone(),
+            handle: proof.statement_opts.handle.clone(),
+            key_type: proof.statement_opts.key_type.clone(),
             statement: statement.to_owned(),
             signature: signature.to_owned(),
         })

@@ -1,5 +1,15 @@
 use crate::signer::signer::{SignerError, SignerType, DID as SignerDID, EIP115, PKH as SignerPKH};
 use async_trait::async_trait;
+use hex::FromHex;
+use k256::{
+    ecdsa::{
+        recoverable::{Id, Signature},
+        signature::Signature as S,
+        Signature as Sig,
+    },
+    elliptic_curve::sec1::ToEncodedPoint,
+};
+use sha3::{Digest, Keccak256};
 
 // TODO: Break EIP115 into own file to use with other chains.
 pub enum PKH {
@@ -12,6 +22,12 @@ pub enum DID {
 
 pub enum Ethereum {
     DID(DID),
+}
+// TODO: Add EIP712 support to enable "sign_vc"?
+// Will need for signer
+pub enum Method {
+    EIP712,
+    PlainText,
 }
 
 #[async_trait(?Send)]
@@ -51,15 +67,71 @@ impl SignerType for Ethereum {
         }
     }
 
-    async fn valid_signature(&self, _statement: &str, _signature: &str) -> Result<(), SignerError> {
+    async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SignerError> {
         // TODO: IMPLEMENT
-        Err(SignerError::Unimplemented)
+        match self {
+            // NOTE: THIS ASSUMES EIP191 SIGNING.
+            // TODO: Call this out in the type system?
+            Ethereum::DID(DID::PKH(PKH::EIP115(Some(o)))) => {
+                let statement: Vec<u8> = format!(
+                    "\x19Ethereum Signed Message:\n{}{}",
+                    statement.as_bytes().len(),
+                    statement
+                )
+                .into();
+                let signature =
+                    <[u8; 65]>::from_hex(signature.trim_start_matches("0x")).map_err(|e| SignerError::InvalidSignature {
+                        signer_type: self.name(),
+                        reason: format!("could not marshal signature to hex: {}", e),
+                    })?;
+
+                let pk = Signature::new(
+                    &Sig::from_bytes(&signature[..64]).map_err(|e| {
+                        SignerError::InvalidSignature {
+                            signer_type: self.name(),
+                            reason: format!("could not process signature to recover key: {}", e),
+                        }
+                    })?,
+                    Id::new(&signature[64] % 27).map_err(|e| SignerError::InvalidSignature {
+                        signer_type: self.name(),
+                        reason: format!("could not process signature to recover key: {}", e),
+                    })?,
+                )
+                .map_err(|e| SignerError::InvalidSignature {
+                    signer_type: self.name(),
+                    reason: format!("could not recover key: {}", e),
+                })?
+                .recover_verify_key(&statement)
+                .map_err(|e| SignerError::InvalidSignature {
+                    signer_type: self.name(),
+                    reason: format!("could not process statement to recover key: {}", e),
+                })?;
+
+                let address =
+                    <[u8; 20]>::from_hex(&o.address.trim_start_matches("0x")).map_err(|e| SignerError::InvalidSignature {
+                        signer_type: self.name(),
+                        reason: format!("could not marshal address to hex: {}", e),
+                    })?;
+
+                if Keccak256::default()
+                    .chain(&pk.to_encoded_point(false).as_bytes()[1..])
+                    .finalize()[12..]
+                    != address
+                {
+                    Err(SignerError::InvalidSignature {
+                        signer_type: self.name(),
+                        reason: "signature mismatch".to_string(),
+                    })
+                } else {
+                    Ok(())
+                }
+            }
+            _ => Err(SignerError::InvalidId {
+                signer_type: self.name(),
+                reason: "expected ethereum based signer type".to_string(),
+            }),
+        }
     }
 }
 
-// TODO: Add EIP712 support to enable "sign_vc"
-// Will need for signer
-pub enum Method {
-    EIP712,
-    PlainText,
-}
+
