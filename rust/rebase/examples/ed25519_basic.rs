@@ -11,7 +11,7 @@ use tokio;
 
 mod util;
 
-fn get_key() -> Result<JWK, String> {
+fn get_key() -> Result<String, String> {
     util::get_key("./examples/temp/ed25519_basic/keys/controller.jwk")
 }
 
@@ -43,10 +43,9 @@ async fn main() {
     let key = get_key().unwrap();
     fmt_did(&url).unwrap();
 
-    let signer =
-        rebase::signer::ed25519::Ed25519DidWebJwk::new(id.clone(), key, "controller".to_string())
-            .await
-            .unwrap();
+    let signer = rebase::signer::ed25519::Ed25519DidWebJwk::new(&id, &key, "controller")
+        .await
+        .unwrap();
 
     println!("Let's make a post, then save it out as a Verifiable Credential!");
     println!("Enter the title of your post:");

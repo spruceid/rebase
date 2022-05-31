@@ -56,14 +56,17 @@ pub struct EIP115 {
 
 #[derive(Clone, Deserialize, Serialize)]
 pub enum PKH {
+    #[serde(rename = "eip115")]
     EIP115(Option<EIP115>),
 }
 
 #[derive(Clone, Deserialize, Serialize)]
 pub enum DID {
+    #[serde(rename = "pkh")]
     PKH(PKH),
     // NOTE: Currently only supports Ed25519 keys for signing
     // Could change did::web to an enum if desired.
+    #[serde(rename = "web")]
     Web(Option<String>),
 }
 

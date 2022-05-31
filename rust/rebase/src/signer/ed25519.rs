@@ -1,10 +1,12 @@
 use crate::signer::signer::{Signer, SignerError, SignerType, DID as SignerDID};
 use async_trait::async_trait;
 use did_web::DIDWeb;
-use ed25519_dalek::{Keypair, PublicKey, SecretKey, Signature, Signer as InnerSigner, Verifier};
+use ed25519_dalek::ed25519::signature::Signature;
+use ed25519_dalek::{Keypair, PublicKey, SecretKey, Signer as InnerSigner, Verifier};
 use hex;
 use serde::{Deserialize, Serialize};
 use ssi::{
+	did_resolve::DIDResolver,
 	jwk::{Base64urlUInt, Params, JWK},
 	one_or_many::OneOrMany,
 	vc::{Credential, LinkedDataProofOptions, Proof, URI},
@@ -25,13 +27,17 @@ pub struct Ed25519DidWebJwk {
 }
 
 impl Ed25519DidWebJwk {
-	pub async fn new(id: String, key: JWK, key_name: String) -> Result<Self, SignerError> {
+	pub async fn new(id: &str, key: &str, key_name: &str) -> Result<Self, SignerError> {
 		// TODO: Validate the ID is a valid did?
-		let signer_type = Ed25519::new(&SignerDID::Web(Some(id.clone())))?;
+		let key: JWK = serde_json::from_str(key).map_err(|e| SignerError::InvalidSignerOpts {
+			signer_type: "ed25519 did jwk".to_owned(),
+			reason: format!("could not deserailize JWK: {}", e),
+		})?;
+		let signer_type = Ed25519::new(&SignerDID::Web(Some(id.to_owned())))?;
 		Ok(Ed25519DidWebJwk {
-			id,
+			id: id.to_owned(),
 			key,
-			key_name,
+			key_name: key_name.to_owned(),
 			signer_type,
 		})
 	}

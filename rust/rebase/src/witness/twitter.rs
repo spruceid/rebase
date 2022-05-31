@@ -2,7 +2,7 @@ use crate::schema::schema_type::{SchemaError, SchemaType};
 use crate::signer::signer::{SignerError, SignerType, DID as SignerDID};
 use crate::witness::{
     signer_type::SignerTypes,
-    witness::{Generator, Proof, WitnessError},
+    witness::{Generator, Proof, Statement, WitnessError},
 };
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
@@ -16,14 +16,13 @@ use url::Url;
 // TODO: Add Serde
 // TODO: Support the more specific TZProfiles attestation. Requires TZProfiles specific text.
 
-pub struct Claim {
+#[derive(Deserialize, Serialize)]
+pub struct Opts {
     pub handle: String,
     pub key_type: SignerDID,
-    pub tweet_id: String,
-    pub tweet_url: String,
 }
 
-impl Proof for Claim {
+impl Statement for Opts {
     fn signer_type(&self) -> Result<SignerTypes, SignerError> {
         SignerTypes::new(&self.key_type)
     }
@@ -44,10 +43,35 @@ impl Proof for Claim {
     }
 }
 
+// NOTE: One could impl Proof for Opts but there's no corresponding schema + generator.
+// impl Proof for Opts {}
+
+#[derive(Deserialize, Serialize)]
+pub struct Claim {
+    pub statement_opts: Opts,
+    pub tweet_url: String,
+}
+
+impl Statement for Claim {
+    fn signer_type(&self) -> Result<SignerTypes, SignerError> {
+        self.statement_opts.signer_type()
+    }
+
+    fn generate_statement(&self) -> Result<String, WitnessError> {
+        self.statement_opts.generate_statement()
+    }
+
+    fn delimitor(&self) -> String {
+        self.statement_opts.delimitor()
+    }
+}
+
+// TODO: Can we just derive this?
+impl Proof for Claim {}
+
 pub struct Schema {
     pub handle: String,
     pub key_type: SignerDID,
-    pub tweet_id: String,
     pub tweet_url: String,
     pub statement: String,
     pub signature: String,
@@ -88,9 +112,17 @@ impl SchemaType for Schema {
             "timestamp".to_string(),
             serde_json::Value::String(Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true)),
         );
+        let url_vec: Vec<&str> = self.tweet_url.split("/").collect();
+        if url_vec.len() < 1 {
+            return Err(SchemaError::BadSubject(
+                "could not find tweet id".to_owned(),
+            ));
+        }
+
+        let tweet_id = url_vec[url_vec.len() - 1];
         evidence_map.insert(
             "tweetId".to_string(),
-            serde_json::Value::String(self.tweet_id.clone()),
+            serde_json::Value::String(tweet_id.to_owned()),
         );
         let evidence = Evidence {
             id: None,
@@ -157,13 +189,22 @@ impl Generator<Claim, Schema> for ClaimGenerator {
         headers.insert(AUTHORIZATION, s);
         let client = reqwest::Client::new();
 
+        let url_vec: Vec<&str> = proof.tweet_url.split("/").collect();
+        if url_vec.len() < 1 {
+            return Err(WitnessError::SchemaError(SchemaError::BadSubject(
+                "could not find tweet id".to_owned(),
+            )));
+        }
+
+        let tweet_id = url_vec[url_vec.len() - 1];
+
         let res: TwitterResponse = client
             .get(
                 Url::parse("https://api.twitter.com/2/tweets")
                     .map_err(|e| WitnessError::BadLookup(e.to_string()))?,
             )
             .query(&[
-                ("ids", proof.tweet_id.to_owned()),
+                ("ids", tweet_id.to_owned()),
                 ("expansions", "author_id".to_string()),
                 ("user.fields", "username".to_string()),
             ])
@@ -179,10 +220,12 @@ impl Generator<Claim, Schema> for ClaimGenerator {
             return Err(WitnessError::BadLookup("No users found".to_string()));
         };
 
-        if proof.handle.to_lowercase() != res.includes.users[0].username.to_lowercase() {
+        if proof.statement_opts.handle.to_lowercase()
+            != res.includes.users[0].username.to_lowercase()
+        {
             return Err(WitnessError::BadLookup(format!(
                 "unexpected handle, wanted: {} got: {}",
-                proof.handle.to_lowercase(),
+                proof.statement_opts.handle.to_lowercase(),
                 res.includes.users[0].username.to_lowercase()
             )));
         };
@@ -201,9 +244,8 @@ impl Generator<Claim, Schema> for ClaimGenerator {
         signature: &str,
     ) -> Result<Schema, WitnessError> {
         Ok(Schema {
-            handle: proof.handle.clone(),
-            key_type: proof.key_type.clone(),
-            tweet_id: proof.tweet_id.clone(),
+            handle: proof.statement_opts.handle.clone(),
+            key_type: proof.statement_opts.key_type.clone(),
             tweet_url: proof.tweet_url.clone(),
             statement: statement.to_owned(),
             signature: signature.to_owned(),

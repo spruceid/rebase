@@ -10,11 +10,11 @@ use tokio;
 
 mod util;
 
-fn get_key1() -> Result<JWK, String> {
+fn get_key1() -> Result<String, String> {
     util::get_key("./examples/temp/ed25519_self_signed/keys/key1.jwk")
 }
 
-fn get_key2() -> Result<JWK, String> {
+fn get_key2() -> Result<String, String> {
     util::get_key("./examples/temp/ed25519_self_signed/keys/key2.jwk")
 }
 
@@ -46,15 +46,13 @@ async fn main() {
     let id1 = format!("did:web:{}", &url1);
     let id2 = format!("did:web:{}", &url2);
 
-    let signer1 =
-        rebase::signer::ed25519::Ed25519DidWebJwk::new(id1, key1, "controller".to_string())
-            .await
-            .unwrap();
+    let signer1 = rebase::signer::ed25519::Ed25519DidWebJwk::new(&id1, &key1, "controller")
+        .await
+        .unwrap();
 
-    let signer2 =
-        rebase::signer::ed25519::Ed25519DidWebJwk::new(id2.clone(), key2, "controller".to_string())
-            .await
-            .unwrap();
+    let signer2 = rebase::signer::ed25519::Ed25519DidWebJwk::new(&id2, &key2, "controller")
+        .await
+        .unwrap();
 
     let credential = default_self_signed_credential(&signer1, &signer2)
         .await

@@ -11,6 +11,8 @@ pub enum WitnessError {
     BadLookup(String),
     #[error("no id in given signer type")]
     NoId,
+    #[error("no configuration set for {claim_type:?} witness")]
+    NoWitnessConfig { claim_type: String },
     #[error("failed to parse lookup: {0}")]
     ParseError(String),
     #[error("statement mismatch, expected: '{expected:?}' got: '{got:?}'")]
@@ -22,19 +24,20 @@ pub enum WitnessError {
 }
 
 #[async_trait(?Send)]
-pub trait Proof
-where
-    Self: Sized,
-{
-    // TODO: Allow parse flow to be over-ridden?
-
+pub trait Statement {
     // From the proof structure, create an accurate statement for signing.
     fn generate_statement(&self) -> Result<String, WitnessError>;
     // the delimitor used to split between the statement and signature in post.
     fn delimitor(&self) -> String;
     // From the proof structure. generate a Signer type for validation
     fn signer_type(&self) -> Result<SignerTypes, SignerError>;
+}
 
+#[async_trait(?Send)]
+pub trait Proof
+where
+    Self: Sized + Statement,
+{
     // From the proof structure and any signer, create a valid attestation post.
     async fn generate_post<T: SignerType>(
         &self,
@@ -45,6 +48,7 @@ where
         Ok(format!("{}{}{}", statement, self.delimitor(), signature))
     }
 
+    // TODO: Allow parse flow to be over-ridden?
     // Parses post into statement and signature
     // And makes sure the signature and statement match the proof.
     async fn parse_post(&self, post: &str) -> Result<(String, String), WitnessError> {
