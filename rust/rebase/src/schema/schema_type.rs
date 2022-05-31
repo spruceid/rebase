@@ -12,6 +12,10 @@ use uuid::Uuid;
 
 #[derive(Error, Debug)]
 pub enum SchemaError {
+    #[error("could not generate credential subject: {0}")]
+    BadSubject(String),
+    #[error("mismatched statement: {0}")]
+    MismatchedStatement(String),
     #[error("{0}")]
     Serialize(#[from] SeralizeError),
     #[error("{0}")]
@@ -25,7 +29,7 @@ pub trait SchemaType {
         &self,
         signer: &dyn Signer<T>,
     ) -> Result<Credential, SchemaError> {
-        let did = signer.as_did().await?;
+        let did = signer.did_id()?;
 
         let mut vc: Credential = serde_json::from_value(json!({
             "@context": self.context()?,
@@ -33,7 +37,7 @@ pub trait SchemaType {
             "issuer": &did,
             "issuanceDate": Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true),
             "type": self.types()?,
-            "credentialSubject": self.subject(&did)?
+            "credentialSubject": self.subject()?
         }))?;
 
         vc.evidence = self.evidence()?;
@@ -52,7 +56,7 @@ pub trait SchemaType {
 
     // TODO: Better type?
     // Returns the object used in credentialSubject
-    fn subject(&self, signer_did: &str) -> Result<serde_json::Value, SchemaError>;
+    fn subject(&self) -> Result<serde_json::Value, SchemaError>;
 
     // Return the types used in credential building.
     fn types(&self) -> Result<Vec<String>, SchemaError>;
