@@ -34,7 +34,7 @@ impl WitnessGenerator {
         }
     }
 
-    pub async fn witness<T: SignerType>(
+    pub async fn witness_ld<T: SignerType>(
         &self,
         proof: &ProofTypes,
         signer: &dyn Signer<T>,
@@ -49,6 +49,28 @@ impl WitnessGenerator {
             },
             ProofTypes::Twitter(x) => match &self.twitter {
                 Some(gen) => gen.credential(x, signer).await,
+                _ => Err(WitnessError::NoWitnessConfig {
+                    claim_type: "twitter".to_owned(),
+                }),
+            },
+        }
+    }
+
+    pub async fn witness_jwt<T: SignerType>(
+        &self,
+        proof: &ProofTypes,
+        signer: &dyn Signer<T>,
+    ) -> Result<String, WitnessError> {
+        match proof {
+            ProofTypes::Dns(x) => self.dns.jwt(x, signer).await,
+            ProofTypes::GitHub(x) => match &self.github {
+                Some(gen) => gen.jwt(x, signer).await,
+                _ => Err(WitnessError::NoWitnessConfig {
+                    claim_type: "github".to_owned(),
+                }),
+            },
+            ProofTypes::Twitter(x) => match &self.twitter {
+                Some(gen) => gen.jwt(x, signer).await,
                 _ => Err(WitnessError::NoWitnessConfig {
                     claim_type: "twitter".to_owned(),
                 }),

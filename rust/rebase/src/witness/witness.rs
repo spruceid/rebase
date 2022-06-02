@@ -94,12 +94,21 @@ pub trait Generator<P: Proof, S: SchemaType> {
         Ok(self._unchecked_to_schema(proof, &statement, &signature)?)
     }
 
-    // From the proof structure, create a credential.
+    // From the proof structure, create a LD credential.
     async fn credential<T: SignerType>(
         &self,
         proof: &P,
         signer: &dyn Signer<T>,
     ) -> Result<Credential, WitnessError> {
         Ok(self.schema(proof).await?.credential(signer).await?)
+    }
+
+    // From the proof structure, create a JWT.
+    async fn jwt<T: SignerType>(
+        &self,
+        proof: &P,
+        signer: &dyn Signer<T>,
+    ) -> Result<String, WitnessError> {
+        Ok(self.schema(proof).await?.jwt(signer).await?)
     }
 }

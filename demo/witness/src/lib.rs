@@ -75,7 +75,7 @@ pub struct WitnessReq {
 
 #[derive(Deserialize, Serialize)]
 pub struct WitnessRes {
-    pub credential: Credential,
+    pub jwt: String,
 }
 
 #[wasm_bindgen]
@@ -84,7 +84,11 @@ pub async fn witness(secret: String, witness_request: String, twitter_api_key: S
         let signer = jserr!(Ed25519DidWebJwk::new(SPRUCE_DIDWEB, &secret, "controller").await);
         let witness_request: WitnessReq = jserr!(serde_json::from_str(&witness_request));
         let generator = create_generator(Some(twitter_api_key)).await;
-        let credential = jserr!(generator.witness(&witness_request.proof, &signer).await);
-        Ok(jserr!(serde_json::to_string(&credential)).into())
+        let jwt = jserr!(generator.witness_jwt(&witness_request.proof, &signer).await);
+        let res = WitnessRes {
+            jwt
+        };
+
+        Ok(jserr!(serde_json::to_string(&res)).into())
     })
 }

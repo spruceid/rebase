@@ -114,6 +114,8 @@ where
     async fn sign(&self, plain_text: &str) -> Result<String, SignerError>;
     // sign_vc takes a mutable reference to an incomplete VC and signs it.
     async fn sign_vc(&self, vc: &mut Credential) -> Result<(), SignerError>;
+    // generate_jwt takes a VC and returns it's formatted as a JWT:
+    async fn generate_jwt(&self, vc: &Credential) -> Result<String, SignerError>;
 
     // id returns the identifier for the given signer, such as a public key hash.
     fn id(&self) -> String;

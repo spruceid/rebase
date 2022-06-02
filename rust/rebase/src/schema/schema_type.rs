@@ -24,12 +24,12 @@ pub enum SchemaError {
 
 #[async_trait(?Send)]
 pub trait SchemaType {
-    // Return the complete, signed credential
-    async fn credential<T: SignerType>(
+    // Return the unsigned credential using a signer type.
+    async fn unsigned_credential<T: SignerType>(
         &self,
-        signer: &dyn Signer<T>,
+        signer_type: &T,
     ) -> Result<Credential, SchemaError> {
-        let did = signer.did_id()?;
+        let did = signer_type.did_id()?;
 
         let mut vc: Credential = serde_json::from_value(json!({
             "@context": self.context()?,
@@ -42,9 +42,26 @@ pub trait SchemaType {
 
         vc.evidence = self.evidence()?;
 
+        Ok(vc)
+    }
+
+    // Return the complete, signed LD Proof credential
+    async fn credential<T: SignerType>(
+        &self,
+        signer: &dyn Signer<T>,
+    ) -> Result<Credential, SchemaError> {
+        let mut vc = self.unsigned_credential(&signer.signer_type()).await?;
+
         signer.sign_vc(&mut vc).await?;
 
         Ok(vc)
+    }
+
+    // Return a JWT signed credential
+    async fn jwt<T: SignerType>(&self, signer: &dyn Signer<T>) -> Result<String, SchemaError> {
+        let vc = self.unsigned_credential(&signer.signer_type()).await?;
+
+        Ok(signer.generate_jwt(&vc).await?)
     }
 
     // TODO: Better type?

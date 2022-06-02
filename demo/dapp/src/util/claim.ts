@@ -1,4 +1,5 @@
 import type { DiscordIcon, EthereumIcon, TwitterIcon, GitHubIcon, SolanaIcon } from '../components/icons';
+import { parseJWT } from './jwt';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
 export type Issuer = "witness" | "local";
@@ -22,10 +23,16 @@ export type BasicBlockchain = {
 
 export type CredentialDisplay = BasicPublic | BasicBlockchain;
 
-export const credentialToDisplay = (credential: string): CredentialDisplay => {
+export const credentialToDisplay = (jwt: string): CredentialDisplay => {
     // TODO: Gracefully handle errs!
-    let j = JSON.parse(credential);
-    let t = j?.type;
+    let j = parseJWT(jwt);
+
+    let vc = j?.vc;
+    if (!vc) {
+        throw new Error("Malformed jwt, no vc property")
+    }
+
+    let t = vc?.type;
     if (!t) {
         throw new Error("Malformed credential, no type property")
     }
@@ -38,8 +45,8 @@ export const credentialToDisplay = (credential: string): CredentialDisplay => {
         case "TwitterVerification": 
         case "GitHubVerification":
         {
-            let handle = j?.evidence?.handle;
-            let did = j?.credentialSubject?.id;
+            let handle = vc?.evidence?.handle;
+            let did = vc?.credentialSubject?.id;
             let address = did.split(":")[did.split(":").length - 1]
             return {
                 type: "basic_public",
