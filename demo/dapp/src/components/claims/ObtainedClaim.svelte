@@ -4,9 +4,8 @@
     import IconLink from "../icons/IconLink.svelte";
     export let claim: Claim;
 
-    export const makeDownloadable = (obj: any): string => {
-        let stringify = JSON.stringify(obj, null, 2);
-        let encoded = encodeURIComponent(stringify);
+    export const makeDownloadable = (jwt: string): string => {
+        let encoded = encodeURIComponent(jwt);
         return `data:application/json;charset=utf-8,${encoded}`;
     };
     // TODO: REMOVE JANKINESS.
@@ -26,10 +25,10 @@
             <IconLink
                 class="block w-4 h-4"
                 icon={DownloadIcon}
-                href={makeDownloadable(JSON.parse(credential))}
+                href={makeDownloadable(credential)}
                 download={`${claim.credential_type}_${
                     credentialToDisplay(credential).address
-                }.json`}
+                }.jwt`}
             />
         {/each}
         {#if claim.credentials.length == 0}

@@ -9,7 +9,7 @@ use ssi::{
 	did_resolve::DIDResolver,
 	jwk::{Base64urlUInt, Params, JWK},
 	one_or_many::OneOrMany,
-	vc::{Credential, LinkedDataProofOptions, Proof, URI},
+	vc::{Check, Credential, LinkedDataProofOptions, Proof, URI},
 };
 use url::Url;
 
@@ -81,6 +81,27 @@ impl Signer<Ed25519> for Ed25519DidWebJwk {
 	async fn sign_vc(&self, vc: &mut Credential) -> Result<(), SignerError> {
 		vc.proof = self.proof(vc).await?;
 		Ok(())
+	}
+
+	async fn generate_jwt(&self, vc: &Credential) -> Result<String, SignerError> {
+		Ok(vc
+			.generate_jwt(
+				Some(&self.key),
+				&LinkedDataProofOptions {
+					checks: None,
+					created: None,
+					eip712_domain: None,
+					type_: None,
+					verification_method: Some(URI::String(format!(
+						"{}#{}",
+						self.signer_type.did_id()?,
+						self.key_name
+					))),
+					..Default::default()
+				},
+				&DIDWeb,
+			)
+			.await?)
 	}
 
 	async fn proof(&self, vc: &Credential) -> Result<Option<OneOrMany<Proof>>, SignerError> {

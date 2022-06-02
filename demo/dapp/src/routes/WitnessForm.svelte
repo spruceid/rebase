@@ -6,7 +6,7 @@
         Claim,
     } from "../util";
     import { Link } from "svelte-navigator";
-    import { claims, witnessState } from "../util";
+    import { claims, parseJWT, witnessState } from "../util";
     import { onMount } from "svelte";
 
     // TODO: Handle this elsewhere?
@@ -200,6 +200,7 @@
             default:
                 throw new Error(`${type} flow is currently unsupported`);
         }
+
         let b = JSON.stringify({ proof: opts });
         console.log(b);
 
@@ -215,9 +216,11 @@
             throw new Error(`failed in getStatement: ${res.statusText}`);
         }
 
-        let credential = await res.json();
+        let {jwt} = await res.json();
+        console.log("JWT!!!")
+        console.log(jwt)
 
-        setNew(JSON.stringify(credential))
+        setNew(jwt)
     };
 </script>
 
