@@ -4,30 +4,25 @@
         Instructions,
         Workflow,
         Claim,
-    } from "../util";
+    } from "../../util";
     import { Link } from "svelte-navigator";
-    import { claims, parseJWT, witnessState } from "../util";
+    import {
+        claims,
+        witnessState,
+        currentSigner,
+        Signer,
+        SignerType,
+    } from "../../util";
     import { onMount } from "svelte";
-
-    // TODO: Handle this elsewhere?
-    import { ethers } from "ethers";
-    import Web3Modal from "web3modal";
 
     // TODO: Make this an ENV?
     const witnessUrl = "http://localhost:8787";
 
-    const providerOptions = {
-        /* See Provider Options Section */
-    };
-
-    const web3Modal = new Web3Modal({
-        network: "mainnet",
-        cacheProvider: true,
-        providerOptions,
-    });
-
     let c: Array<Claim> = [];
     claims.subscribe((x) => (c = x));
+
+    let _currentSigner: [SignerType, Signer] = null;
+    currentSigner.subscribe((x) => (_currentSigner = x));
 
     const setNew = (credential: string) => {
         let next: Array<Claim> = [];
@@ -50,8 +45,6 @@
     $: statement = "";
     $: signature = "";
     $: delimitor = "";
-    $: provider = null;
-    $: signer = null;
 
     // TODO: Change to statment + proof types.
     $: handle = "";
@@ -63,44 +56,6 @@
 
     let state: Workflow = "statement";
     witnessState.subscribe((x) => (state = x));
-
-    // TODO: Handle as Signer in store.
-    const connect = async () => {
-        errMsg = "";
-        try {
-            const instance = await web3Modal.connect();
-            provider = new ethers.providers.Web3Provider(instance);
-            signer = provider.getSigner();
-
-            if (signer) {
-                let addresses = await provider.listAccounts();
-                if (addresses.length > 0) {
-                    address = addresses[0];
-                } else {
-                    errMsg = "User Cancelled Connect";
-                    return;
-                }
-            } else {
-                errMsg = "No ethereum provider detected";
-            }
-        } catch (e) {
-            errMsg = `${e.message}`;
-        }
-    };
-
-    const sign = async () => {
-        if (!signer) {
-            errMsg = "No signer connected";
-            return;
-        }
-        // TODO: Correctly assign this.
-        try {
-            signature = await signer.signMessage(statement);
-            errMsg = "";
-        } catch (e) {
-            errMsg = `${e.message}`;
-        }
-    };
 
     onMount(async () => {
         witnessState.set("statement");
@@ -132,7 +87,7 @@
         return {
             pkh: {
                 eip115: {
-                    address,
+                    address: _currentSigner[1].id(),
                     chain_id: "1",
                 },
             },
@@ -202,7 +157,6 @@
         }
 
         let b = JSON.stringify({ proof: opts });
-        console.log(b);
 
         let res = await fetch(`${witnessUrl}/witness?type=${type}`, {
             method: "POST",
@@ -216,19 +170,21 @@
             throw new Error(`failed in getStatement: ${res.statusText}`);
         }
 
-        let {jwt} = await res.json();
-        console.log("JWT!!!")
-        console.log(jwt)
+        let { jwt } = await res.json();
 
-        setNew(jwt)
+        setNew(jwt);
     };
+
+    const sign = async () => {
+        signature = await _currentSigner[1].sign(statement);
+    }
 </script>
 
 <div>
     {#if errMsg}
         <p>{errMsg}</p>
     {/if}
-    {#if signer}
+    {#if _currentSigner}
         <div>
             <h4>Step 1: Generate a statement</h4>
             <p>{instructions.statement}</p>
@@ -307,6 +263,5 @@
         {/if}
     {:else}
         <div>Connect Signer to Create Credential</div>
-        <button on:click={connect}>Connect Provider</button>
     {/if}
 </div>
