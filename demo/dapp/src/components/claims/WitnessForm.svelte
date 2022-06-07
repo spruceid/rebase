@@ -15,8 +15,9 @@
     } from "../../util";
     import { onMount } from "svelte";
 
-    // TODO: Make this an ENV?
+    // TODO: Make these an ENV?
     const witnessUrl = "http://localhost:8787";
+    const prefix = "rebase_sig";
 
     let c: Array<Claim> = [];
     claims.subscribe((x) => (c = x));
@@ -41,7 +42,6 @@
     export let instructions: Instructions;
 
     $: errMsg = "";
-    $: address = "";
     $: statement = "";
     $: signature = "";
     $: delimitor = "";
@@ -51,7 +51,14 @@
     $: proof = "";
 
     const post = (): string => {
-        return `${statement}${delimitor}${signature}`;
+        switch (type) {
+            case "discord":
+            case "github":
+            case "twitter":
+                return `${statement}${delimitor}${signature}`;
+            case "dns":
+                return `${prefix}${delimitor}${signature}`;
+        }
     };
 
     let state: Workflow = "statement";
@@ -83,6 +90,7 @@
         };
     }
 
+    // TODO: Move to store?
     const getKeyType = (): KeyType => {
         return {
             pkh: {
@@ -100,6 +108,11 @@
         opts[type] = {};
 
         switch (type) {
+            case "dns":
+                opts[type]["domain"] = handle;
+                opts[type]["prefix"] = prefix;
+                opts[type]["key_type"] = getKeyType();
+                break;
             case "github":
             case "twitter":
                 opts[type]["handle"] = handle;
@@ -138,6 +151,12 @@
         let opts = {};
 
         switch (type) {
+            case "dns":
+                opts["dns"] = {};
+                opts["dns"]["domain"] = handle;
+                opts["dns"]["prefix"] = prefix;
+                opts["dns"]["key_type"] = getKeyType();
+                break;
             case "github":
                 opts["github"] = {};
                 opts["github"]["statement_opts"] = {};
@@ -177,10 +196,10 @@
 
     const sign = async () => {
         signature = await _currentSigner[1].sign(statement);
-    }
+    };
 </script>
 
-<div>
+<div class="inner-center">
     {#if errMsg}
         <p>{errMsg}</p>
     {/if}
@@ -235,14 +254,16 @@
                 <p>{instructions.witness}</p>
                 <label for="post">Post</label>
                 <textarea value={post()} name="post" disabled />
-                <label for={instructions.witness_label}
-                    >{instructions.witness_label}</label
-                >
-                <input
-                    bind:value={proof}
-                    name={instructions.witness_label}
-                    type="text"
-                />
+                {#if type === "twitter" || type === "github" || type === "discord"}
+                    <label for={instructions.witness_label}
+                        >{instructions.witness_label}</label
+                    >
+                    <input
+                        bind:value={proof}
+                        name={instructions.witness_label}
+                        type="text"
+                    />
+                {/if}
                 <button
                     disabled={state !== "witness"}
                     on:click={async () => {
@@ -265,3 +286,18 @@
         <div>Connect Signer to Create Credential</div>
     {/if}
 </div>
+
+<style>
+    .viewer {
+        height: 70vh;
+        width: 75vh;
+        background-color: white;
+    }
+    .inner-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 5vh;
+        margin-right: 5vh;
+    }
+</style>

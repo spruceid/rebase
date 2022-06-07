@@ -19,12 +19,29 @@
     });
 </script>
 
-<div>
+<div class="viewer">
     {#if loading}
-        <p>Building workflow...</p>
+        <p class="inner-center">Building workflow...</p>
     {:else if errMsg}
-        <p>Error encountered: ${errMsg}</p>
+        <p class="inner-center">Error encountered: ${errMsg}</p>
     {:else}
         <WitnessForm {type} instructions={inst} />
     {/if}
 </div>
+
+
+<style>
+    .viewer {
+        height: 70vh;
+        width: 75vh;
+        background-color: white;
+    }
+    .inner-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 5vh;
+        margin-right: 5vh;
+    }
+</style>
+
