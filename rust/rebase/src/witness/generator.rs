@@ -1,9 +1,11 @@
 use crate::{
+    schema::schema_type::SchemaType,
     signer::signer::{Signer, SignerType},
     witness::{
         dns::ClaimGenerator as DnsGen,
         github::ClaimGenerator as GithubGen,
         proof_type::ProofTypes,
+        self_signed::Claim as SelfSignedClaim,
         twitter::ClaimGenerator as TwitterGen,
         witness::{Generator, WitnessError},
     },
@@ -41,6 +43,20 @@ impl WitnessGenerator {
     ) -> Result<Credential, WitnessError> {
         match proof {
             ProofTypes::Dns(x) => self.dns.credential(x, signer).await,
+            ProofTypes::SelfSigned(x) => {
+                // Validates inner signature by creating
+                let claim = SelfSignedClaim::new(
+                    x.statement_opts.clone(),
+                    x.signature_1.clone(),
+                    x.signature_2.clone(),
+                )
+                .await?;
+
+                claim
+                    .credential(signer)
+                    .await
+                    .map_err(|e| WitnessError::SchemaError(e))
+            }
             ProofTypes::GitHub(x) => match &self.github {
                 Some(gen) => gen.credential(x, signer).await,
                 _ => Err(WitnessError::NoWitnessConfig {
@@ -63,6 +79,20 @@ impl WitnessGenerator {
     ) -> Result<String, WitnessError> {
         match proof {
             ProofTypes::Dns(x) => self.dns.jwt(x, signer).await,
+            ProofTypes::SelfSigned(x) => {
+                // Validates inner signature by creating
+                let claim = SelfSignedClaim::new(
+                    x.statement_opts.clone(),
+                    x.signature_1.clone(),
+                    x.signature_2.clone(),
+                )
+                .await?;
+
+                claim
+                    .jwt(signer)
+                    .await
+                    .map_err(|e| WitnessError::SchemaError(e))
+            }
             ProofTypes::GitHub(x) => match &self.github {
                 Some(gen) => gen.jwt(x, signer).await,
                 _ => Err(WitnessError::NoWitnessConfig {

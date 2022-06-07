@@ -3,7 +3,6 @@ extern crate rebase;
 use rebase::schema::schema_type::SchemaType;
 use rebase::signer::signer::Signer;
 use serde_json::to_string;
-use ssi::jwk::JWK;
 use std::env;
 use std::fs::OpenOptions;
 use std::io::{stdin, stdout, Write};

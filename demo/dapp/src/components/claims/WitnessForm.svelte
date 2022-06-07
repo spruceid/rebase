@@ -7,23 +7,28 @@
     } from "../../util";
     import { Link } from "svelte-navigator";
     import {
+        _currentType,
+        _signerMap,
+        currentType,
+        signerMap,
         claims,
+        getKeyType,
         witnessState,
-        currentSigner,
+        sign,
         Signer,
-        SignerType,
     } from "../../util";
     import { onMount } from "svelte";
 
     // TODO: Make these an ENV?
     const witnessUrl = "http://localhost:8787";
-    const prefix = "rebase_sig";
+    const dnsPrefix = "rebase_sig";
+
+    let signer: Signer | false = false;
+    currentType.subscribe((x) => (signer = _signerMap[x]));
+    signerMap.subscribe((x) => (signer = x[_currentType]));
 
     let c: Array<Claim> = [];
     claims.subscribe((x) => (c = x));
-
-    let _currentSigner: [SignerType, Signer] = null;
-    currentSigner.subscribe((x) => (_currentSigner = x));
 
     const setNew = (credential: string) => {
         let next: Array<Claim> = [];
@@ -57,7 +62,7 @@
             case "twitter":
                 return `${statement}${delimitor}${signature}`;
             case "dns":
-                return `${prefix}${delimitor}${signature}`;
+                return `${dnsPrefix}${delimitor}${signature}`;
         }
     };
 
@@ -81,36 +86,14 @@
         }
     };
 
-    interface KeyType {
-        pkh: {
-            eip115: {
-                address: string;
-                chain_id: string;
-            };
-        };
-    }
-
-    // TODO: Move to store?
-    const getKeyType = (): KeyType => {
-        return {
-            pkh: {
-                eip115: {
-                    address: _currentSigner[1].id(),
-                    chain_id: "1",
-                },
-            },
-        };
-    };
-
     const getStatement = async (): Promise<void> => {
-        // TODO: Fetch from worker.
         let opts = {};
         opts[type] = {};
 
         switch (type) {
             case "dns":
                 opts[type]["domain"] = handle;
-                opts[type]["prefix"] = prefix;
+                opts[type]["prefix"] = dnsPrefix;
                 opts[type]["key_type"] = getKeyType();
                 break;
             case "github":
@@ -138,8 +121,9 @@
 
         let body = await res.json();
         if (!body.statement || !body.delimitor) {
-            errMsg = "Did not find statement and delimitor in response.";
-            return;
+            throw new Error(
+                "Did not find statement and delimitor in response."
+            );
         }
 
         statement = body.statement;
@@ -147,14 +131,13 @@
     };
 
     const getCredential = async (): Promise<void> => {
-        // TODO: WORK FROM HERE.
         let opts = {};
 
         switch (type) {
             case "dns":
                 opts["dns"] = {};
                 opts["dns"]["domain"] = handle;
-                opts["dns"]["prefix"] = prefix;
+                opts["dns"]["prefix"] = dnsPrefix;
                 opts["dns"]["key_type"] = getKeyType();
                 break;
             case "github":
@@ -176,7 +159,6 @@
         }
 
         let b = JSON.stringify({ proof: opts });
-
         let res = await fetch(`${witnessUrl}/witness?type=${type}`, {
             method: "POST",
             headers: new Headers({
@@ -186,113 +168,118 @@
         });
 
         if (!res.ok || res.status !== 200) {
-            throw new Error(`failed in getStatement: ${res.statusText}`);
+            throw new Error(`failed in getCredential: ${res.statusText}`);
         }
 
         let { jwt } = await res.json();
 
         setNew(jwt);
     };
-
-    const sign = async () => {
-        signature = await _currentSigner[1].sign(statement);
-    };
 </script>
 
-<div class="inner-center">
-    {#if errMsg}
-        <p>{errMsg}</p>
-    {/if}
-    {#if _currentSigner}
-        <div>
-            <h4>Step 1: Generate a statement</h4>
-            <p>{instructions.statement}</p>
-            <label for={instructions.statement_label}
-                >{instructions.statement_label}</label
-            >
-            <input
-                disabled={state !== "statement"}
-                bind:value={handle}
-                name={instructions.statement_label}
+{#if errMsg}
+    <p class="inner-center">{errMsg}</p>
+{/if}
+{#if signer}
+    <h4 class="inner-center">Step 1: Generate a statement</h4>
+    <p class="inner-center">{instructions.statement}</p>
+    <div class="inner-center">
+        <label for={instructions.statement_label} class="inner-center"
+            >{instructions.statement_label}</label
+        >
+        <input
+            class="inner-center"
+            disabled={state !== "statement"}
+            bind:value={handle}
+            name={instructions.statement_label}
+            type="text"
+        />
+    </div>
+    <div class="inner-center">
+        <button
+            disabled={state !== "statement"}
+            on:click={async () => {
+                try {
+                    await getStatement();
+                    advance();
+                } catch (e) {
+                    errMsg = e.message;
+                }
+            }}>Generate Statement</button
+        >
+    </div>
+    {#if state !== "statement"}
+        <h4 class="inner-center">Step 2: Sign the statement</h4>
+        <p class="inner-center">{instructions.signature}</p>
+        <div class="inner-center">
+            <textarea
+                name="statement_display"
                 type="text"
+                disabled
+                value={statement}
             />
+        </div>
+        <div class="inner-center">
             <button
-                disabled={state !== "statement"}
+                disabled={state !== "signature"}
                 on:click={async () => {
                     try {
-                        await getStatement();
+                        await sign(statement);
                         advance();
                     } catch (e) {
-                        errMsg = e.message;
+                        errMsg = `${e?.message ? e.message : e}`;
                     }
-                }}>Generate Statement</button
+                }}>Sign Statement</button
             >
         </div>
-        {#if state !== "statement"}
-            <div>
-                <h4>Step 2: Sign the statement</h4>
-                <p>{instructions.signature}</p>
-                <!-- TODO: Fill with statement here -->
-                <textarea
-                    name="statement_display"
-                    type="text"
-                    disabled
-                    value={statement}
-                />
-                <button
-                    disabled={state !== "signature"}
-                    on:click={async () => {
-                        await sign();
-                        advance();
-                    }}>Sign Statement</button
+    {/if}
+    {#if state === "witness" || state === "complete"}
+        <h4 class="inner-center">Step 3: Show the Witness</h4>
+        <p class="inner-center">{instructions.witness}</p>
+        <div class="inner-center">
+            <label for="post">Post</label>
+            <textarea value={post()} name="post" disabled />
+        </div>
+        {#if type === "twitter" || type === "github" || type === "discord"}
+            <div class="inner-center">
+                <label for={instructions.witness_label}
+                    >{instructions.witness_label}</label
                 >
+                <input
+                    bind:value={proof}
+                    name={instructions.witness_label}
+                    type="text"
+                />
             </div>
         {/if}
-        {#if state === "witness" || state === "complete"}
-            <div>
-                <h4>Step 3: Show the witness</h4>
-                <p>{instructions.witness}</p>
-                <label for="post">Post</label>
-                <textarea value={post()} name="post" disabled />
-                {#if type === "twitter" || type === "github" || type === "discord"}
-                    <label for={instructions.witness_label}
-                        >{instructions.witness_label}</label
-                    >
-                    <input
-                        bind:value={proof}
-                        name={instructions.witness_label}
-                        type="text"
-                    />
-                {/if}
-                <button
-                    disabled={state !== "witness"}
-                    on:click={async () => {
+        <div class="inner-center">
+            <button
+                disabled={state !== "witness"}
+                on:click={async () => {
+                    try {
                         await getCredential();
                         advance();
-                    }}>Generate Credential</button
-                >
-            </div>
-        {/if}
-        {#if state === "complete"}
-            <div>
-                <h4>Step 4: Complete!</h4>
-                <p>
-                    Please return to the <Link to="/account">main page</Link> to
-                    download your credential
-                </p>
-            </div>
-        {/if}
-    {:else}
-        <div>Connect Signer to Create Credential</div>
+                    } catch (e) {
+                        errMsg = `${e?.message ? e.message : e}`;
+                    }
+                }}>Generate Credential</button
+            >
+        </div>
     {/if}
-</div>
+    {#if state === "complete"}
+        <div class="inner-center">
+            <h4>Step 4: Complete!</h4>
+            <p>
+                Please return to the <Link to="/account">main page</Link> to download
+                your credential
+            </p>
+        </div>
+    {/if}
+{:else}
+    <div class="inner-center">Connect Signer to Create Credential</div>
+{/if}
 
 <style>
-    .viewer {
-        height: 70vh;
-        width: 75vh;
-        background-color: white;
-    }
     .inner-center {
         display: flex;
         justify-content: center;

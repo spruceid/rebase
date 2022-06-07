@@ -2,7 +2,7 @@ import type { DiscordIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, Sol
 import { parseJWT } from './jwt';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
-export type CredentialType = "twitter" | "discord" | "github" | "dns"
+export type CredentialType = "twitter" | "discord" | "github" | "dns" | "self_signed"
 export type ClaimIcon = typeof TwitterIcon 
     | typeof EthereumIcon 
     | typeof DiscordIcon 
@@ -52,6 +52,28 @@ export const credentialToDisplay = (jwt: string): CredentialDisplay => {
                 type: "basic_public",
                 handle,
                 address
+            }
+        }
+        case "DnsVerification": {
+            let domain = vc?.credentialSubject?.sameAs;
+            let did = vc?.credentialSubject?.id;
+            let address = did.split(":")[did.split(":").length - 1]
+            return {
+                type: "basic_public",
+                handle: domain.replace("dns:", ""),
+                address
+            }
+        }
+        case "SelfSignedControl": {
+            let key1 = vc?.credentialSubject?.id;
+            let key2 = vc?.credentialSubject?.sameAs;
+            let handle = key1.split(":")[key1.split(":").length - 1]
+            let address = key2.split(":")[key2.split(":").length - 1]
+
+            return {
+                type: "basic_public",
+                handle,
+                address,
             }
         }
         default:

@@ -7,8 +7,10 @@ export interface Signer {
 };
 
 export type SignerType = "ethereum"; // | "tezos" | "solana" | "etc"
+export const signerTypes: Array<SignerType> = ["ethereum"];
 
-export type SignerMap = Record<SignerType, Record<string, Signer>>;
+export type SignerMap = Record<SignerType, Signer | false>;
+
 
 export const connectSigner = async (signerType: SignerType): Promise<Signer> => {
     switch (signerType) {
@@ -19,9 +21,10 @@ export const connectSigner = async (signerType: SignerType): Promise<Signer> => 
 
             const web3Modal = new Web3Modal({
                 network: "mainnet",
-                cacheProvider: true,
+                cacheProvider: false,
                 providerOptions,
             });
+
             const instance = await web3Modal.connect();
             const provider = new ethers.providers.Web3Provider(instance);
             const s = provider.getSigner();
@@ -46,3 +49,24 @@ export const connectSigner = async (signerType: SignerType): Promise<Signer> => 
             throw new Error(`Unknown signerType: ${signerType}`);
     }
 };
+
+export const disconnectSigner = async (signerType: SignerType): Promise<void> => {
+    switch (signerType) {
+        case "ethereum": 
+            const providerOptions = {
+                /* See Provider Options Section */
+            };
+
+            const web3Modal = new Web3Modal({
+                network: "mainnet",
+                cacheProvider: true,
+                providerOptions,
+            });
+
+            await web3Modal.clearCachedProvider();
+
+            return;
+        default:
+            throw new Error(`Unknown signerType: ${signerType}`);
+    }
+}

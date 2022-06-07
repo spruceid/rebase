@@ -3,6 +3,7 @@
     import { instructions } from "../util";
     import { onMount } from "svelte";
     import WitnessForm from "../components/claims/WitnessForm.svelte";
+    import SelfSignedForm from "../components/claims/SelfSignedForm.svelte";
 
     export let type: CredentialType;
     $: inst = null;
@@ -11,7 +12,9 @@
 
     onMount(async () => {
         try {
-            inst = await instructions(type);
+            if (type !== "self_signed") {
+                inst = await instructions(type);
+            }
             loading = false;
         } catch (e) {
             errMsg = `${e.message}`;
@@ -24,6 +27,8 @@
         <p class="inner-center">Building workflow...</p>
     {:else if errMsg}
         <p class="inner-center">Error encountered: ${errMsg}</p>
+    {:else if type === "self_signed"}
+        <SelfSignedForm />
     {:else}
         <WitnessForm {type} instructions={inst} />
     {/if}
@@ -32,7 +37,7 @@
 
 <style>
     .viewer {
-        height: 70vh;
+        height: 80vh;
         width: 75vh;
         background-color: white;
     }

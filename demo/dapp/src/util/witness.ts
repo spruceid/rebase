@@ -1,5 +1,12 @@
 import type { CredentialType } from "./claim";
-
+export interface KeyType {
+    pkh: {
+        eip115: {
+            address: string;
+            chain_id: string;
+        };
+    };
+}
 export type Workflow = "statement" | "signature" | "witness" | "complete"
 
 export type Instructions = {

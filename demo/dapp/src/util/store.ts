@@ -1,8 +1,8 @@
 import { writable, Writable } from "svelte/store";
 import { DiscordIcon, EthereumIcon, GlobeIcon, TwitterIcon, GitHubIcon, SolanaIcon } from '../components/icons';
 import type {Claim} from "./claim";
-import {connectSigner, Signer, SignerMap, SignerType} from "./signer";
-import type { Workflow } from "./witness";
+import {connectSigner, disconnectSigner, Signer, SignerMap, SignerType} from "./signer";
+import type { KeyType, Workflow } from "./witness";
 
 // TODO: Break into UI file?
 export type AccountState = "available" | "obtained";
@@ -42,30 +42,72 @@ export let claims: Writable<Array<Claim>> = writable([
         icon: GitHubIcon,
         title: "Github",
         type: "public"
+    },
+    {
+        credentials: [],
+        credential_type: "self_signed",
+        icon: GlobeIcon,
+        title: "Self Signed",
+        type: "public"
     }
 ]);
 
-export let signerMap: Writable<SignerMap> = writable({"ethereum": {}});
-export let _signerMap: SignerMap = {"ethereum": {}};
+export let currentType: Writable<SignerType> = writable("ethereum");
+export let _currentType: SignerType = "ethereum";
+currentType.subscribe(x => (_currentType = x));
+
+export let signerMap: Writable<SignerMap> = writable({"ethereum": false});
+export let _signerMap: SignerMap = {"ethereum": false};
 signerMap.subscribe(x => (_signerMap = x));
 
-export let currentSigner: Writable<[SignerType, Signer]> = writable(null);
+export let signer: Signer | false = false;
+currentType.subscribe(x => (signer = _signerMap[x]));
+signerMap.subscribe(x => (signer = x[_currentType]));
 
-export const connectNewSigner = async (signerType: SignerType): Promise<void> => {
-    let signer = await connectSigner(signerType);
+export const getKeyType = (): KeyType => {
+    if (!signer) {
+        throw new Error("No signer set");
+    }
+
+    switch (_currentType)  {
+        case "ethereum": 
+        return {
+            pkh: {
+                eip115: {
+                    address: signer.id(),
+                    chain_id: "1",
+                },
+            },
+        }
+    };
+};
+
+export const connect = async (): Promise<void> => {
+    let s = await connectSigner(_currentType);
     let next = Object.assign({}, _signerMap);
 
-    next[signerType][signer.id()] = signer;
+    next[_currentType] = s;
 
     signerMap.set(next);
-    currentSigner.set([signerType, signer]);
 }
 
-export const signWith = async (signerType: SignerType, id: string, statement: string): Promise<string> => {
-    let t = _signerMap[signerType];
-    let s = t[id];
-    if (!s) {
-        throw new Error(`Failed to find a ${signerType} signer at id: ${id}`)
+export const disconnect = async (): Promise<void> => {
+    if (!_signerMap[_currentType]) {
+        return
     }
+
+    let next = Object.assign({}, _signerMap);
+    next[_currentType] = false;
+    signerMap.set(next);
+
+    await disconnectSigner(_currentType);
+};
+
+export const sign = async (statement: string): Promise<string> => {
+    let s = _signerMap[_currentType];
+    if (!s) {
+        throw new Error(`No signer for current type: ${_currentType}`);
+    }
+    
     return s.sign(statement);
 }

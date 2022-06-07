@@ -1,97 +1,85 @@
 <script lang="ts">
     import {
-        connectNewSigner,
-        SignerType,
+        _currentType,
+        _signerMap,
+        currentType,
+        connect,
+        disconnect,
+        signerTypes,
         signerMap,
-        SignerMap,
         Signer,
-        currentSigner,
+        SignerType,
     } from "../util";
 
-    const newOpts: Array<SignerType> = ["ethereum"];
-    const currentOpts: Array<SignerType> = ["ethereum"];
-
-    $: newSigner = "";
-    $: currentType = "";
-    $: currentId = "";
     $: errMsg = "";
+    $: nextType = "ethereum";
+    $: showChangeConx = false;
 
-    let _signerMap: SignerMap = { ethereum: {} };
-    signerMap.subscribe((x) => (_signerMap = x));
-
-    let _currentSigner: [SignerType, Signer] = null;
-    currentSigner.subscribe((x) => (_currentSigner = x));
+    let signer: Signer | false = false;
+    currentType.subscribe((x) => (signer = _signerMap[x]));
+    signerMap.subscribe((x) => (signer = x[_currentType]));
 
     const connectNew = async (): Promise<void> => {
         try {
-            await connectNewSigner(newSigner as SignerType);
+            currentType.set(nextType as SignerType);
+            await connect();
         } catch (e) {
             errMsg = `${e?.message ? e.message : e}`;
         }
-    };
-
-    const useExisting = async () => {
-        let t = _signerMap[currentType];
-        if (!t) {
-            errMsg = `No signers for ${currentType} found in existing.`
-            return;
-        }
-        let s = t[currentId];
-        if (!s) {
-            errMsg = `No signers with id ${currentId} found in existing.`
-            return;
-        }
-
-        currentSigner.set([currentType as SignerType, s]);
     };
 </script>
 
 <div class="viewer">
     {#if errMsg}
         <p class="inner-center">
-            ERROR: {errMsg}
+            {errMsg}
         </p>
     {/if}
     <div class="inner-center">
-        <label for="connect-new">Connect New Signer: </label>
-        <select name="connect-new" bind:value={newSigner}>
-            {#each newOpts as opt}
-                <option value={opt}>{opt}</option>
-            {/each}
-        </select>
-        <button on:click={connectNew}>Connect</button>
-    </div>
-    <div class="inner-center">
-        {#if _currentSigner}
+        {#if signer}
             <h5>
-                Currently using {_currentSigner[0]} signer: {_currentSigner[1].id()}
+                Currently using {_currentType} signer: {signer.id()}
             </h5>
         {:else}
             <h3>No Signer Connected</h3>
         {/if}
     </div>
-    <div class="inner-center">
-        Use connected <select name="signer-type" bind:value={currentType}>
-            {#each currentOpts as opt}
-                <option value={opt}>{opt}</option>
-            {/each}
-        </select>
-        signer:
-        {#if !_signerMap || !_signerMap[currentType] || Object.keys(_signerMap[currentType]).length <= 0}
-            -- No signers connected.
-        {:else}
-            <select name="signer-id" bind:value={currentId}>
-                {#each Object.keys(_signerMap[currentType]) as id}
-                    <option value={id}>{id}</option>
+    {#if signer}
+        <div class="inner-center">
+            {#if !showChangeConx}
+                Change Connection? <button
+                    name="show-change-connection"
+                    on:click={() => (showChangeConx = true)}>Yes!</button
+                >
+            {:else}
+                Hide Connection Options? <button
+                    name="hide-change-connection"
+                    on:click={() => (showChangeConx = false)}>Hide</button
+                >
+            {/if}
+        </div>
+    {/if}
+
+    {#if signer}
+        <div class="inner-center">
+            Disconnect Current Signer <button
+                name="disconnect-current-signer"
+                on:click={disconnect}>Disconnect</button
+            >
+        </div>
+    {/if}
+
+    {#if !signer || showChangeConx}
+        <div class="inner-center">
+            <label for="signer-type">Select Signer Type To Connect</label>
+            <select name="signer-type" bind:value={nextType}>
+                {#each signerTypes as t}
+                    <option id={t}>{t}</option>
                 {/each}
             </select>
-        {/if}
-        {#if currentId && currentType}
-            <button name="use-existing-signer" on:click={useExisting}
-                >Use This Signer</button
-            >
-        {/if}
-    </div>
+            <button name="connect" on:click={connectNew}>Connect</button>
+        </div>
+    {/if}
 </div>
 
 <style>
