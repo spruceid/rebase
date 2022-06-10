@@ -26,7 +26,7 @@
 
 <style>
 	.bg {
-		height: 100vh;
+		height: 200vh;
 		background-color: lightgray;
 	}
 	.centered {

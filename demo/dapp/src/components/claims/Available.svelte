@@ -7,7 +7,6 @@
     // let sfClaims: Array<Claim> = [];
 
     claims.subscribe((x) => {
-        bcClaims = x.filter((claim) => claim.type === "blockchain");
         pbClaims = x.filter((claim) => claim.type === "public");
         // sfClaims = x.filter((claim) => claim.type === "self_attested");
     });
