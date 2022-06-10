@@ -2,7 +2,7 @@
     import type { CredentialType } from "../util";
     import { instructions } from "../util";
     import { onMount } from "svelte";
-    import WitnessForm from "./WitnessForm.svelte";
+    import WitnessForm from "../components/claims/WitnessForm.svelte";
 
     export let type: CredentialType;
     $: inst = null;

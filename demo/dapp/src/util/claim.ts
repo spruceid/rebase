@@ -1,14 +1,14 @@
-import type { DiscordIcon, EthereumIcon, TwitterIcon, GitHubIcon, SolanaIcon } from '../components/icons';
+import type { DiscordIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon } from '../components/icons';
 import { parseJWT } from './jwt';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
-export type Issuer = "witness" | "local";
 export type CredentialType = "twitter" | "discord" | "github" | "dns"
 export type ClaimIcon = typeof TwitterIcon 
     | typeof EthereumIcon 
     | typeof DiscordIcon 
     | typeof GitHubIcon
-    | typeof SolanaIcon;
+    | typeof SolanaIcon
+    | typeof GlobeIcon;
 
 export type BasicPublic = {
     type: "basic_public"
@@ -64,7 +64,6 @@ export type Claim = {
     credentials: Array<string>,
     credential_type: CredentialType,
     icon: ClaimIcon,
-    issuer: Issuer,
     title: string,
     type: ClaimType,
 }
