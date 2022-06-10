@@ -1,64 +1,14 @@
-# svelte app
+# Rebase Dapp Demo
 
-This is a project template for [Svelte](https://svelte.dev) apps. It lives at https://github.com/sveltejs/template-webpack.
+This is a thin client for usage with the witness service found in `rebase/demo/witness`. Running locally should be as simple as `cd`ing to this directory then:
 
-To create a new project based on this template using [degit](https://github.com/Rich-Harris/degit):
-
-```bash
-npx degit sveltejs/template-webpack svelte-app
-cd svelte-app
+```
+$ npm i
+$ npm run dev
 ```
 
-*Note that you will need to have [Node.js](https://nodejs.org) installed.*
+Then the UI should be running on `localhost:8080` and simple to operate. Signers (currently limited to Ethereum) can be connected through the header and claims can be created by visiting the `available` option at the top of the body.
 
+The witness flows should contain sufficient instructions for a user to follow. If using the default configuration, `rebase/demo/witness` will need to be running on `localhost:8787`. If using a different witness, change the const `witnessUrl` in `demo/dapp/src/components/claims/WitnessForm.svelte` to the location of the witness you want to use.
 
-## Get started
-
-Install the dependencies...
-
-```bash
-cd svelte-app
-npm install
-```
-
-...then start webpack:
-
-```bash
-npm run dev
-```
-
-Navigate to [localhost:8080](http://localhost:8080). You should see your app running. Edit a component file in `src`, save it, and the page should reload with your changes.
-
-
-## Deploying to the web
-
-### With [now](https://zeit.co/now)
-
-Install `now` if you haven't already:
-
-```bash
-npm install -g now
-```
-
-Then, from within your project folder:
-
-```bash
-now
-```
-
-As an alternative, use the [Now desktop client](https://zeit.co/download) and simply drag the unzipped project folder to the taskbar icon.
-
-### With [surge](https://surge.sh/)
-
-Install `surge` if you haven't already:
-
-```bash
-npm install -g surge
-```
-
-Then, from within your project folder:
-
-```bash
-npm run build
-surge public
-```
+In the future, there may be a more abstract way of handling witness flows, but for now, `WitnessForm` switches on the type and changes the instructions accordingly.
