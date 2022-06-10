@@ -29,13 +29,13 @@ export let claims: Writable<Array<Claim>> = writable([
     //     title: "Discord",
     //     type: "public"
     // },
-    // {
-    //     credentials: [], 
-    //     credential_type: "dns",
-    //     icon: GlobeIcon,
-    //     title: "Discord",
-    //     type: "public"
-    // },
+    {
+        credentials: [], 
+        credential_type: "dns",
+        icon: GlobeIcon,
+        title: "DNS",
+        type: "public"
+    },
     {
         credentials: [],
         credential_type: "github",

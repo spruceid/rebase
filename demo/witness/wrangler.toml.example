@@ -1,9 +1,6 @@
-name = "tzprofiles_witness"
+name = "rebase_self_serve_demo"
 type = "rust"
 account_id = ""
 workers_dev = true
-route = ""
+route = "rebase_self_serve_demo"
 zone_id = ""
-kv_namespaces = [
-    { binding = "INSTAGRAM_CLAIM", preview_id = "", id = "" }
-]
