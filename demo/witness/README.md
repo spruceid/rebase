@@ -1,6 +1,6 @@
 # Tezos Profiles Witness
 
-A Cloudflare Worker to witness public attestations of ownership of a Tezos account.
+A Cloudflare Worker to act as a witness for Rebase claims.
 
 ## Deploy
 
@@ -13,22 +13,34 @@ The worker needs two things: the private key to issue the VC after verifying the
 tweet, and an API token for the relevant social APIs. You can add these as secrets with:
 
 ```bash
-wrangler secret put TZPROFILES_ME_PRIVATE_KEY
+wrangler secret put REBASE_SK
 wrangler secret put TWITTER_BEARER_TOKEN
-wrangler secret put DISCORD_AUTHORIZATION_TOKEN
 ```
 
 > The private key is expected to be a JWK. You can generate one with
 > `didkit generate-ed25519-key`.
 
+> This key is also expected to have a corresponding `did:web` outlined
+
 ```bash
 wrangler publish
 ```
 
-> For development, you should use `wrangler dev`.
+> For development, you should use `wrangler dev`. This will launch the worker to listen on `localhost:8787`.
 
-## Test
-
-```bash
-cargo test
+Regardless of where it's deployed, the worker responds to two routes `/statement` and `/witness`, both expect a POST. The former expects the `POST` body to conform to:
+```rust
+#[derive(Deserialize, Serialize)]
+pub struct StatementReq {
+    pub opts: StatementTypes,
+}
 ```
+for Statement and for Witness:
+```rust
+#[derive(Deserialize, Serialize)]
+pub struct WitnessReq {
+    pub proof: ProofTypes,
+}
+```
+
+Details on `StatementTypes` and `ProofTypes` can be found in the top-level README and their implementations can be found in `rebase/rust/src`.

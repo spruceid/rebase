@@ -68,7 +68,7 @@ pub trait SchemaType {
     // Return the @context contents based enum variant
     fn context(&self) -> Result<serde_json::Value, SchemaError>;
 
-    // Returns the evide
+    // Returns the evidence entry for the VC
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, SchemaError>;
 
     // TODO: Better type?
