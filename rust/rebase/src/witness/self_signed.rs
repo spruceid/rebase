@@ -1,17 +1,9 @@
 use crate::schema::schema_type::{SchemaError, SchemaType};
-use crate::signer::signer::{
-    Signer, SignerError, SignerType, DID as SignerDID, EIP115, PKH as SignerPKH,
-};
-use crate::witness::{
-    signer_type::SignerTypes,
-    witness::{Statement, WitnessError},
-};
+use crate::signer::signer::{SignerType, DID as SignerDID};
+use crate::witness::{signer_type::SignerTypes, witness::WitnessError};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use ssi::{
-    one_or_many::OneOrMany,
-    vc::{Credential, Evidence},
-};
+use ssi::{one_or_many::OneOrMany, vc::Evidence};
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Opts {
@@ -61,7 +53,7 @@ impl SchemaType for Claim {
                 "sameAs": "http://schema.org/sameAs",
                 "SelfSignedControl": "https://example.com/SelfSignedControl",
                 "SelfSignedControlVerification": {
-                    "@id": "https://example.com/GitHubVerificationMessage",
+                    "@id": "https://example.com/SelfSignedControlVerification",
                     "@context": {
                         "@version": 1.1,
                         "@protected": true,
@@ -88,7 +80,9 @@ impl SchemaType for Claim {
 
         evidence_map.insert(
             "statement".to_string(),
-            serde_json::Value::String(self.statement_opts.generate_statement().map_err(|e| SchemaError::BadSubject(format!("could not format statement: {}", e)))?),
+            serde_json::Value::String(self.statement_opts.generate_statement().map_err(|e| {
+                SchemaError::BadSubject(format!("could not format statement: {}", e))
+            })?),
         );
 
         let evidence = Evidence {
@@ -98,7 +92,6 @@ impl SchemaType for Claim {
         };
 
         Ok(Some(OneOrMany::One(evidence)))
-
     }
 
     fn subject(&self) -> Result<serde_json::Value, SchemaError> {
@@ -162,12 +155,12 @@ impl Claim {
                                     let v: Vec<&str> = s.split(":").collect();
                                     if v.len() != 5 {
                                         return Err(SchemaError::BadSubject(
-                                            "could not parse did pkh eip115".to_string(),
+                                            "could not parse did pkh eip155".to_string(),
                                         ));
                                     }
 
-                                    SignerTypes::new(&SignerDID::PKH(SignerPKH::EIP115(Some(
-                                        EIP115 {
+                                    SignerTypes::new(&SignerDID::PKH(SignerPKH::EIP155(Some(
+                                        EIP155 {
                                             address: v[4].to_owned(),
                                             chain_id: v[3].to_owned(),
                                         },
