@@ -20,7 +20,8 @@
     import { onMount } from "svelte";
 
     // TODO: Make these an ENV?
-    const witnessUrl = "http://localhost:8787";
+    const witnessUrl = "https://rebasedemo.spruceid.workers.dev";
+
     const dnsPrefix = "rebase_sig";
 
     let signer: Signer | false = false;
