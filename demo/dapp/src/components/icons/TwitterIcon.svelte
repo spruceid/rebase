@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {iconColor as color} from "../../util";
+  import {iconColor as color} from "util";
 </script>
 
 <!-- NOTE: width, height set here to get around Safari bug with tailwind or SVGs?-->

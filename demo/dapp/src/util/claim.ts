@@ -1,4 +1,4 @@
-import type { DiscordIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon } from '../components/icons';
+import type { DiscordIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon } from 'components/icons';
 import { parseJWT } from './jwt';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";

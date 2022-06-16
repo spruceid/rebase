@@ -1,0 +1,32 @@
+  .button-container {
+    @apply transition delay-100 font-bold text-gray-850 bg-white px-4;
+  }
+
+  .primary-button-container {
+    @apply font-bold bg-white py-3 px-6 transition delay-100 text-gray-850 border border-purple-550;
+
+    &:hover {
+      @apply text-white transition delay-100 bg-purple-550;
+    }
+  }
+
+  .secondary-button-container {
+    @apply text-black bg-beige-2 text-black transition delay-100;
+
+    &:hover {
+      @apply bg-beige-3;
+    }
+  }
+
+  .toggle-button-container {
+    @apply w-fit m-auto transition delay-100 bg-white border border-purple-550 rounded-2xl;
+
+    & .toggle-button {
+      @apply px-4 font-bold capitalize rounded-2xl w-[100px]
+    }
+
+    & .toggle-button.selected {
+      @apply bg-purple-550 text-white
+    }
+
+  }

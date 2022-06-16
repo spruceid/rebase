@@ -1,5 +1,5 @@
 import { writable, Writable } from "svelte/store";
-import { DiscordIcon, EthereumIcon, GlobeIcon, TwitterIcon, GitHubIcon, SolanaIcon } from '../components/icons';
+import { GlobeIcon, TwitterIcon, GitHubIcon, DiscordIcon } from 'components/icons';
 import type {Claim} from "./claim";
 import {connectSigner, disconnectSigner, Signer, SignerMap, SignerType} from "./signer";
 import type { KeyType, Workflow } from "./witness";
@@ -10,7 +10,16 @@ export type AccountState = "available" | "obtained";
 // TODO: Break into UI file?
 export const iconColor = "#625ff5";
 
-export let accountState: Writable<AccountState> = writable("obtained");
+// The UI element for poping toast-like alerts
+export const alert: Writable<{
+    message: string;
+    variant: 'error' | 'warning' | 'success' | 'info';
+}> = writable<{
+    message: string;
+    variant: 'error' | 'warning' | 'success' | 'info';
+}>(null);
+
+export let accountState: Writable<AccountState> = writable("available");
 
 export let witnessState: Writable<Workflow> = writable("statement");
 
@@ -22,13 +31,13 @@ export let claims: Writable<Array<Claim>> = writable([
         title: "Twitter",
         type: "public"
     },
-    // {
-    //     credentials: [], 
-    //     credential_type: "discord",
-    //     icon: DiscordIcon,
-    //     title: "Discord",
-    //     type: "public"
-    // },
+    {
+        credentials: [], 
+        credential_type: "discord",
+        icon: DiscordIcon,
+        title: "Discord",
+        type: "public"
+    },
     {
         credentials: [], 
         credential_type: "dns",

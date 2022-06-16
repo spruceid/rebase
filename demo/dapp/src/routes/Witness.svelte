@@ -2,8 +2,7 @@
     import type { CredentialType } from "../util";
     import { instructions } from "../util";
     import { onMount } from "svelte";
-    import WitnessForm from "../components/claims/WitnessForm.svelte";
-    import SelfSignedForm from "../components/claims/SelfSignedForm.svelte";
+    import { WitnessForm, BasePage, SelfSignedForm } from "components";
 
     export let type: CredentialType;
     $: inst = null;
@@ -22,7 +21,7 @@
     });
 </script>
 
-<div class="viewer">
+<BasePage>
     {#if loading}
         <p class="inner-center">Building workflow...</p>
     {:else if errMsg}
@@ -32,21 +31,4 @@
     {:else}
         <WitnessForm {type} instructions={inst} />
     {/if}
-</div>
-
-
-<style>
-    .viewer {
-        height: 80vh;
-        width: 75vh;
-        background-color: white;
-    }
-    .inner-center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: 5vh;
-        margin-right: 5vh;
-    }
-</style>
-
+</BasePage>

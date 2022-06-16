@@ -1,46 +1,45 @@
 <script lang="ts">
-    import { Available, Obtained } from "../components/claims";
-    import { accountState, AccountState } from "../util";
+    import { Available, Obtained } from "components/claims";
+    import { BasePage, ToggleButton, Button } from "components";
+    import { accountState, AccountState } from "util";
+    import { useNavigate } from "svelte-navigator";
 
-    let state: AccountState;
+    const navigate = useNavigate();
+
+    let state: AccountState = "available";
     accountState.subscribe((x) => {
         state = x;
     });
 
-    const toggle = () => {
-        accountState.set(state == "available" ? "obtained" : "available");
+    const changeAccountState = (option) => {
+        if (option !== state) {
+            accountState.set(option);
+        }
     };
 </script>
 
-<div class="viewer">
-    <div class="inner-center">
-        <button disabled={state == "available"} on:click={toggle}
-            >Available</button
-        >
-        <button disabled={state == "obtained"} on:click={toggle}
-            >Obtained</button
-        >
-    </div>
-    <div class="inner-center">
+<BasePage>
+    <div class="min-h-[577px] h-full flex flex-wrap">
+        <div class="w-full">
+            <ToggleButton
+                class=""
+                onClick={changeAccountState}
+                options={["available", "obtained"]}
+            />
+        </div>
         {#if state == "available"}
             <Available />
         {:else}
             <Obtained />
         {/if}
-    </div>
-</div>
 
-<style>
-    .viewer {
-		height: 70vh;
-        width: 75vh;
-		background-color: white;
-	}
-    .inner-center {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-        margin-left: 5vh;
-        margin-right: 5vh;
-    }
-</style>
+        <div class="w-full flex justify-center items-center">
+            <Button
+                class="w-full max-w-42 my-[16px]"
+                onClick={() => navigate("/")}
+                text="Help"
+                primary
+            />
+        </div>
+    </div>
+</BasePage>

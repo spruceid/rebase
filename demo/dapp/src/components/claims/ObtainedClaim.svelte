@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { Claim, credentialToDisplay } from "../../util";
-    import DownloadIcon from "../icons/DownloadIcon.svelte";
-    import IconLink from "../icons/IconLink.svelte";
+    import { Claim, credentialToDisplay } from "util";
+    import { DownloadIcon } from "components/icons";
+    import { IconLink } from "components";
     export let claim: Claim;
 
     export const makeDownloadable = (jwt: string): string => {
@@ -11,9 +11,9 @@
     // TODO: REMOVE JANKINESS.
 </script>
 
-<div>
-    <p>
-        <span><svelte:component this={claim.icon} /></span>
+<div class="py-2 w-full flex flex-wrap justify-between">
+    <div class="flex flex-wrap w-fit">
+        <div class="w-8"><svelte:component this={claim.icon} /></div>
         {#each claim.credentials as credential}
             {#if credentialToDisplay(credential).type === "basic_public"}
                 Handle: {credentialToDisplay(credential).handle}
@@ -21,7 +21,6 @@
             {:else if credentialToDisplay(credential).type === "basic_blockchain"}
                 Address: {credentialToDisplay(credential).address}
             {/if}
-
             <IconLink
                 class="block w-4 h-4"
                 icon={DownloadIcon}
@@ -33,6 +32,8 @@
         {/each}
         {#if claim.credentials.length == 0}
             No {claim.title} credentials.
+        {:else}
+            <div>actions</div>
         {/if}
-    </p>
+    </div>
 </div>
