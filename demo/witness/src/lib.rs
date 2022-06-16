@@ -2,7 +2,6 @@ extern crate wasm_bindgen;
 
 extern crate log;
 use js_sys::Promise;
-use log::info;
 use rebase::{
     signer::ed25519::Ed25519DidWebJwk,
     witness::{
@@ -10,9 +9,9 @@ use rebase::{
         witness::Statement,
     },
 };
+
 use serde::{Deserialize, Serialize};
 use serde_json;
-use ssi::vc::Credential;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 
@@ -31,8 +30,8 @@ use wee_alloc;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-// TODO: Change to rebase specific?
-const SPRUCE_DIDWEB: &str = "did:web:tzprofiles.com";
+// TODO: Make passable var?
+const SPRUCE_DIDWEB: &str = "did:web:rebasedemokey.pages.dev";
 
 const SPRUCE_USER_AGENT: &str = "Spruce Systems";
 

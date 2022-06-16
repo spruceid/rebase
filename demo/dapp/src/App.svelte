@@ -19,6 +19,22 @@
 	@tailwind base;
 	@tailwind components;
 	@tailwind utilities;
+	@font-face {
+		font-family: "Satoshi";
+		font-style: normal;
+		font-weight: 100 700;
+		src: url("/fonts/Satoshi.eot"); /* IE9 Compat Modes */
+		src: local(""),
+			url("/fonts/Satoshi.eot?#iefix")
+				format("embedded-opentype"),
+			/* IE6-IE8 */ url("/fonts/Satoshi.woff2") format("woff2"),
+			/* Super Modern Browsers */ url("/fonts/Satoshi.woff")
+				format("woff"),
+			/* Modern Browsers */ url("/fonts/Satoshi.ttf")
+				format("truetype"),
+			/* Safari, Android, iOS */ url("/fonts/Satoshi.svg#Satoshi")
+				format("svg"); /* Legacy iOS */
+	}
 	.tooltip {
 		@apply invisible absolute;
 	}
@@ -34,10 +50,10 @@
 	h3,
 	h4,
 	h5 {
-		@apply font-satoshi font-semibold text-dark-1;
+		@apply font-satoshi font-semibold text-gray-850;
 	}
 	body {
-		@apply text-dark-1;
+		@apply text-gray-850;
 	}
 	/* a {
 		@apply no-underline text-blue-1;
@@ -73,11 +89,5 @@
 	}
 	::-webkit-scrollbar {
 		@apply bg-beige-1 rounded-lg h-1.5 w-1.5;
-	}
-	.body1 {
-		@apply text-xl;
-	}
-	.body2 {
-		@apply text-base;
 	}
 </style>

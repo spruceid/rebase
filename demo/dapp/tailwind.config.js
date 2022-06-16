@@ -9,6 +9,8 @@ module.exports = {
       base: ['14px', '21px'],
       lg: ['16px', '24px'],
       xl: ['20px', '30px'],
+      '2xl': ['30px', '45px'],
+      'step': ['30px', '30px'],
     },
     extend: {
       lineHeight: {

@@ -27,7 +27,7 @@
     let c: Array<Claim> = [];
     claims.subscribe((x) => (c = x));
 
-    const witnessUrl = "http://localhost:8787";
+    const witnessUrl = process.env.WITNESS_URL;
 
     const getKey1 = () => {
         key1 = getKeyType();

@@ -18,6 +18,14 @@
     }
   }
 
+  .action-button-container {
+    @apply font-bold bg-purple-550 py-3 px-6 transition delay-100 text-white border border-purple-550;
+
+    &:hover {
+      @apply bg-purple-550 transition delay-100 text-white;
+    }
+  }
+
   .toggle-button-container {
     @apply w-fit m-auto transition delay-100 bg-white border border-purple-550 rounded-2xl;
 

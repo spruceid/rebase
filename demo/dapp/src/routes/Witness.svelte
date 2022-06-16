@@ -22,13 +22,15 @@
 </script>
 
 <BasePage>
-    {#if loading}
-        <p class="inner-center">Building workflow...</p>
-    {:else if errMsg}
-        <p class="inner-center">Error encountered: ${errMsg}</p>
-    {:else if type === "self_signed"}
-        <SelfSignedForm />
-    {:else}
-        <WitnessForm {type} instructions={inst} />
-    {/if}
+    <div class="min-h-[577px] h-full flex flex-wrap">
+        {#if loading}
+            <p class="inner-center">Building workflow...</p>
+        {:else if errMsg}
+            <p class="inner-center">Error encountered: ${errMsg}</p>
+        {:else if type === "self_signed"}
+            <SelfSignedForm />
+        {:else}
+            <WitnessForm {type} instructions={inst} />
+        {/if}
+    </div>
 </BasePage>

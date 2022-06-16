@@ -5,6 +5,7 @@
   export { clazz as class };
   export let primary: boolean = false;
   export let secondary: boolean = false;
+  export let action: boolean = false;
   export let text: string;
   export let title: string = "";
   export let onClick: (() => void) | null;
@@ -22,11 +23,12 @@
   class:cursor-not-allowed={disabled}
   class:primary-button-container={primary}
   class:secondary-button-container={secondary}
+  class:action-button-container={action}
   class:rounded-25={rounded}
   class:rounded-xl={!rounded}
   on:click|preventDefault={disabled ? null : onClick}
   aria-label={title}
   {title}
 >
-    {text}
+  {text}
 </button>

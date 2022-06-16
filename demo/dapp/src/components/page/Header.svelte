@@ -41,7 +41,7 @@
     <RebaseLogo class="w-fit flex items-center" />
     {#if !signer}
         <DropdownButton
-            class="menu focus:outline-none focus:shadow-solid w-full min-w-42 my-[16px]"
+            class="menu focus:outline-none focus:shadow-solid w-full min-w-42 my-[16px] rounded-xl"
             text="Connect"
         >
             <div
@@ -73,7 +73,7 @@
             </Tooltip>
             <DropdownButton
                 bind:this={moreDropdown}
-                class="w-[50px] my-[16px] pl-[16px]"
+                class="w-[50px] my-[16px] pl-[16px] rounded-xl"
                 ml
                 text="&#8226;&#8226;&#8226;"
             >
