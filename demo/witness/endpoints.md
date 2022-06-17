@@ -92,7 +92,7 @@ type KeyTypes = Eth | Web;
 
 interface Eth {
     pkh: {
-        eip115: {
+        eip155: {
             address: string;
             chain_id: "1";
         };
@@ -112,7 +112,7 @@ A sample GitHub request would look like:
             "handle": "foo",
             "key_type": {
                 "pkh": {
-                    "eip115": {
+                    "eip155": {
                         "address": "0x1111111111111111111111111111111111111111",
                         "chain_id": "1"
                     }
@@ -186,7 +186,7 @@ An example (VALID) request for a GitHub proof would look like:
                 "handle":"krhoda",
                 "key_type": {
                     "pkh": {
-                        "eip115": {
+                        "eip155": {
                             "address":"0xdA3176d77c04632F2862B14E35bc6B4717FB5016","chain_id":"1"
                         }
                     }
@@ -218,7 +218,7 @@ The body:
   "iss": "did:web:rebasedemokey.pages.dev",
   "nbf": 1655324274.197,
   "jti": "urn:uuid:55c4bc79-faa0-4086-a5fa-2aaef1b06d64",
-  "sub": "did:pkh:eip115:1:0xdA3176d77c04632F2862B14E35bc6B4717FB5016",
+  "sub": "did:pkh:eip155:1:0xdA3176d77c04632F2862B14E35bc6B4717FB5016",
   "vc": {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
@@ -246,7 +246,7 @@ The body:
       "GitHubVerification"
     ],
     "credentialSubject": {
-      "id": "did:pkh:eip115:1:0xdA3176d77c04632F2862B14E35bc6B4717FB5016",
+      "id": "did:pkh:eip155:1:0xdA3176d77c04632F2862B14E35bc6B4717FB5016",
       "sameAs": "https://github.com/krhoda"
     },
     "issuer": "did:web:rebasedemokey.pages.dev",

@@ -41,8 +41,8 @@ impl SignerType for SignerTypes {
             // Could change did::web to an enum if desired.
             SignerDID::Web(o) => Ok(SignerTypes::Ed25519(Ed25519::DIDWebJWK(o.clone()))),
             SignerDID::PKH(pkh) => match pkh {
-                SignerPKH::EIP115(o) => Ok(SignerTypes::Ethereum(Ethereum::DID(EthDID::PKH(
-                    EthPKH::EIP115(o.clone()),
+                SignerPKH::EIP155(o) => Ok(SignerTypes::Ethereum(Ethereum::DID(EthDID::PKH(
+                    EthPKH::EIP155(o.clone()),
                 )))),
             },
         }

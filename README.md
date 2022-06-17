@@ -248,15 +248,15 @@ Once this has been implemented, the next step is to add it's `did` representatio
 ```rust
 // src/signer/signer
 #[derive(Clone, Deserialize, Serialize)]
-pub struct EIP115 {
+pub struct EIP155 {
     pub address: String,
     pub chain_id: String,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
 pub enum PKH {
-    #[serde(rename = "eip115")]
-    EIP115(Option<EIP115>),
+    #[serde(rename = "eip155")]
+    EIP155(Option<EIP155>),
 }
 
 #[derive(Clone, Deserialize, Serialize)]
