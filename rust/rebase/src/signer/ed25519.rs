@@ -6,10 +6,9 @@ use ed25519_dalek::{Keypair, PublicKey, SecretKey, Signer as InnerSigner, Verifi
 use hex;
 use serde::{Deserialize, Serialize};
 use ssi::{
-	did_resolve::DIDResolver,
 	jwk::{Base64urlUInt, Params, JWK},
 	one_or_many::OneOrMany,
-	vc::{Check, Credential, LinkedDataProofOptions, Proof, URI},
+	vc::{Credential, LinkedDataProofOptions, Proof, URI},
 };
 use url::Url;
 

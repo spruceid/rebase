@@ -88,7 +88,7 @@ export const getKeyType = (): KeyType => {
         case "ethereum": 
         return {
             pkh: {
-                eip115: {
+                eip155: {
                     address: signer.id(),
                     chain_id: "1",
                 },

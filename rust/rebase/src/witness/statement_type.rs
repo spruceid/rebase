@@ -37,7 +37,7 @@ impl Statement for StatementTypes {
             StatementTypes::Dns(x) => x.delimitor(),
             StatementTypes::GitHub(x) => x.delimitor(),
             // TODO / NOTE: Should this be an err? Permitted? A value?
-            StatementTypes::SelfSigned(x) => String::new(),
+            StatementTypes::SelfSigned(_) => String::new(),
             StatementTypes::Twitter(x) => x.delimitor(),
         }
     }

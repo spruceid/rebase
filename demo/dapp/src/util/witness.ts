@@ -2,7 +2,7 @@ import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon } from "components";
 import type { CredentialType } from "./claim";
 export interface KeyType {
     pkh: {
-        eip115: {
+        eip155: {
             address: string;
             chain_id: string;
         };

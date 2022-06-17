@@ -49,15 +49,15 @@ where
 }
 
 #[derive(Clone, Deserialize, Serialize)]
-pub struct EIP115 {
+pub struct EIP155 {
     pub address: String,
     pub chain_id: String,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
 pub enum PKH {
-    #[serde(rename = "eip115")]
-    EIP115(Option<EIP115>),
+    #[serde(rename = "eip155")]
+    EIP155(Option<EIP155>),
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -93,7 +93,7 @@ impl std::fmt::Display for DID {
                 Some(s) => write!(f, "ed25519 did web jwk: {}", s),
                 _ => write!(f, "ed25519 did web jwk: no id set"),
             },
-            DID::PKH(PKH::EIP115(o)) => match o {
+            DID::PKH(PKH::EIP155(o)) => match o {
                 Some(s) => write!(
                     f,
                     "ethereum did pkh eip155: chain: {}, address: {}",

@@ -1,4 +1,4 @@
-# Tezos Profiles Witness
+# Rebase Witness
 
 A Cloudflare Worker to act as a witness for Rebase claims.
 

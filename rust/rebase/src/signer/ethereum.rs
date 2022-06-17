@@ -1,4 +1,4 @@
-use crate::signer::signer::{SignerError, SignerType, DID as SignerDID, EIP115, PKH as SignerPKH};
+use crate::signer::signer::{SignerError, SignerType, DID as SignerDID, EIP155, PKH as SignerPKH};
 use async_trait::async_trait;
 use hex::FromHex;
 use k256::{
@@ -11,9 +11,9 @@ use k256::{
 };
 use sha3::{Digest, Keccak256};
 
-// TODO: Break EIP115 into own file to use with other chains.
+// TODO: Break EIP155 into own file to use with other chains.
 pub enum PKH {
-    EIP115(Option<EIP115>),
+    EIP155(Option<EIP155>),
 }
 
 pub enum DID {
@@ -35,8 +35,8 @@ impl SignerType for Ethereum {
     fn new(t: &SignerDID) -> Result<Self, SignerError> {
         // TODO: Screen for valid opts.
         match t {
-            SignerDID::PKH(SignerPKH::EIP115(o)) => {
-                Ok(Ethereum::DID(DID::PKH(PKH::EIP115(o.clone()))))
+            SignerDID::PKH(SignerPKH::EIP155(o)) => {
+                Ok(Ethereum::DID(DID::PKH(PKH::EIP155(o.clone()))))
             }
             _ => Err(SignerError::InvalidSignerOpts {
                 signer_type: t.to_string(),
@@ -47,7 +47,7 @@ impl SignerType for Ethereum {
 
     fn did(&self) -> SignerDID {
         match self {
-            Ethereum::DID(DID::PKH(PKH::EIP115(o))) => SignerDID::PKH(SignerPKH::EIP115(o.clone())),
+            Ethereum::DID(DID::PKH(PKH::EIP155(o))) => SignerDID::PKH(SignerPKH::EIP155(o.clone())),
         }
     }
 
@@ -57,8 +57,8 @@ impl SignerType for Ethereum {
 
     fn did_id(&self) -> Result<String, SignerError> {
         match self {
-            Ethereum::DID(DID::PKH(PKH::EIP115(Some(o)))) => {
-                Ok(format!("did:pkh:eip115:{}:{}", o.chain_id, o.address))
+            Ethereum::DID(DID::PKH(PKH::EIP155(Some(o)))) => {
+                Ok(format!("did:pkh:eip155:{}:{}", o.chain_id, o.address))
             }
             _ => Err(SignerError::InvalidId {
                 signer_type: self.name(),
@@ -72,7 +72,7 @@ impl SignerType for Ethereum {
         match self {
             // NOTE: THIS ASSUMES EIP191 SIGNING.
             // TODO: Call this out in the type system?
-            Ethereum::DID(DID::PKH(PKH::EIP115(Some(o)))) => {
+            Ethereum::DID(DID::PKH(PKH::EIP155(Some(o)))) => {
                 let statement: Vec<u8> = format!(
                     "\x19Ethereum Signed Message:\n{}{}",
                     statement.as_bytes().len(),
