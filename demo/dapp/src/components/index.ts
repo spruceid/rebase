@@ -5,6 +5,6 @@ export * from './page/';
 export * from './buttons/';
 // export * from './select/';
 export * from './icons/';
-// export * from './form/';
+export * from './form/';
 export * from './alerts/';
 // export * from './modals/';

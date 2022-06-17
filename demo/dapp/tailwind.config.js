@@ -4,25 +4,18 @@ module.exports = {
   content: ['./src/**/*.html', './src/**/*.js', './src/**/*.svelte'],
   media: false,
   theme: {
-    fontSize: {
-      sm: ['12px', '18px'],
-      base: ['14px', '21px'],
-      lg: ['16px', '24px'],
-      xl: ['20px', '30px'],
-      '2xl': ['30px', '45px'],
-      'step': ['30px', '30px'],
-    },
     extend: {
-      lineHeight: {
-        16: '4rem',
+      fontSize: {
+        sm: ['12px', '18px'],
+        base: ['14px', '21px'],
+        lg: ['16px', '24px'],
+        xl: ['20px', '30px'],
+        '4_5xl': ['42px', '63px'],
+        'step': ['30px', '30px'],
       },
       colors: {
         green: {
           550: '#429383',
-        },
-        blue: {
-          350: '#1DA1F2',
-          550: '#3A83A3',
         },
         gray: {
           350: '#AAAAAA',
@@ -34,6 +27,8 @@ module.exports = {
           1: '#1a75ff',
           2: '#097fff',
           3: '#035cbb',
+          350: '#1DA1F2',
+          550: '#3A83A3',
         },
         purple: {
           'light': '#F6F5FF',

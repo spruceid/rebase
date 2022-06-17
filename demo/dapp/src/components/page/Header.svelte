@@ -12,7 +12,7 @@
     } from "util";
     import { Tooltip, Button, DropdownButton, RebaseLogo } from "components";
     import { scale } from "svelte/transition";
-    import { useNavigate } from "svelte-navigator";
+    import { Link, useNavigate } from "svelte-navigator";
     import { alert } from "util/store";
 
     let moreDropdown;
@@ -36,20 +36,22 @@
 </script>
 
 <div
-    class="min-w-screen px-4 h-[70px] w-full flex items-center justify-between bg"
+    class="min-w-screen px-4 h-[70px] w-full flex items-center justify-between bg-white shadow"
 >
-    <RebaseLogo class="w-fit flex items-center" />
+    <Link to="/">
+        <RebaseLogo class="w-fit flex items-center" xl />
+    </Link>
     {#if !signer}
         <DropdownButton
-            class="menu focus:outline-none focus:shadow-solid w-full min-w-42 my-[16px] rounded-xl"
+            class="menu focus:outline-none focus:shadow-solid w-full min-w-42 my-[16px] rounded-xl border border-gray-400"
             text="Connect"
         >
             <div
                 in:scale={{ duration: 100, start: 0.95 }}
                 out:scale={{ duration: 75, start: 0.95 }}
-                class="origin-top-right absolute right-0 w-48 py-2 mt-1 bg-white rounded shadow-md"
+                class="origin-top-right absolute right-0 w-48 py-2 mt-1 bg-white rounded-xl shadow-md"
             >
-                <div class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                <div class="px-4 py-3 text-sm text-gray-900">
                     <div>Select Signer Type To Connect</div>
                 </div>
                 <hr />
@@ -66,24 +68,24 @@
         <div class="flex flex-wrap">
             <Tooltip tooltip="Currently using {_currentType} signer" bottom>
                 <Button
-                    class="w-full max-w-42 my-[16px]"
+                    class="w-full max-w-42 my-[16px] border border-gray-400"
                     onClick={() => navigate("/account")}
                     text={signer.id()}
                 />
             </Tooltip>
             <DropdownButton
                 bind:this={moreDropdown}
-                class="w-[50px] my-[16px] pl-[16px] rounded-xl"
+                class="w-[55px] my-[16px] pl-[16px] rounded-xl border border-gray-400"
                 ml
                 text="&#8226;&#8226;&#8226;"
             >
                 <div
                     in:scale={{ duration: 100, start: 0.95 }}
                     out:scale={{ duration: 75, start: 0.95 }}
-                    class="origin-top-right absolute right-0 w-48 py-2 mt-1 bg-white rounded shadow-md"
+                    class="origin-top-right absolute right-4 w-48 py-0 mt-1 bg-dark-1 rounded-xl shadow-md"
                 >
                     <Button
-                        class="w-full my-[4px]"
+                        class="w-full bg-dark-1 text-white"
                         onClick={() => {
                             navigate("/");
                             moreDropdown.closeDropdown();
@@ -91,7 +93,7 @@
                         text="About"
                     />
                     <Button
-                        class="w-full my-[4px]"
+                        class="w-full bg-dark-1 text-white"
                         onClick={() => {
                             disconnect();
                             moreDropdown.closeDropdown();

@@ -7,7 +7,7 @@
 
 <BasePage>
     <div class="min-h-[577px] h-full flex flex-wrap">
-        <RebaseLogo class="w-full flex items-center justify-center my-[16px]" />
+        <RebaseLogo class="w-full flex items-center justify-center my-[16px]" xl4_5/>
         <div>
             <p>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
@@ -35,7 +35,7 @@
         </div>
         <div class="w-full flex justify-center items-center">
             <Button
-                class="w-full max-w-42 my-[16px]"
+                class="w-full max-w-42 my-[16px] bg-purple-550 text-white"
                 onClick={() => navigate("/account")}
                 text="Enter"
                 primary

@@ -6,14 +6,15 @@ export interface Signer {
     id: () => string;
 };
 
-export type SignerType = "ethereum"; // | "tezos" | "solana" | "etc"
-export const signerTypes: Array<SignerType> = ["ethereum"];
+export type SignerType = "ethereum" ; // "ed25519" | "tezos" | "solana" | "etc"
+export const signerTypes: Array<SignerType> = ["ethereum", ]; //  "ed25519"
 
 export type SignerMap = Record<SignerType, Signer | false>;
 
 
 export const connectSigner = async (signerType: SignerType): Promise<Signer> => {
     switch (signerType) {
+        // case "ed25519": 
         case "ethereum": 
             const providerOptions = {
                 /* See Provider Options Section */
@@ -52,6 +53,7 @@ export const connectSigner = async (signerType: SignerType): Promise<Signer> => 
 
 export const disconnectSigner = async (signerType: SignerType): Promise<void> => {
     switch (signerType) {
+        // case "ed25519": 
         case "ethereum": 
             const providerOptions = {
                 /* See Provider Options Section */

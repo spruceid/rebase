@@ -11,8 +11,8 @@
 </script>
 
 <div class="w-full">
-    <h3>Public Accounts</h3>
-    <div class="max-h-[100px] overflow-auto px-4">
+    <h3>Social Media Credentials</h3>
+    <div class="max-h-40 overflow-auto px-4">
         {#each pbClaims as claim}
             <AvailableClaim {claim} />
         {/each}
@@ -21,7 +21,7 @@
 
 <div class="w-full">
     <h3>Blockchain Accounts</h3>
-    <div class="max-h-[100px] overflow-auto px-4">
+    <div class="max-h-40 overflow-auto px-4">
         {#each bcClaims as claim}
             <AvailableClaim {claim} />
         {/each}

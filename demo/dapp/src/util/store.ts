@@ -65,8 +65,14 @@ export let currentType: Writable<SignerType> = writable("ethereum");
 export let _currentType: SignerType = "ethereum";
 currentType.subscribe(x => (_currentType = x));
 
-export let signerMap: Writable<SignerMap> = writable({"ethereum": false});
-export let _signerMap: SignerMap = {"ethereum": false};
+export let signerMap: Writable<SignerMap> = writable({
+    "ethereum": false,
+    // "ed25519": false
+});
+export let _signerMap: SignerMap = {
+    "ethereum": false,
+    // "ed25519": false
+};
 signerMap.subscribe(x => (_signerMap = x));
 
 export let signer: Signer | false = false;

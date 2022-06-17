@@ -5,7 +5,6 @@
         Workflow,
         Claim,
     } from "../../util";
-    import { Link } from "svelte-navigator";
     import {
         _currentType,
         _signerMap,
@@ -22,6 +21,7 @@
     import WitnessFormStepper from "./WitnessFormStepper.svelte";
     import { Button } from "components";
     import { useNavigate } from "svelte-navigator";
+    import CopyTextArea from "../form/CopyTextArea.svelte";
 
     const navigate = useNavigate();
 
@@ -199,6 +199,7 @@
         <div class="">
             <WitnessFormStepper
                 step={1}
+                totalSteps={4}
                 label={instructions.statement_label}
                 question={instructions.statement}
                 labelFor={"form-step-q-1-i-1"}
@@ -239,6 +240,7 @@
     {#if state === "signature"}
         <WitnessFormStepper
             step={2}
+            totalSteps={4}
             label={instructions.signature_label}
             question={instructions.signature}
             labelFor={"form-step-q-2-i-1"}
@@ -248,7 +250,8 @@
                 disabled={state !== "signature" || signed}
                 onClick={async () => {
                     try {
-                        await sign(statement);
+                        const signedStatement = await sign(statement);
+                        console.log(signedStatement)
                         signed = true;
                     } catch (e) {
                         errMsg = `${e?.message ? e.message : e}`;
@@ -277,21 +280,14 @@
     {#if state === "witness"}
         <WitnessFormStepper
             step={3}
+            totalSteps={4}
             label={instructions.witness_label}
             question={instructions.witness}
             labelFor={"form-step-q-3-i-1"}
         >
-            <textarea
-                class="py-4 w-full h-100"
-                value={post()}
-                name="post"
-                disabled
-            />
+            <CopyTextArea value={post()} />
             {#if type === "twitter" || type === "github" || type === "discord"}
                 <div class="w-full">
-                    <!-- <label for={instructions.witness_label}
-                    >{instructions.witness_label}</label
-                > -->
                     <input
                         class="form-text-input-action"
                         placeholder={instructions.witness_placeholder}
