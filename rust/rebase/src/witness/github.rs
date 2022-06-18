@@ -255,3 +255,64 @@ impl Generator<Claim, Schema> for ClaimGenerator {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::signer::ed25519::Ed25519;
+    use crate::util::util::{
+        test_ed25519_did, test_eth_did, test_witness_signature, MockGenerator, TestKey, TestWitness,
+    };
+    use crate::witness::witness::Generator;
+
+    fn mock_proof(key: fn() -> SignerDID) -> Claim {
+        Claim {
+            // TODO: Make test util
+            statement_opts: Opts {
+                key_type: key(),
+                handle: "foo".to_owned(),
+            },
+            gist_id: "not_tested".to_owned(),
+        }
+    }
+
+    #[async_trait(?Send)]
+    impl Generator<Claim, Schema> for MockGenerator {
+        async fn locate_post(&self, _proof: &Claim) -> Result<String, WitnessError> {
+            Ok(self.post.clone())
+        }
+
+        fn _unchecked_to_schema(
+            &self,
+            proof: &Claim,
+            statement: &str,
+            signature: &str,
+        ) -> Result<Schema, WitnessError> {
+            Ok(Schema {
+                gist_id: proof.gist_id.clone(),
+                key_type: proof.statement_opts.key_type.clone(),
+                handle: proof.statement_opts.handle.clone(),
+                statement: statement.to_owned(),
+                signature: signature.to_owned(),
+            })
+        }
+    }
+
+    #[tokio::test]
+    async fn mock_github() {
+        let sig = test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap();
+        let did = mock_proof(test_eth_did);
+        let gen = MockGenerator::new(sig, || mock_proof(test_eth_did)).unwrap();
+
+        gen.unsigned_credential(&did, &Ed25519::new(&test_ed25519_did()).unwrap())
+            .await
+            .unwrap();
+
+        let sig = test_witness_signature(TestWitness::GitHub, TestKey::Ed25519).unwrap();
+        let did = mock_proof(test_ed25519_did);
+        let gen = MockGenerator::new(sig, || mock_proof(test_ed25519_did)).unwrap();
+        gen.unsigned_credential(&did, &Ed25519::new(&test_ed25519_did()).unwrap())
+            .await
+            .unwrap();
+    }
+}

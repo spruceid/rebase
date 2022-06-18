@@ -80,9 +80,11 @@ impl SignerType for Ethereum {
                 )
                 .into();
                 let signature =
-                    <[u8; 65]>::from_hex(signature.trim_start_matches("0x")).map_err(|e| SignerError::InvalidSignature {
-                        signer_type: self.name(),
-                        reason: format!("could not marshal signature to hex: {}", e),
+                    <[u8; 65]>::from_hex(signature.trim_start_matches("0x")).map_err(|e| {
+                        SignerError::InvalidSignature {
+                            signer_type: self.name(),
+                            reason: format!("could not marshal signature to hex: {}", e),
+                        }
                     })?;
 
                 let pk = Signature::new(
@@ -108,9 +110,11 @@ impl SignerType for Ethereum {
                 })?;
 
                 let address =
-                    <[u8; 20]>::from_hex(&o.address.trim_start_matches("0x")).map_err(|e| SignerError::InvalidSignature {
-                        signer_type: self.name(),
-                        reason: format!("could not marshal address to hex: {}", e),
+                    <[u8; 20]>::from_hex(&o.address.trim_start_matches("0x")).map_err(|e| {
+                        SignerError::InvalidSignature {
+                            signer_type: self.name(),
+                            reason: format!("could not marshal address to hex: {}", e),
+                        }
                     })?;
 
                 if Keccak256::default()
@@ -134,4 +138,101 @@ impl SignerType for Ethereum {
     }
 }
 
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::util::util::{
+        test_eth_did, test_witness_signature, test_witness_statement, TestKey, TestWitness,
+    };
 
+    #[tokio::test]
+    async fn test_eth() {
+        let signer_type = Ethereum::new(&test_eth_did()).unwrap();
+        signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::DNS, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::DNS, TestKey::Eth).unwrap(),
+            )
+            .await
+            .unwrap();
+        signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::GitHub, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap(),
+            )
+            .await
+            .unwrap();
+        signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::Twitter, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::Twitter, TestKey::Eth).unwrap(),
+            )
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_eth_fail() {
+        let signer_type = Ethereum::new(&test_eth_did()).unwrap();
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::DNS, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Said invalid signature was valid"),
+            Err(_) => {}
+        };
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::DNS, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::Twitter, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Said invalid signature was valid"),
+            Err(_) => {}
+        };
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::GitHub, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::DNS, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Said invalid signature was valid"),
+            Err(_) => {}
+        };
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::GitHub, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::Twitter, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Said invalid signature was valid"),
+            Err(_) => {}
+        };
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::Twitter, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Said invalid signature was valid"),
+            Err(_) => {}
+        };
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::Twitter, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::DNS, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Said invalid signature was valid"),
+            Err(_) => {}
+        };
+    }
+}

@@ -94,6 +94,18 @@ pub trait Generator<P: Proof, S: SchemaType> {
         Ok(self._unchecked_to_schema(proof, &statement, &signature)?)
     }
 
+    async fn unsigned_credential<T: SignerType>(
+        &self,
+        proof: &P,
+        signer_type: &T,
+    ) -> Result<Credential, WitnessError> {
+        Ok(self
+            .schema(proof)
+            .await?
+            .unsigned_credential(signer_type)
+            .await?)
+    }
+
     // From the proof structure, create a LD credential.
     async fn credential<T: SignerType>(
         &self,

@@ -225,7 +225,7 @@
                 disabled={state !== "signature"}
                 on:click={async () => {
                     try {
-                        await sign(statement);
+                        signature = await sign(statement);
                         advance();
                     } catch (e) {
                         errMsg = `${e?.message ? e.message : e}`;
