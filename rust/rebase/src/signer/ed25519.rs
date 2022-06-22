@@ -115,8 +115,9 @@ impl Signer<Ed25519> for Ed25519DidWebJwk {
 			},
 		};
 
+		let mut context_loader = ssi::jsonld::ContextLoader::default();
 		Ok(Some(OneOrMany::One(
-			vc.generate_proof(&self.key, &lpdo, &DIDWeb).await?,
+			vc.generate_proof(&self.key, &lpdo, &DIDWeb, &mut context_loader).await?,
 		)))
 	}
 
