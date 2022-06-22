@@ -2,6 +2,7 @@
     export let icon: any;
     export let title: string;
     export let subtitle: string;
+    export let subsubtitle: string = "";
 </script>
 
 <div class="w-full text-center">
@@ -10,6 +11,7 @@
     </div>
     <p class="font-bold text-2xl text-gray-850">{title}</p>
     <p class="text-sm px-4">{subtitle}</p>
+    <p class="text-sm px-4">{subsubtitle}</p>
 </div>
 
 <style>

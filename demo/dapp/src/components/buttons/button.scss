@@ -5,8 +5,17 @@
   .primary-button-container {
     @apply font-bold bg-white py-3 px-6 transition delay-100 text-gray-850 border border-purple-550;
 
+    svg path {
+      @apply fill-purple-550;
+    }
+
     &:hover {
       @apply text-white transition delay-100 bg-purple-550;
+
+      svg path {
+        @apply fill-white;
+      }
+
     }
   }
 

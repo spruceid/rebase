@@ -1,7 +1,7 @@
 import { writable, Writable } from "svelte/store";
-import { GlobeIcon, TwitterIcon, GitHubIcon, DiscordIcon } from 'components/icons';
-import type {Claim} from "./claim";
-import {connectSigner, disconnectSigner, Signer, SignerMap, SignerType} from "./signer";
+import { GlobeIcon, TwitterIcon, GitHubIcon, DiscordIcon, SolanaIcon, EthereumIcon } from 'components/icons';
+import type { Claim } from "./claim";
+import { connectSigner, disconnectSigner, Signer, SignerMap, SignerType } from "./signer";
 import type { KeyType, Workflow } from "./witness";
 
 // TODO: Break into UI file?
@@ -29,36 +29,59 @@ export let claims: Writable<Array<Claim>> = writable([
         credential_type: "twitter",
         icon: TwitterIcon,
         title: "Twitter",
-        type: "public"
-    },
-    {
-        credentials: [], 
-        credential_type: "discord",
-        icon: DiscordIcon,
-        title: "Discord",
-        type: "public"
-    },
-    {
-        credentials: [], 
-        credential_type: "dns",
-        icon: GlobeIcon,
-        title: "DNS",
-        type: "public"
+        type: "public",
+        available: true,
     },
     {
         credentials: [],
         credential_type: "github",
         icon: GitHubIcon,
         title: "Github",
-        type: "public"
+        type: "public",
+        available: true,
+    },
+    {
+        credentials: [],
+        credential_type: "dns",
+        icon: GlobeIcon,
+        title: "DNS",
+        type: "public",
+        available: true,
     },
     {
         credentials: [],
         credential_type: "self_signed",
         icon: GlobeIcon,
         title: "Self Signed",
-        type: "public"
-    }
+        type: "public",
+        available: true,
+    },
+    {
+        credentials: [],
+        credential_type: "discord",
+        icon: DiscordIcon,
+        title: "Discord",
+        type: "public",
+        available: false,
+    },
+
+    {
+        credentials: [],
+        credential_type: "ethereum",
+        icon: EthereumIcon,
+        title: "Ethereum Account",
+        type: "blockchain",
+        available: false,
+    },
+
+    {
+        credentials: [],
+        credential_type: "solana",
+        icon: SolanaIcon,
+        title: "Solana Account",
+        type: "blockchain",
+        available: false,
+    },
 ]);
 
 export let currentType: Writable<SignerType> = writable("ethereum");
@@ -67,11 +90,9 @@ currentType.subscribe(x => (_currentType = x));
 
 export let signerMap: Writable<SignerMap> = writable({
     "ethereum": false,
-    // "ed25519": false
 });
 export let _signerMap: SignerMap = {
     "ethereum": false,
-    // "ed25519": false
 };
 signerMap.subscribe(x => (_signerMap = x));
 
@@ -84,16 +105,16 @@ export const getKeyType = (): KeyType => {
         throw new Error("No signer set");
     }
 
-    switch (_currentType)  {
-        case "ethereum": 
-        return {
-            pkh: {
-                eip155: {
-                    address: signer.id(),
-                    chain_id: "1",
+    switch (_currentType) {
+        case "ethereum":
+            return {
+                pkh: {
+                    eip155: {
+                        address: signer.id(),
+                        chain_id: "1",
+                    },
                 },
-            },
-        }
+            }
     };
 };
 
@@ -123,6 +144,6 @@ export const sign = async (statement: string): Promise<string> => {
     if (!s) {
         throw new Error(`No signer for current type: ${_currentType}`);
     }
-    
+
     return s.sign(statement);
 }

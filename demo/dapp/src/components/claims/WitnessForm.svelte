@@ -1,10 +1,5 @@
 <script lang="ts">
-    import type {
-        CredentialType,
-        Instructions,
-        Workflow,
-        Claim,
-    } from "../../util";
+    import type { CredentialType, Instructions, Workflow, Claim } from "util";
     import {
         _currentType,
         _signerMap,
@@ -15,6 +10,7 @@
         witnessState,
         sign,
         Signer,
+        alert,
     } from "../../util";
     import { onMount } from "svelte";
     import WitnessFormHeader from "./WitnessFormHeader.svelte";
@@ -30,8 +26,8 @@
     const dnsPrefix = "rebase_sig";
 
     let signer: Signer | false = false;
-    let signed: Boolean = false;
-    let verified: Boolean = false;
+    let verified: boolean = false;
+    let loading: boolean = false;
     currentType.subscribe((x) => (signer = _signerMap[x]));
     signerMap.subscribe((x) => (signer = x[_currentType]));
 
@@ -54,7 +50,6 @@
     export let type: CredentialType;
     export let instructions: Instructions;
 
-    $: errMsg = "";
     $: statement = "";
     $: signature = "";
     $: delimitor = "";
@@ -91,6 +86,17 @@
                 return witnessState.set("complete");
             case "complete":
                 return;
+        }
+    };
+
+    const back = () => {
+        switch (state) {
+            case "signature":
+                return witnessState.set("statement");
+            case "witness":
+                return witnessState.set("signature");
+            case "complete":
+                return witnessState.set("witness");
         }
     };
 
@@ -185,10 +191,6 @@
     };
 </script>
 
-{#if errMsg}
-    <p class="">{errMsg}</p>
-{/if}
-
 <WitnessFormHeader
     icon={instructions.icon}
     title={instructions.title}
@@ -196,41 +198,48 @@
 />
 {#if signer}
     {#if state === "statement"}
-        <div class="">
-            <WitnessFormStepper
-                step={1}
-                totalSteps={4}
-                label={instructions.statement_label}
-                question={instructions.statement}
-                labelFor={"form-step-q-1-i-1"}
-            >
-                <input
-                    class="form-text-input"
-                    placeholder={instructions.statement_placeholder}
-                    disabled={state !== "statement"}
-                    bind:value={handle}
-                    name={"form-step-q-1-i-1"}
-                    type="text"
-                />
-            </WitnessFormStepper>
-        </div>
-        <div class="w-full my-[16px] text-center">
+        <WitnessFormStepper
+            step={1}
+            totalSteps={4}
+            label={instructions.statement_label}
+            question={instructions.statement}
+            labelFor={"form-step-q-1-i-1"}
+        >
+            <input
+                class="form-text-input"
+                placeholder={instructions.statement_placeholder}
+                disabled={state !== "statement"}
+                bind:value={handle}
+                name={"form-step-q-1-i-1"}
+                type="text"
+            />
+        </WitnessFormStepper>
+        <div
+            class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center"
+        >
             <Button
                 class="w-2/5"
                 onClick={() => navigate("/account")}
                 text="Back"
                 primary
+                disabled={loading}
             />
             <Button
+                {loading}
                 class="w-2/5"
                 disabled={state !== "statement" || handle.length === 0}
                 onClick={async () => {
                     try {
+                        loading = true;
                         await getStatement();
                         advance();
                     } catch (e) {
-                        errMsg = e.message;
+                        alert.set({
+                            variant: "error",
+                            message: e.message,
+                        });
                     }
+                    loading = false;
                 }}
                 text="Next"
                 action
@@ -245,32 +254,39 @@
             question={instructions.signature}
             labelFor={"form-step-q-2-i-1"}
         >
-            <Button
-                class="w-2/5 mt-[16px]"
-                disabled={state !== "signature" || signed}
-                onClick={async () => {
-                    try {
-                        const signedStatement = await sign(statement);
-                        console.log(signedStatement)
-                        signed = true;
-                    } catch (e) {
-                        errMsg = `${e?.message ? e.message : e}`;
-                    }
-                }}
-                text="Sign"
-                action
-            />
+            <div id="form-step-q-2-i-1">
+                <Button
+                    {loading}
+                    class="w-2/5 mt-[16px]"
+                    disabled={state !== "signature" || signature !== ""}
+                    onClick={async () => {
+                        try {
+                            loading = true;
+                            signature = await sign(statement);
+                        } catch (e) {
+                            alert.set({
+                                variant: "error",
+                                message: e?.message ? e.message : e,
+                            });
+                        }
+                        loading = false;
+                    }}
+                    text="Sign"
+                    action
+                />
+            </div>
         </WitnessFormStepper>
         <div class="w-full my-[16px] text-center">
             <Button
                 class="w-2/5"
-                onClick={() => navigate("/account")}
+                onClick={back}
                 text="Back"
                 primary
+                disabled={loading}
             />
             <Button
                 class="w-2/5"
-                disabled={!signed}
+                disabled={signature === "" || loading}
                 onClick={advance}
                 text="Next"
                 action
@@ -285,85 +301,90 @@
             question={instructions.witness}
             labelFor={"form-step-q-3-i-1"}
         >
-            <CopyTextArea value={post()} />
-            {#if type === "twitter" || type === "github" || type === "discord"}
-                <div class="w-full">
-                    <input
-                        class="form-text-input-action"
-                        placeholder={instructions.witness_placeholder}
-                        bind:value={proof}
-                        name={"form-step-q-3-i-1"}
-                        type="text"
-                    />
-                    <Button
-                        class="w-[90px] mt-[16px]"
-                        disabled={state !== "witness" || verified}
-                        onClick={async () => {
-                            try {
-                                await getCredential();
-                                verified = true;
-                            } catch (e) {
-                                errMsg = `${e?.message ? e.message : e}`;
-                            }
-                        }}
-                        text="Verify"
-                        action
-                    />
-                </div>
-            {:else}
+            <div id="form-step-q-3-i-1">
+                <CopyTextArea value={post()} />
+                {#if type === "twitter" || type === "github" || type === "discord"}
+                    <div class="w-full">
+                        <input
+                            class="form-text-input w-full"
+                            placeholder={instructions.witness_placeholder}
+                            bind:value={proof}
+                            name={"form-step-q-3-i-1"}
+                            type="text"
+                        />
+                    </div>
+                {/if}
                 <Button
-                    class="w-full mt-[16px]"
+                    {loading}
+                    class="w-full"
                     disabled={state !== "witness" || verified}
                     onClick={async () => {
                         try {
+                            loading = true;
                             await getCredential();
                             verified = true;
                         } catch (e) {
-                            errMsg = `${e?.message ? e.message : e}`;
+                            alert.set({
+                                variant: "error",
+                                message: e?.message ? e.message : e,
+                            });
                         }
+                        loading = false;
                     }}
                     text="Verify"
                     action
                 />
-            {/if}
+            </div>
         </WitnessFormStepper>
         <div class="w-full my-[16px] text-center">
             <Button
                 class="w-2/5"
-                onClick={() => navigate("/account")}
+                onClick={back}
                 text="Back"
                 primary
+                disabled={loading}
             />
             <Button
                 class="w-2/5"
-                disabled={!verified}
+                disabled={!verified || loading}
                 onClick={advance}
                 text="Complete"
                 action
             />
         </div>
     {/if}
-    <!--  {#if state === "complete"}
-        <div class="">
-            <h4>Step 4: Complete!</h4>
-            <p>
-                Please return to the <Link to="/account">main page</Link> to download
-                your credential
-            </p>
+    {#if state === "complete"}
+        <WitnessFormStepper
+            step={4}
+            totalSteps={4}
+            label={"Complete"}
+            question={"Please click the button to manage your credentials"}
+            labelFor={""}
+        />
+        <div class="w-full my-[16px] text-center">
+            <Button
+                class="w-fit  my-[16px]"
+                onClick={() => navigate("/account")}
+                text="Manage Credentials"
+                action
+            />
         </div>
-    {/if} -->
+    {/if}
 {:else}
-    <div class="">Connect Signer to Create Credential</div>
+    <div class="w-full text-center">
+        <b>No Signer connected</b><br />
+        Please, connect a Signer to Create Credentials
+    </div>
 {/if}
 
 <style>
     .form-text-input {
         @apply w-full bg-gray-100 rounded-md py-2 px-2 my-4;
     }
-    .form-text-input-action {
+    /* .form-text-input-action {
         @apply bg-gray-100 rounded-md py-4 px-2 my-4;
     }
-    .form-text-input-action::placeholder,
+    .form-text-input-action::placeholder, */
     .form-text-input::placeholder {
         @apply font-bold text-gray-350;
     }

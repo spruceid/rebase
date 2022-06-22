@@ -6,7 +6,8 @@ export interface KeyType {
             address: string;
             chain_id: string;
         };
-    };
+    },
+    web?: string;
 }
 export type Workflow = "statement" | "signature" | "witness" | "complete"
 
@@ -72,22 +73,24 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
         case "dns":
             return {
                 icon: ICONS[t],
-                title: `${capitalizeFirstLetter(t)} Verification Workflow`,
-                subtitle: ``,
-                statement: "Please enter the web domain you wish to prove ownership of.",
-                statement_label: "domain",
-                statement_placeholder: `Enter your ${capitalizeFirstLetter(t)} handle`,
-                signature: `Sign the message presented to you containing your ${capitalizeFirstLetter(t)} handle and additional 
+                title: `${t.toUpperCase()} Verification Workflow`,
+                subtitle: `This process is used to link your Web Domain to your identifier by signing a 
+                        message using your private key, entering your domain, and finally, generating
+                        a message.`,
+                statement: "Enter the Web Domain you wish to prove ownership of.",
+                statement_label: "Enter the Domain",
+                statement_placeholder: `Enter your domain`,
+                signature: `Sign the message presented to you containing your domain and additional 
                             information.`,
                 signature_label: `Signature Prompt`,
                 witness: `In your DNS settings, add a new TXT record for @ and copy and put the
                         following text as the value. Keep in mind that DNS propagation can take
                         some time. This process may take a few minutes for the verification to
                         successfully complete.`,
-                witness_label: "N/A",
+                witness_label: "Add a TXT record with the Message",
                 witness_placeholder: "N/A",
             }
     }
 
-    throw new Error(`No instructions found for credential type: ${capitalizeFirstLetter(t)}`);
+    throw new Error(`No instructions found for credential type: ${t}`);
 }

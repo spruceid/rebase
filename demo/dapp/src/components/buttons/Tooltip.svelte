@@ -2,10 +2,11 @@
   export let tooltip: string = "";
   export { clazz as class };
   export let bottom: boolean = false;
+  export let left: boolean = false;
   let clazz: string = "";
 </script>
 
-<div class={clazz} class:bottom data-tooltip={tooltip}>
+<div class={clazz} class:bottom class:left data-tooltip={tooltip}>
   <slot />
 </div>
 
@@ -52,6 +53,10 @@
   [data-tooltip].bottom:before {
     bottom: -60%;
   }
+  [data-tooltip].left:before {
+    left: -250%;
+    bottom: -20%;
+  }
 
   [data-tooltip]:after {
     position: absolute;
@@ -80,7 +85,12 @@
   }
 
   [data-tooltip].bottom:after {
-    bottom: 4%;
+    bottom: 3%;
     transform: rotate(180deg);
+  }
+  [data-tooltip].left:after {
+    left: -45%;
+    bottom: 45%;
+    transform: rotate(-90deg);
   }
 </style>

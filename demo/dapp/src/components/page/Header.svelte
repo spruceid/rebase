@@ -33,6 +33,10 @@
             });
         }
     };
+
+    const capitalizeFirstLetter = (string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    };
 </script>
 
 <div
@@ -43,23 +47,24 @@
     </Link>
     {#if !signer}
         <DropdownButton
-            class="menu focus:outline-none focus:shadow-solid w-full min-w-42 my-[16px] rounded-xl border border-gray-400"
+            class="menu focus:outline-none focus:shadow-solid w-full min-w-42 my-[16px] rounded-xl border border-gray-250"
             text="Connect"
         >
+            <!-- class="origin-top-right absolute right-0 w-48 py-2 mt-1 bg-white rounded-xl shadow-md" -->
             <div
                 in:scale={{ duration: 100, start: 0.95 }}
                 out:scale={{ duration: 75, start: 0.95 }}
-                class="origin-top-right absolute right-0 w-48 py-2 mt-1 bg-white rounded-xl shadow-md"
+                class="origin-top-right absolute right-4 w-48 py-0 mt-1 bg-dark-1 rounded-xl shadow-md"
             >
-                <div class="px-4 py-3 text-sm text-gray-900">
+                <div class="px-4 py-3 text-sm text-white text-center">
                     <div>Select Signer Type To Connect</div>
                 </div>
                 <hr />
                 {#each signerTypes as t}
                     <Button
-                        class="w-full my-[4px]"
+                        class="w-full bg-dark-1 text-white"
                         onClick={() => connectNew(t)}
-                        text={t}
+                        text={capitalizeFirstLetter(t)}
                     />
                 {/each}
             </div>
@@ -68,14 +73,14 @@
         <div class="flex flex-wrap">
             <Tooltip tooltip="Currently using {_currentType} signer" bottom>
                 <Button
-                    class="w-full max-w-42 my-[16px] border border-gray-400"
+                    class="w-full max-w-42 my-[16px] border border-gray-250"
                     onClick={() => navigate("/account")}
                     text={signer.id()}
                 />
             </Tooltip>
             <DropdownButton
                 bind:this={moreDropdown}
-                class="w-[55px] my-[16px] pl-[16px] rounded-xl border border-gray-400"
+                class="w-[55px] my-[16px] pl-[16px] rounded-xl border border-gray-250"
                 ml
                 text="&#8226;&#8226;&#8226;"
             >

@@ -6,16 +6,17 @@ export interface Signer {
     id: () => string;
 };
 
-export type SignerType = "ethereum" ; // "ed25519" | "tezos" | "solana" | "etc"
-export const signerTypes: Array<SignerType> = ["ethereum", ]; //  "ed25519"
+export type SignerType = "ethereum"; // | "tezos" | "solana" | "etc"
+export const signerTypes: Array<SignerType> = ["ethereum"];
 
 export type SignerMap = Record<SignerType, Signer | false>;
 
 
 export const connectSigner = async (signerType: SignerType): Promise<Signer> => {
+    let sign;
+    let id;
     switch (signerType) {
-        // case "ed25519": 
-        case "ethereum": 
+        case "ethereum":
             const providerOptions = {
                 /* See Provider Options Section */
             };
@@ -34,17 +35,17 @@ export const connectSigner = async (signerType: SignerType): Promise<Signer> => 
             }
 
             const ids = await provider.listAccounts();
-            if (ids.length <= 0) { 
+            if (ids.length <= 0) {
                 throw new Error("No ids found in ethereum connection");
             }
 
-            const sign = async (statement: string): Promise<string> => {
+            sign = async (statement: string): Promise<string> => {
                 return s.signMessage(statement)
             };
 
-            const id = (): string => ids[0];
+            id = (): string => ids[0];
 
-            return {sign, id};
+            return { sign, id };
 
         default:
             throw new Error(`Unknown signerType: ${signerType}`);
@@ -53,8 +54,7 @@ export const connectSigner = async (signerType: SignerType): Promise<Signer> => 
 
 export const disconnectSigner = async (signerType: SignerType): Promise<void> => {
     switch (signerType) {
-        // case "ed25519": 
-        case "ethereum": 
+        case "ethereum":
             const providerOptions = {
                 /* See Provider Options Section */
             };

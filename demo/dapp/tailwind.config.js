@@ -18,6 +18,7 @@ module.exports = {
           550: '#429383',
         },
         gray: {
+          250: '#B3B3B3',
           350: '#AAAAAA',
           370: '#A0A4A8',
           650: '#3E3E3E',
@@ -136,8 +137,7 @@ module.exports = {
         green: ['2px solid #429383', '-6px'],
       },
       fontFamily: {
-        satoshi: ['Satoshi'],
-        inter: ['Inter'],
+        "basier-square": ['Basier Square'],
       },
     },
   },

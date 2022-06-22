@@ -20,19 +20,51 @@
 	@tailwind components;
 	@tailwind utilities;
 	@font-face {
-		font-family: "Satoshi";
+		font-family: "Basier Square";
 		font-style: normal;
-		font-weight: 100 700;
-		src: url("/fonts/Satoshi.eot"); /* IE9 Compat Modes */
+		font-weight: 400;
+		src: url("/fonts/basier-square-regular.eot"); /* IE9 Compat Modes */
 		src: local(""),
-			url("/fonts/Satoshi.eot?#iefix")
+			url("/fonts/basier-square-regular.eot?#iefix")
 				format("embedded-opentype"),
-			/* IE6-IE8 */ url("/fonts/Satoshi.woff2") format("woff2"),
-			/* Super Modern Browsers */ url("/fonts/Satoshi.woff")
+			/* IE6-IE8 */ url("/fonts/basier-square-regular.woff2") format("woff2"),
+			/* Super Modern Browsers */ url("/fonts/basier-square-regular.woff")
 				format("woff"),
-			/* Modern Browsers */ url("/fonts/Satoshi.ttf")
+			/* Modern Browsers */ url("/fonts/basier-square-regular.ttf")
 				format("truetype"),
-			/* Safari, Android, iOS */ url("/fonts/Satoshi.svg#Satoshi")
+			/* Safari, Android, iOS */ url("/fonts/basier-square-regular.svg#Basier Square")
+				format("svg"); /* Legacy iOS */
+	}
+	@font-face {
+		font-family: "Basier Square";
+		font-style: normal;
+		font-weight: 600;
+		src: url("/fonts/basier-square-medium.eot"); /* IE9 Compat Modes */
+		src: local(""),
+			url("/fonts/basier-square-medium.eot?#iefix")
+				format("embedded-opentype"),
+			/* IE6-IE8 */ url("/fonts/basier-square-medium.woff2") format("woff2"),
+			/* Super Modern Browsers */ url("/fonts/basier-square-medium.woff")
+				format("woff"),
+			/* Modern Browsers */ url("/fonts/basier-square-medium.ttf")
+				format("truetype"),
+			/* Safari, Android, iOS */ url("/fonts/basier-square-medium.svg#Basier Square")
+				format("svg"); /* Legacy iOS */
+	}
+	@font-face {
+		font-family: "Basier Square";
+		font-style: normal;
+		font-weight: 700;
+		src: url("/fonts/basier-square-bold.eot"); /* IE9 Compat Modes */
+		src: local(""),
+			url("/fonts/basier-square-bold.eot?#iefix")
+				format("embedded-opentype"),
+			/* IE6-IE8 */ url("/fonts/basier-square-bold.woff2") format("woff2"),
+			/* Super Modern Browsers */ url("/fonts/basier-square-bold.woff")
+				format("woff"),
+			/* Modern Browsers */ url("/fonts/basier-square-bold.ttf")
+				format("truetype"),
+			/* Safari, Android, iOS */ url("/fonts/basier-square-bold.svg#Basier Square")
 				format("svg"); /* Legacy iOS */
 	}
 	.tooltip {
@@ -43,14 +75,14 @@
 	}
 	html,
 	body {
-		@apply relative bg-purple-light w-screen min-h-screen m-0 p-0 text-base flex font-satoshi flex-col overflow-x-hidden;
+		@apply relative bg-purple-light w-screen min-h-screen m-0 p-0 text-base flex font-basier-square font-normal flex-col overflow-x-hidden;
 	}
 	h1,
 	h2,
 	h3,
 	h4,
 	h5 {
-		@apply font-satoshi font-semibold text-gray-850;
+		@apply font-basier-square font-semibold text-gray-850;
 	}
 	body {
 		@apply text-gray-850;
@@ -60,7 +92,7 @@
 	} */
 	td,
 	th {
-		@apply font-satoshi font-normal;
+		@apply font-basier-square font-normal;
 	}
 	pre {
 		white-space: pre-wrap; /* Since CSS 2.1 */

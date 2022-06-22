@@ -2,19 +2,23 @@
     import {
         _currentType,
         _signerMap,
-        currentType,
-        signerMap,
         signer,
         claims,
         getKeyType,
         sign,
         Claim,
         KeyType,
-        Signer,
+        alert,
     } from "../../util";
-    import { Link } from "svelte-navigator";
+    import { useNavigate } from "svelte-navigator";
 
-    $: errMsg = "";
+    import WitnessFormHeader from "./WitnessFormHeader.svelte";
+    import GlobeIcon from "../icons/GlobeIcon.svelte";
+    import WitnessFormStepper from "./WitnessFormStepper.svelte";
+    import Button from "../buttons/Button.svelte";
+
+    const navigate = useNavigate();
+
     $: display1 = "";
     $: display2 = "";
     $: statement = "";
@@ -23,6 +27,7 @@
 
     let key1: KeyType | false = false;
     let key2: KeyType | false = false;
+    let loading: boolean = false;
 
     let c: Array<Claim> = [];
     claims.subscribe((x) => (c = x));
@@ -32,7 +37,7 @@
     const getKey1 = () => {
         key1 = getKeyType();
         if (signer) {
-            display1 = `First signer is ${_currentType} signer: ${signer.id()}`;
+            display1 = `${_currentType} signer: ${signer.id()}`;
         }
     };
 
@@ -40,11 +45,10 @@
         key2 = getKeyType();
 
         if (JSON.stringify(key1) === JSON.stringify(key2)) {
+            key2 = false;
             throw new Error("Cannot use same signer for both entries");
-        }
-
-        if (signer) {
-            display2 = `Second signer is ${_currentType} signer: ${signer.id()}`;
+        } else if (signer) {
+            display2 = `${_currentType} signer: ${signer.id()}`;
         }
     };
 
@@ -164,122 +168,267 @@
                 current = "complete";
                 return;
         }
-
-        throw new Error(`Unknown workflow state: ${current}`);
+    };
+    const back = () => {
+        switch (current as Workflow) {
+            case "key2":
+                current = "key1";
+                return;
+            case "sig2":
+                current = "key2";
+                return;
+            case "sig1":
+                current = "sig2";
+                return;
+            case "complete":
+                current = "sig1";
+                return;
+        }
     };
 </script>
 
-{#if errMsg}
-    <p class="inner-center">{errMsg}</p>
-{/if}
-
-<p class="inner-center">{display1 ? display1 : "No first signer set"}</p>
-<p class="inner-center">{display2 ? display2 : "No second signer set"}</p>
-
-<h4 class="inner-center">Step 1: Connect First Key</h4>
-<p class="inner-center">
-    Using the connection controls in the header, select the first of two signers
-    you would like to link.
-</p>
-<div class="inner-center">
-    <label for="connect-key-1"> Is the first signer connected? </label>
-    <button
-        name="connect-key-1"
-        disabled={current !== "key1"}
-        on:click={() => {
-            try {
-                getKey1();
-                advance();
-            } catch (e) {
-                errMsg = `${e?.message ? e.message : e}`;
-            }
-        }}>Confirm</button
+<WitnessFormHeader
+    icon={GlobeIcon}
+    title={"Self Signed Verification Workflow"}
+    subtitle={`Fist signer is ${display1 ? display1 : "none"}`}
+    subsubtitle={`Second signer is ${display2 ? display2 : "none"}`}
+/>
+{#if current === "key1"}
+    <WitnessFormStepper
+        step={1}
+        totalSteps={5}
+        label={"Connect First Key"}
+        question={"Using the connection controls in the header, select the first of two signers you would like to link"}
+        labelFor={"form-step-q-1-i-1"}
     >
-</div>
-{#if current !== "key1"}
-    <h4 class="inner-center">Step 2: Connect Second Key</h4>
-    <p class="inner-center">
-        Using the connection controls in the header, select the second
-        (DIFFERENT than the key used in the last step) of two signers you would
-        like to link.
-    </p>
-    <div class="inner-center">
-        <label for="connect-key-2"> Is the second signer connected? </label>
-        <button
-            name="connect-key-2"
-            disabled={current !== "key2"}
-            on:click={async () => {
+        <div id="form-step-q-1-i-1">
+            <Button
+                class="w-fit mt-[16px]"
+                disabled={current !== "key1" || key1 !== false}
+                onClick={async () => {
+                    try {
+                        getKey1();
+                    } catch (e) {
+                        alert.set({
+                            variant: "error",
+                            message: e?.message ? e.message : e,
+                        });
+                    }
+                }}
+                text="Connect First"
+                action
+            />
+        </div>
+    </WitnessFormStepper>
+    <div class="w-full my-[16px] text-center">
+        <Button
+            class="w-2/5"
+            onClick={() => navigate("/account")}
+            text="Back"
+            primary
+        />
+        <Button
+            class="w-2/5"
+            disabled={current !== "key1" || !key1}
+            onClick={() => {
                 try {
-                    getKey2();
-                    await getStatement();
                     advance();
                 } catch (e) {
-                    errMsg = `${e?.message ? e.message : e}`;
+                    alert.set({
+                        variant: "error",
+                        message: e?.message ? e.message : e,
+                    });
                 }
-            }}>Confirm</button
-        >
+            }}
+            text="Next"
+            action
+        />
     </div>
 {/if}
-{#if current !== "key1" && current !== "key2"}
-    <h4 class="inner-center">Step 3: Sign with the Second Key</h4>
-    <p class="inner-center">
-        Keeping the same signer as was connected in the last step, sign the
-        statement.
-    </p>
-    <div class="inner-center">
-        <button
-            name="connect-key-1"
-            disabled={current !== "sig2"}
-            on:click={async () => {
+{#if current === "key2"}
+    <WitnessFormStepper
+        step={2}
+        totalSteps={5}
+        label={"Connect Second Key"}
+        question={"Using the connection controls in the header, select the second (DIFFERENT than the key used in the last step) of two signers you would like to link"}
+        labelFor={"form-step-q-2-i-1"}
+    >
+        <div id="form-step-q-2-i-1">
+            <Button
+                {loading}
+                class="w-fit mt-[16px]"
+                disabled={current !== "key2" || key2 !== false}
+                onClick={async () => {
+                    try {
+                        loading = true;
+                        getKey2();
+                        await getStatement();
+                    } catch (e) {
+                        alert.set({
+                            variant: "error",
+                            message: e?.message ? e.message : e,
+                        });
+                    }
+                    loading = false;
+                }}
+                text="Connect Second"
+                action
+            />
+        </div>
+    </WitnessFormStepper>
+    <div class="w-full my-[16px] text-center">
+        <Button
+            class="w-2/5"
+            onClick={back}
+            text="Back"
+            primary
+            disabled={loading}
+        />
+        <Button
+            class="w-2/5"
+            disabled={current !== "key2" || !key2 || loading}
+            onClick={() => {
                 try {
-                    await signKey2();
                     advance();
                 } catch (e) {
-                    errMsg = `${e?.message ? e.message : e}`;
+                    alert.set({
+                        variant: "error",
+                        message: e?.message ? e.message : e,
+                    });
                 }
-            }}>Sign with Second Key</button
-        >
+            }}
+            text="Next"
+            action
+        />
     </div>
 {/if}
-{#if current !== "key1" && current !== "key2" && current !== "sig2"}
-    <h4 class="inner-center">Step 4: Sign with First Key</h4>
-    <p class="inner-center">
-        Using the controls in the header, reconnect the signer that was
-        connected for the first step, then sign the statement. The signatures
-        will then be used to generate a credential.
-    </p>
-    <div class="inner-center">
-        <button
-            name="connect-key-1"
-            disabled={current !== "sig1"}
-            on:click={async () => {
+{#if current === "sig2"}
+    <WitnessFormStepper
+        step={3}
+        totalSteps={5}
+        label={"Sign with the Second Key"}
+        question={"Keeping the same signer as was connected in the last step, sign the statement"}
+        labelFor={"form-step-q-3-i-1"}
+    >
+        <div id="form-step-q-3-i-1">
+            <Button
+                {loading}
+                class="w-2/5 mt-[16px]"
+                disabled={current !== "sig2" || signature2 !== ""}
+                onClick={async () => {
+                    try {
+                        loading = true;
+                        await signKey2();
+                    } catch (e) {
+                        alert.set({
+                            variant: "error",
+                            message: e?.message ? e.message : e,
+                        });
+                    }
+                    loading = false;
+                }}
+                text="Sign"
+                action
+            />
+        </div>
+    </WitnessFormStepper>
+    <div class="w-full my-[16px] text-center">
+        <Button
+            class="w-2/5"
+            onClick={back}
+            text="Back"
+            primary
+            disabled={loading}
+        />
+        <Button
+            class="w-2/5"
+            disabled={current !== "sig2" || signature2 === "" || loading}
+            onClick={() => {
                 try {
-                    await signKey1();
-                    await getCredential();
                     advance();
                 } catch (e) {
-                    errMsg = `${e?.message ? e.message : e}`;
+                    alert.set({
+                        variant: "error",
+                        message: e?.message ? e.message : e,
+                    });
                 }
-            }}>Sign with First Key</button
-        >
+            }}
+            text="Next"
+            action
+        />
+    </div>
+{/if}
+{#if current === "sig1"}
+    <WitnessFormStepper
+        step={4}
+        totalSteps={5}
+        label={"Sign with First Key"}
+        question={"Using the controls in the header, reconnect the signer that was connected for the first step, then sign the statement. The signatures will then be used to generate a credential"}
+        labelFor={"form-step-q-4-i-1"}
+    >
+        <div id="form-step-q-4-i-1">
+            <Button
+                {loading}
+                class="w-2/5 mt-[16px]"
+                disabled={current !== "sig1" || signature1 !== ""}
+                onClick={async () => {
+                    try {
+                        loading = true;
+                        await signKey1();
+                        await getCredential();
+                    } catch (e) {
+                        alert.set({
+                            variant: "error",
+                            message: e?.message ? e.message : e,
+                        });
+                    }
+                    loading = false;
+                }}
+                text="Sign"
+                action
+            />
+        </div>
+    </WitnessFormStepper>
+    <div class="w-full my-[16px] text-center">
+        <Button
+            class="w-2/5"
+            onClick={back}
+            text="Back"
+            primary
+            disabled={loading}
+        />
+        <Button
+            class="w-2/5"
+            disabled={current !== "sig1" || signature1 === "" || loading}
+            onClick={() => {
+                try {
+                    advance();
+                } catch (e) {
+                    alert.set({
+                        variant: "error",
+                        message: e?.message ? e.message : e,
+                    });
+                }
+            }}
+            text="Next"
+            action
+        />
     </div>
 {/if}
 {#if current === "complete"}
-    <div class="inner-center">
-        <h4>Step 4: Complete!</h4>
-        <p>
-            Please return to the <Link to="/account">main page</Link> to download
-            your credential
-        </p>
+    <WitnessFormStepper
+        step={5}
+        totalSteps={5}
+        label={"Complete"}
+        question={"Please click the button to manage your credentials"}
+        labelFor={""}
+    />
+    <div class="w-full my-[16px] text-center">
+        <Button
+            class="w-fit  my-[16px]"
+            onClick={() => navigate("/account")}
+            text="Manage Credentials"
+            action
+        />
     </div>
 {/if}
-
-<style>
-    .inner-center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: 5vh;
-        margin-right: 5vh;
-    }
-</style>

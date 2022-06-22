@@ -2,7 +2,7 @@ import type { DiscordIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, Sol
 import { parseJWT } from './jwt';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
-export type CredentialType = "twitter" | "discord" | "github" | "dns" | "self_signed"
+export type CredentialType = "twitter" | "discord" | "github" | "dns" | "self_signed" | "ethereum" | "solana"
 export type ClaimIcon = typeof TwitterIcon 
     | typeof EthereumIcon 
     | typeof DiscordIcon 
