@@ -5,7 +5,7 @@
     import { useNavigate } from "svelte-navigator";
     import { onMount } from "svelte";
 
-    export let params: any = {};
+    // export let params: any = {};
 
     const navigate = useNavigate();
 
