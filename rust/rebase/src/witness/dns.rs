@@ -178,3 +178,60 @@ impl Generator<Claim, Schema> for ClaimGenerator {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::signer::ed25519::Ed25519;
+    use crate::util::util::{
+        test_ed25519_did, test_eth_did, test_witness_signature, MockGenerator, TestKey, TestWitness,
+    };
+    use crate::witness::witness::Generator;
+
+    fn mock_proof(key: fn() -> SignerDID) -> Claim {
+        Claim {
+            // TODO: Make test util
+            key_type: key(),
+            domain: "example.com".to_owned(),
+            prefix: "not_needed".to_owned(),
+        }
+    }
+
+    #[async_trait(?Send)]
+    impl Generator<Claim, Schema> for MockGenerator {
+        async fn locate_post(&self, _proof: &Claim) -> Result<String, WitnessError> {
+            Ok(self.post.clone())
+        }
+
+        fn _unchecked_to_schema(
+            &self,
+            proof: &Claim,
+            _statement: &str,
+            _signature: &str,
+        ) -> Result<Schema, WitnessError> {
+            Ok(Schema {
+                domain: proof.domain.clone(),
+                key_type: proof.key_type.clone(),
+            })
+        }
+    }
+
+    #[tokio::test]
+    async fn mock_dns() {
+        let sig = test_witness_signature(TestWitness::DNS, TestKey::Eth).unwrap();
+        let did = mock_proof(test_eth_did);
+        let gen = MockGenerator::new(sig, || mock_proof(test_eth_did)).unwrap();
+
+        gen.unsigned_credential(&did, &Ed25519::new(&test_ed25519_did()).unwrap())
+            .await
+            .unwrap();
+
+        let sig = test_witness_signature(TestWitness::DNS, TestKey::Ed25519).unwrap();
+        let did = mock_proof(test_ed25519_did);
+        let gen = MockGenerator::new(sig, || mock_proof(test_ed25519_did)).unwrap();
+
+        gen.unsigned_credential(&did, &Ed25519::new(&test_ed25519_did()).unwrap())
+            .await
+            .unwrap();
+    }
+}

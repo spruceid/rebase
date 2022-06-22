@@ -253,7 +253,8 @@ impl Ed25519 {
 #[derive(Deserialize, Serialize)]
 pub struct Did {
 	#[serde(rename = "@context")]
-	pub context: Vec<Context>,
+	// pub context: Vec<Context>,
+	pub context: String,
 	pub id: String,
 	#[serde(rename = "verificationMethod")]
 	pub verification_method: Vec<VerificationMethod>,

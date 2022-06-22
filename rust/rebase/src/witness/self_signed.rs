@@ -34,18 +34,6 @@ pub struct Claim {
 
 impl SchemaType for Claim {
     fn context(&self) -> Result<serde_json::Value, SchemaError> {
-        // Ok(json!([
-        //     "https://www.w3.org/2018/credentials/v1",
-        //     {
-        //         "SelfSignedControl": "https://example.com/SelfSignedControl",
-        //         "id": "https://example.com/id",
-        //         "sameAs": "https://example.com/sameAs",
-        //         "signature_1": "https://example.com/signature_1",
-        //         "signature_2": "https://example.com/signature_2",
-        //         "statement": "https://example.com/statement",
-        //     }
-        // ]))
-
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
             {
@@ -191,4 +179,195 @@ impl Claim {
             )),
         }
         */
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::signer::ed25519::Ed25519;
+    use crate::util::util::{
+        test_ed25519_did, test_ed25519_did_2, test_eth_did, test_eth_did_2, test_witness_signature,
+        TestKey, TestWitness, TEST_2KEY_ED25519_SIG_1, TEST_2KEY_ED25519_SIG_2,
+        TEST_2KEY_ETH_SIG_1, TEST_2KEY_ETH_SIG_2,
+    };
+
+    async fn mock_proof(
+        key_1: fn() -> SignerDID,
+        key_2: fn() -> SignerDID,
+        sig_1: &str,
+        sig_2: &str,
+    ) -> Result<Claim, WitnessError> {
+        Claim::new(
+            // TODO: Make test util
+            Opts {
+                key_1: key_1(),
+                key_2: key_2(),
+            },
+            sig_1.to_owned(),
+            sig_2.to_owned(),
+        )
+        .await
+    }
+
+    #[tokio::test]
+    async fn test_eth_claim() {
+        // The valid case.
+        mock_proof(
+            test_eth_did,
+            test_eth_did_2,
+            TEST_2KEY_ETH_SIG_1,
+            TEST_2KEY_ETH_SIG_2,
+        )
+        .await
+        .unwrap()
+        .unsigned_credential(&Ed25519::new(&test_ed25519_did()).unwrap())
+        .await
+        .unwrap();
+
+        // Swapped signatures.
+        match mock_proof(
+            test_eth_did,
+            test_eth_did_2,
+            TEST_2KEY_ETH_SIG_2,
+            TEST_2KEY_ETH_SIG_1,
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Reversed signatures were incorrectly validated!"),
+        }
+
+        // Swapped keys.
+        match mock_proof(
+            test_eth_did_2,
+            test_eth_did,
+            TEST_2KEY_ETH_SIG_1,
+            TEST_2KEY_ETH_SIG_2,
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Reversed keys were incorrectly validated!"),
+        }
+
+        // Unrelated signatures one of three.
+        match mock_proof(
+            test_eth_did,
+            test_eth_did_2,
+            TEST_2KEY_ETH_SIG_1,
+            &test_witness_signature(TestWitness::DNS, TestKey::Eth).unwrap(),
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Invalid signature in signature_2 was incorrectly validated!"),
+        }
+
+        // two of three
+        match mock_proof(
+            test_eth_did,
+            test_eth_did_2,
+            &test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap(),
+            TEST_2KEY_ETH_SIG_2,
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Invalid signature in signature_1 was incorrectly validated!"),
+        }
+
+        // three of three
+        match mock_proof(
+            test_eth_did,
+            test_eth_did_2,
+            TEST_2KEY_ETH_SIG_2,
+            &test_witness_signature(TestWitness::Twitter, TestKey::Eth).unwrap(),
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Invalid signatures in both signatures were incorrectly validated!"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_ed25519_claim() {
+        // The valid case.
+        mock_proof(
+            test_ed25519_did,
+            test_ed25519_did_2,
+            TEST_2KEY_ED25519_SIG_1,
+            TEST_2KEY_ED25519_SIG_2,
+        )
+        .await
+        .unwrap()
+        .unsigned_credential(&Ed25519::new(&test_ed25519_did()).unwrap())
+        .await
+        .unwrap();
+
+        // Swapped signatures.
+        match mock_proof(
+            test_ed25519_did,
+            test_ed25519_did_2,
+            TEST_2KEY_ED25519_SIG_2,
+            TEST_2KEY_ED25519_SIG_1,
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Reversed signatures were incorrectly validated!"),
+        }
+
+        // Swapped keys.
+        match mock_proof(
+            test_ed25519_did_2,
+            test_ed25519_did,
+            TEST_2KEY_ED25519_SIG_1,
+            TEST_2KEY_ED25519_SIG_2,
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Reversed keys were incorrectly validated!"),
+        }
+
+        // Unrelated signatures one of three.
+        match mock_proof(
+            test_ed25519_did,
+            test_ed25519_did_2,
+            TEST_2KEY_ED25519_SIG_1,
+            &test_witness_signature(TestWitness::DNS, TestKey::Ed25519).unwrap(),
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Invalid signature in signature_2 was incorrectly validated!"),
+        }
+
+        // two of three
+        match mock_proof(
+            test_ed25519_did,
+            test_ed25519_did_2,
+            &test_witness_signature(TestWitness::GitHub, TestKey::Ed25519).unwrap(),
+            TEST_2KEY_ED25519_SIG_2,
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Invalid signature in signature_1 was incorrectly validated!"),
+        }
+
+        // three of three
+        match mock_proof(
+            test_ed25519_did,
+            test_ed25519_did_2,
+            TEST_2KEY_ED25519_SIG_2,
+            &test_witness_signature(TestWitness::Twitter, TestKey::Ed25519).unwrap(),
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Invalid signatures in both signatures were incorrectly validated!"),
+        }
+    }
 }
