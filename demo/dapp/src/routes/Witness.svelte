@@ -5,6 +5,7 @@
     import { WitnessForm, BasePage, SelfSignedForm } from "components";
 
     export let type: CredentialType;
+    
     $: inst = null;
     $: errMsg = "";
     $: loading = true;

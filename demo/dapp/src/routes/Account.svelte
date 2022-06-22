@@ -3,6 +3,9 @@
     import { BasePage, ToggleButton, Button } from "components";
     import { accountState, AccountState } from "util";
     import { useNavigate } from "svelte-navigator";
+    import { onMount } from "svelte";
+
+    export let params: any = {};
 
     const navigate = useNavigate();
 
@@ -16,6 +19,8 @@
             accountState.set(option);
         }
     };
+
+    onMount(() => {});
 </script>
 
 <BasePage>

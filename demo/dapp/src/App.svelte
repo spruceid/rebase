@@ -7,8 +7,8 @@
 	<Route path="/">
 		<Explainer />
 	</Route>
-	<Route path="account">
-		<Account />
+	<Route path="account" let:params>
+		<Account {params} />
 	</Route>
 	<Route path="create/witness/:type" let:params>
 		<Witness type={params.type} />
@@ -19,54 +19,7 @@
 	@tailwind base;
 	@tailwind components;
 	@tailwind utilities;
-	@font-face {
-		font-family: "Basier Square";
-		font-style: normal;
-		font-weight: 400;
-		src: url("/fonts/basier-square-regular.eot"); /* IE9 Compat Modes */
-		src: local(""),
-			url("/fonts/basier-square-regular.eot?#iefix")
-				format("embedded-opentype"),
-			/* IE6-IE8 */ url("/fonts/basier-square-regular.woff2") format("woff2"),
-			/* Super Modern Browsers */ url("/fonts/basier-square-regular.woff")
-				format("woff"),
-			/* Modern Browsers */ url("/fonts/basier-square-regular.ttf")
-				format("truetype"),
-			/* Safari, Android, iOS */ url("/fonts/basier-square-regular.svg#Basier Square")
-				format("svg"); /* Legacy iOS */
-	}
-	@font-face {
-		font-family: "Basier Square";
-		font-style: normal;
-		font-weight: 600;
-		src: url("/fonts/basier-square-medium.eot"); /* IE9 Compat Modes */
-		src: local(""),
-			url("/fonts/basier-square-medium.eot?#iefix")
-				format("embedded-opentype"),
-			/* IE6-IE8 */ url("/fonts/basier-square-medium.woff2") format("woff2"),
-			/* Super Modern Browsers */ url("/fonts/basier-square-medium.woff")
-				format("woff"),
-			/* Modern Browsers */ url("/fonts/basier-square-medium.ttf")
-				format("truetype"),
-			/* Safari, Android, iOS */ url("/fonts/basier-square-medium.svg#Basier Square")
-				format("svg"); /* Legacy iOS */
-	}
-	@font-face {
-		font-family: "Basier Square";
-		font-style: normal;
-		font-weight: 700;
-		src: url("/fonts/basier-square-bold.eot"); /* IE9 Compat Modes */
-		src: local(""),
-			url("/fonts/basier-square-bold.eot?#iefix")
-				format("embedded-opentype"),
-			/* IE6-IE8 */ url("/fonts/basier-square-bold.woff2") format("woff2"),
-			/* Super Modern Browsers */ url("/fonts/basier-square-bold.woff")
-				format("woff"),
-			/* Modern Browsers */ url("/fonts/basier-square-bold.ttf")
-				format("truetype"),
-			/* Safari, Android, iOS */ url("/fonts/basier-square-bold.svg#Basier Square")
-				format("svg"); /* Legacy iOS */
-	}
+	
 	.tooltip {
 		@apply invisible absolute;
 	}
