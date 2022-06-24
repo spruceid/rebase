@@ -1,6 +1,6 @@
 <script lang="ts">
     import { claims, Claim } from "util";
-    import ObtainClaim from "./ObtainedClaim.svelte";
+    import { ObtainedClaim } from "components";
 
     let bcClaims: Array<Claim> = [];
     let pbClaims: Array<Claim> = [];
@@ -28,12 +28,12 @@
 
 <div class="w-full">
     <h3 class="py-4 px-4">My Credentials</h3>
-    <div class="max-h-full overflow-auto px-4">
+    <div class="max-h-[350px] overflow-auto px-4">
         {#each pbClaims as claim}
-            <ObtainClaim {claim} {removeClaim} />
+            <ObtainedClaim {claim} {removeClaim} />
         {/each}
         {#each bcClaims as claim}
-            <ObtainClaim {claim} {removeClaim} />
+            <ObtainedClaim {claim} {removeClaim} />
         {/each}
     </div>
 </div>

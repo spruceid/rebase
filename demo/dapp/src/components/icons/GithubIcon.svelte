@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { iconColor as color } from "../../util";
+  import { iconColor as color } from "util";
 </script>
 
 <svg width="20" height="15" viewBox="0 0 32 32">

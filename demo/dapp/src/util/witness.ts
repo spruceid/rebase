@@ -1,4 +1,4 @@
-import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon } from "components";
+import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon } from "components/icons";
 import type { CredentialType } from "./claim";
 export interface KeyType {
     pkh: {

@@ -1,40 +1,52 @@
 <script lang="ts">
-    import { Available, Obtained } from "components/claims";
-    import { BasePage, ToggleButton, Button } from "components";
-    import { accountState, AccountState } from "util";
+    import {
+        Available,
+        Obtained,
+        BasePage,
+        ToggleButton,
+        Button,
+    } from "components";
+    import { AccountState } from "util";
     import { useNavigate } from "svelte-navigator";
     import { onMount } from "svelte";
 
-    // export let params: any = {};
+    export let location: any = {};
 
     const navigate = useNavigate();
 
-    let state: AccountState = "available";
-    accountState.subscribe((x) => {
-        state = x;
-    });
+    let state: AccountState;
 
     const changeAccountState = (option) => {
         if (option !== state) {
-            accountState.set(option);
+            state = option;
         }
     };
 
-    onMount(() => {});
+    onMount(() => {
+        if (location.hash.includes("obtained")) {
+            state = "obtained";
+        } else {
+            state = "available";
+        }
+    });
 </script>
 
 <BasePage>
     <div class="min-h-[577px] h-full flex flex-wrap">
         <div class="w-full">
-            <ToggleButton
-                class=""
-                onClick={changeAccountState}
-                options={["available", "obtained"]}
-            />
+            {#if state}
+                <ToggleButton
+                    class=""
+                    selected={state}
+                    onClick={changeAccountState}
+                    options={["available", "obtained"]}
+                />
+            {/if}
         </div>
         {#if state == "available"}
             <Available />
-        {:else}
+        {/if}
+        {#if state == "obtained"}
             <Obtained />
         {/if}
 

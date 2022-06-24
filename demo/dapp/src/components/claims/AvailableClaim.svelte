@@ -1,7 +1,8 @@
 <script lang="ts">
     import type { Claim } from "util";
     import { useNavigate } from "svelte-navigator";
-    import Tooltip from "../buttons/Tooltip.svelte";
+    import { Tooltip } from "components";
+
     const navigate = useNavigate();
 
     export let claim: Claim;

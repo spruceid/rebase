@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { ClipboardIcon } from 'components';
   import { alert } from 'util';
+  import { ClipboardIcon } from 'components';
   import { onMount, SvelteComponent } from 'svelte';
 
   export let icon: typeof SvelteComponent = null;

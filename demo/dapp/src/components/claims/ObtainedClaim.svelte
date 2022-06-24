@@ -1,8 +1,7 @@
 <script lang="ts">
     import { Claim, credentialToDisplay } from "util";
-    import { DownloadIcon, DeleteIcon } from "components/icons";
-    import { IconLink } from "components";
-    import IconButton from "../buttons/IconButton.svelte";
+    import { IconButton, DownloadIcon, DeleteIcon, IconLink } from "components";
+
     export let claim: Claim;
     export let removeClaim: Function;
 
@@ -32,16 +31,17 @@
                     class="w-full px-4 flex flex-wrap justify-between items-center"
                 >
                     {#if credentialToDisplay(credential).type === "basic_public"}
-                        <div class="w-4/5 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <div
+                            class="w-4/5 whitespace-nowrap overflow-hidden text-ellipsis"
+                        >
                             Handle: {credentialToDisplay(credential).handle}
                         </div>
-                        <!-- Address: {credentialToDisplay(credential).address} -->
                     {:else if credentialToDisplay(credential).type === "basic_blockchain"}
                         Address: {credentialToDisplay(credential).address}
                     {/if}
                     <div class="flex flex-wrap justify-center">
                         <div
-                            class="obtained-claim-action border border-gray-250 w-8 h-8 rounded-full flex flex-wrap align-center justify-center"
+                            class="obtained-claim-action border border-gray-250 w-8 h-8 rounded-full flex flex-wrap align-center justify-center transition-all"
                         >
                             <IconLink
                                 class="block w-4"
@@ -61,7 +61,7 @@
                                 onClick={() => removeClaim(claim, credential)}
                                 icon={DeleteIcon}
                                 color="#b3b3b3"
-                                />
+                            />
                         </div>
                     </div>
                 </div>

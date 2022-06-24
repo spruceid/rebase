@@ -1,6 +1,6 @@
 <script lang="ts">
     import { claims, Claim } from "util";
-    import AvailableClaim from "./AvailableClaim.svelte";
+    import { AvailableClaim } from "components";
 
     let bcClaims: Array<Claim> = [];
     let pbClaims: Array<Claim> = [];

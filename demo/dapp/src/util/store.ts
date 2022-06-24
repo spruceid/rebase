@@ -19,8 +19,6 @@ export const alert: Writable<{
     variant: 'error' | 'warning' | 'success' | 'info';
 }>(null);
 
-export let accountState: Writable<AccountState> = writable("available");
-
 export let witnessState: Writable<Workflow> = writable("statement");
 
 export let claims: Writable<Array<Claim>> = writable([

@@ -1,10 +1,11 @@
 <script lang="ts">
-  import SpinnerIcon from "../icons/SpinnerIcon.svelte";
+  import { SpinnerIcon } from "components";
   import "./button.scss";
 
   let clazz: string = "";
   export { clazz as class };
   export let primary: boolean = false;
+  export let reverse: boolean = false;
   export let secondary: boolean = false;
   export let action: boolean = false;
   export let text: string;
@@ -24,6 +25,7 @@
   class:opacity-50={disabled}
   class:cursor-not-allowed={disabled}
   class:primary-button-container={primary}
+  class:reverse={reverse}
   class:secondary-button-container={secondary}
   class:action-button-container={action}
   class:rounded-25={rounded}

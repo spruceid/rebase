@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { CloseIcon } from 'components';
-  import { alert } from 'util/store';
-  import { onMount } from 'svelte';
+  import { CloseIcon } from "components";
+  import { alert } from "util";
+  import { onMount } from "svelte";
 
   let resetTimeout: NodeJS.Timeout = null;
   let subscriptionTimeout: NodeJS.Timeout = null;
-  let error: string = 'bg-red-100 border text-red-700';
-  let warning: string = 'bg-orange-100 border text-orange-700';
-  let success: string = 'bg-green-100 border text-green-700';
-  let info: string = 'bg-blue-100 border text-blue-700';
-  let style: string = '';
-  let iconColor: string = '';
+  let error: string = "bg-red-100 border text-red-700";
+  let warning: string = "bg-orange-100 border text-orange-700";
+  let success: string = "bg-green-100 border text-green-700";
+  let info: string = "bg-blue-100 border text-blue-700";
+  let style: string = "";
+  let iconColor: string = "";
   let fade: boolean = false;
 
   const reset = () => {
@@ -21,25 +21,25 @@
 
   const updateStyle = () => {
     switch ($alert?.variant) {
-      case 'error':
+      case "error":
         style = error;
-        iconColor = 'text-red-500';
+        iconColor = "text-red-500";
         break;
-      case 'warning':
+      case "warning":
         style = warning;
-        iconColor = 'text-orange-500';
+        iconColor = "text-orange-500";
         break;
-      case 'success':
+      case "success":
         style = success;
-        iconColor = 'text-green-500';
+        iconColor = "text-green-500";
         break;
-      case 'info':
+      case "info":
         style = info;
-        iconColor = 'text-blue-500';
+        iconColor = "text-blue-500";
         break;
       default:
         style = error;
-        iconColor = 'text-red-500';
+        iconColor = "text-red-500";
         break;
     }
   };
@@ -70,6 +70,8 @@
     >{$alert?.message}</span
   >
   <span class="absolute top-0 bottom-0 right-0 px-4 py-3" on:click={reset}>
-    <CloseIcon class="fill-current h-5 w-5 flex items-center justify-center {iconColor}" />
+    <CloseIcon
+      class="fill-current h-5 w-5 flex items-center justify-center {iconColor}"
+    />
   </span>
 </div>

@@ -35,10 +35,11 @@
         </div>
         <div class="w-full flex justify-center items-center">
             <Button
-                class="w-full max-w-42 my-[16px] bg-purple-550 text-white"
+                class="w-full max-w-42 my-[16px]"
                 onClick={() => navigate("/account")}
                 text="Enter"
                 primary
+                reverse
                 rounded
             />
         </div>

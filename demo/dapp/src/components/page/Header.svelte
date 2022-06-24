@@ -9,12 +9,12 @@
         signerMap,
         Signer,
         SignerType,
+        alert
     } from "util";
     import { Tooltip, Button, DropdownButton, RebaseLogo } from "components";
     import { scale } from "svelte/transition";
     import { Link, useNavigate } from "svelte-navigator";
-    import { alert } from "util/store";
-
+    
     let moreDropdown;
     const navigate = useNavigate();
 

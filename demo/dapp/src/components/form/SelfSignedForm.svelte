@@ -9,13 +9,15 @@
         Claim,
         KeyType,
         alert,
-    } from "../../util";
+    } from "util";
     import { useNavigate } from "svelte-navigator";
-
-    import WitnessFormHeader from "./WitnessFormHeader.svelte";
-    import GlobeIcon from "../icons/GlobeIcon.svelte";
-    import WitnessFormStepper from "./WitnessFormStepper.svelte";
-    import Button from "../buttons/Button.svelte";
+    import {
+        WitnessFormHeader,
+        WitnessFormStepper,
+        Button,
+        GlobeIcon,
+    } from "components";
+    import WitnessFormComplete from "./WitnessFormComplete.svelte";
 
     const navigate = useNavigate();
 
@@ -416,19 +418,5 @@
     </div>
 {/if}
 {#if current === "complete"}
-    <WitnessFormStepper
-        step={5}
-        totalSteps={5}
-        label={"Complete"}
-        question={"Please click the button to manage your credentials"}
-        labelFor={""}
-    />
-    <div class="w-full my-[16px] text-center">
-        <Button
-            class="w-fit  my-[16px]"
-            onClick={() => navigate("/account")}
-            text="Manage Credentials"
-            action
-        />
-    </div>
+    <WitnessFormComplete step={5} totalSteps={5} {navigate} />
 {/if}

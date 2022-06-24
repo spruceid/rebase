@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-
   import "./button.scss";
 
   let clazz: string = "";
@@ -10,12 +8,8 @@
   export let disabled: boolean = false;
   export let onClick: ((option: string) => void) | null;
   export let options: Array<string> = [];
+  export let selected: string;
 
-  let selected;
-
-  onMount(() => {
-    selected = options?.[0];
-  });
 </script>
 
 <div class="toggle-button-container">

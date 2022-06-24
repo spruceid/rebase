@@ -7,8 +7,8 @@
 	<Route path="/">
 		<Explainer />
 	</Route>
-	<Route path="account" let:params>
-		<Account {params} />
+	<Route path="account" let:location>
+		<Account {location} />
 	</Route>
 	<Route path="create/witness/:type" let:params>
 		<Witness type={params.type} />
@@ -19,7 +19,7 @@
 	@tailwind base;
 	@tailwind components;
 	@tailwind utilities;
-	
+
 	.tooltip {
 		@apply invisible absolute;
 	}
@@ -40,9 +40,6 @@
 	body {
 		@apply text-gray-850;
 	}
-	/* a {
-		@apply no-underline text-blue-1;
-	} */
 	td,
 	th {
 		@apply font-basier-square font-normal;

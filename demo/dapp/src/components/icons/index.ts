@@ -9,7 +9,3 @@ export { default as DownloadIcon } from './DownloadIcon.svelte';
 export { default as ClipboardIcon } from './ClipboardIcon.svelte';
 export { default as DeleteIcon } from './DeleteIcon.svelte';
 export { default as SpinnerIcon } from './SpinnerIcon.svelte';
-// export { default as ErrorIcon } from './ErrorIcon.svelte';
-// export { default as LoadingSpinner } from './LoadingSpinner.svelte';
-// export { default as InfoIcon } from './InfoIcon.svelte';
-// export { default as RebaseIcon } from './RebaseIcon.svelte';

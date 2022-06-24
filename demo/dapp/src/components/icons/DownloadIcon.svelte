@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let color: string = '#b3b3b3';
+  export let color: string = "#b3b3b3";
 </script>
 
 <svg viewBox="0 0 512 512" width="24" height="24">
