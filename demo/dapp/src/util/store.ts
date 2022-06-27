@@ -1,7 +1,7 @@
 import { writable, Writable } from "svelte/store";
-import { DiscordIcon, EthereumIcon, GlobeIcon, TwitterIcon, GitHubIcon, SolanaIcon } from '../components/icons';
-import type {Claim} from "./claim";
-import {connectSigner, disconnectSigner, Signer, SignerMap, SignerType} from "./signer";
+import { GlobeIcon, TwitterIcon, GitHubIcon, DiscordIcon, SolanaIcon, EthereumIcon } from 'components/icons';
+import type { Claim } from "./claim";
+import { connectSigner, disconnectSigner, Signer, SignerMap, SignerType } from "./signer";
 import type { KeyType, Workflow } from "./witness";
 
 // TODO: Break into UI file?
@@ -10,7 +10,14 @@ export type AccountState = "available" | "obtained";
 // TODO: Break into UI file?
 export const iconColor = "#625ff5";
 
-export let accountState: Writable<AccountState> = writable("obtained");
+// The UI element for poping toast-like alerts
+export const alert: Writable<{
+    message: string;
+    variant: 'error' | 'warning' | 'success' | 'info';
+}> = writable<{
+    message: string;
+    variant: 'error' | 'warning' | 'success' | 'info';
+}>(null);
 
 export let witnessState: Writable<Workflow> = writable("statement");
 
@@ -20,44 +27,71 @@ export let claims: Writable<Array<Claim>> = writable([
         credential_type: "twitter",
         icon: TwitterIcon,
         title: "Twitter",
-        type: "public"
-    },
-    // {
-    //     credentials: [], 
-    //     credential_type: "discord",
-    //     icon: DiscordIcon,
-    //     title: "Discord",
-    //     type: "public"
-    // },
-    {
-        credentials: [], 
-        credential_type: "dns",
-        icon: GlobeIcon,
-        title: "DNS",
-        type: "public"
+        type: "public",
+        available: true,
     },
     {
         credentials: [],
         credential_type: "github",
         icon: GitHubIcon,
         title: "Github",
-        type: "public"
+        type: "public",
+        available: true,
+    },
+    {
+        credentials: [],
+        credential_type: "dns",
+        icon: GlobeIcon,
+        title: "DNS",
+        type: "public",
+        available: true,
     },
     {
         credentials: [],
         credential_type: "self_signed",
         icon: GlobeIcon,
         title: "Self Signed",
-        type: "public"
-    }
+        type: "public",
+        available: true,
+    },
+    {
+        credentials: [],
+        credential_type: "discord",
+        icon: DiscordIcon,
+        title: "Discord",
+        type: "public",
+        available: false,
+    },
+
+    {
+        credentials: [],
+        credential_type: "ethereum",
+        icon: EthereumIcon,
+        title: "Ethereum Account",
+        type: "blockchain",
+        available: false,
+    },
+
+    {
+        credentials: [],
+        credential_type: "solana",
+        icon: SolanaIcon,
+        title: "Solana Account",
+        type: "blockchain",
+        available: false,
+    },
 ]);
 
 export let currentType: Writable<SignerType> = writable("ethereum");
 export let _currentType: SignerType = "ethereum";
 currentType.subscribe(x => (_currentType = x));
 
-export let signerMap: Writable<SignerMap> = writable({"ethereum": false});
-export let _signerMap: SignerMap = {"ethereum": false};
+export let signerMap: Writable<SignerMap> = writable({
+    "ethereum": false,
+});
+export let _signerMap: SignerMap = {
+    "ethereum": false,
+};
 signerMap.subscribe(x => (_signerMap = x));
 
 export let signer: Signer | false = false;
@@ -69,16 +103,16 @@ export const getKeyType = (): KeyType => {
         throw new Error("No signer set");
     }
 
-    switch (_currentType)  {
-        case "ethereum": 
-        return {
-            pkh: {
-                eip155: {
-                    address: signer.id(),
-                    chain_id: "1",
+    switch (_currentType) {
+        case "ethereum":
+            return {
+                pkh: {
+                    eip155: {
+                        address: signer.id(),
+                        chain_id: "1",
+                    },
                 },
-            },
-        }
+            }
     };
 };
 
@@ -108,6 +142,6 @@ export const sign = async (statement: string): Promise<string> => {
     if (!s) {
         throw new Error(`No signer for current type: ${_currentType}`);
     }
-    
+
     return s.sign(statement);
 }

@@ -1,11 +1,5 @@
 <script lang="ts">
-    import type {
-        CredentialType,
-        Instructions,
-        Workflow,
-        Claim,
-    } from "../../util";
-    import { Link } from "svelte-navigator";
+    import type { CredentialType, Instructions, Workflow, Claim } from "util";
     import {
         _currentType,
         _signerMap,
@@ -16,15 +10,30 @@
         witnessState,
         sign,
         Signer,
-    } from "../../util";
+        alert,
+    } from "util";
     import { onMount } from "svelte";
+    import { useNavigate } from "svelte-navigator";
+    import {
+        Button,
+        CopyTextArea,
+        WitnessFormStepper,
+        WitnessFormHeader,
+    } from "components";
+    import WitnessFormStatement from "./WitnessFormStatement.svelte";
+    import WitnessFormSignature from "./WitnessFormSignature.svelte";
+    import WitnessFormWitness from "./WitnessFormWitness.svelte";
+    import WitnessFormComplete from "./WitnessFormComplete.svelte";
 
-    // TODO: Make these an ENV?
-    const witnessUrl = "https://rebasedemo.spruceid.workers.dev";
+    const navigate = useNavigate();
+
+    const witnessUrl = process.env.WITNESS_URL;
 
     const dnsPrefix = "rebase_sig";
 
     let signer: Signer | false = false;
+    let verified: boolean = false;
+    let loading: boolean = false;
     currentType.subscribe((x) => (signer = _signerMap[x]));
     signerMap.subscribe((x) => (signer = x[_currentType]));
 
@@ -47,14 +56,28 @@
     export let type: CredentialType;
     export let instructions: Instructions;
 
-    $: errMsg = "";
     $: statement = "";
     $: signature = "";
     $: delimitor = "";
-
-    // TODO: Change to statment + proof types.
     $: handle = "";
     $: proof = "";
+
+    const onChangeValue = (name, value) => {
+        switch (name) {
+            case "handle":
+                handle = value;
+                break;
+            case "signature":
+                signature = value;
+                break;
+            case "proof":
+                proof = value;
+                break;
+            case "verified":
+                verified = value;
+                break;
+        }
+    };
 
     const post = (): string => {
         switch (type) {
@@ -84,6 +107,17 @@
                 return witnessState.set("complete");
             case "complete":
                 return;
+        }
+    };
+
+    const back = () => {
+        switch (state) {
+            case "signature":
+                return witnessState.set("statement");
+            case "witness":
+                return witnessState.set("signature");
+            case "complete":
+                return witnessState.set("witness");
         }
     };
 
@@ -178,114 +212,57 @@
     };
 </script>
 
-{#if errMsg}
-    <p class="inner-center">{errMsg}</p>
-{/if}
+<WitnessFormHeader
+    icon={instructions.icon}
+    title={instructions.title}
+    subtitle={instructions.subtitle}
+/>
 {#if signer}
-    <h4 class="inner-center">Step 1: Generate a statement</h4>
-    <p class="inner-center">{instructions.statement}</p>
-    <div class="inner-center">
-        <label for={instructions.statement_label} class="inner-center"
-            >{instructions.statement_label}</label
-        >
-        <input
-            class="inner-center"
-            disabled={state !== "statement"}
-            bind:value={handle}
-            name={instructions.statement_label}
-            type="text"
+    {#if state === "statement"}
+        <WitnessFormStatement
+            {instructions}
+            {loading}
+            {handle}
+            {onChangeValue}
+            {navigate}
+            {getStatement}
+            {advance}
         />
-    </div>
-    <div class="inner-center">
-        <button
-            disabled={state !== "statement"}
-            on:click={async () => {
-                try {
-                    await getStatement();
-                    advance();
-                } catch (e) {
-                    errMsg = e.message;
-                }
-            }}>Generate Statement</button
-        >
-    </div>
-    {#if state !== "statement"}
-        <h4 class="inner-center">Step 2: Sign the statement</h4>
-        <p class="inner-center">{instructions.signature}</p>
-        <div class="inner-center">
-            <textarea
-                name="statement_display"
-                type="text"
-                disabled
-                value={statement}
-            />
-        </div>
-        <div class="inner-center">
-            <button
-                disabled={state !== "signature"}
-                on:click={async () => {
-                    try {
-                        signature = await sign(statement);
-                        advance();
-                    } catch (e) {
-                        errMsg = `${e?.message ? e.message : e}`;
-                    }
-                }}>Sign Statement</button
-            >
-        </div>
     {/if}
-    {#if state === "witness" || state === "complete"}
-        <h4 class="inner-center">Step 3: Show the Witness</h4>
-        <p class="inner-center">{instructions.witness}</p>
-        <div class="inner-center">
-            <label for="post">Post</label>
-            <textarea value={post()} name="post" disabled />
-        </div>
-        {#if type === "twitter" || type === "github" || type === "discord"}
-            <div class="inner-center">
-                <label for={instructions.witness_label}
-                    >{instructions.witness_label}</label
-                >
-                <input
-                    bind:value={proof}
-                    name={instructions.witness_label}
-                    type="text"
-                />
-            </div>
-        {/if}
-        <div class="inner-center">
-            <button
-                disabled={state !== "witness"}
-                on:click={async () => {
-                    try {
-                        await getCredential();
-                        advance();
-                    } catch (e) {
-                        errMsg = `${e?.message ? e.message : e}`;
-                    }
-                }}>Generate Credential</button
-            >
-        </div>
+    {#if state === "signature"}
+        <WitnessFormSignature
+            {instructions}
+            {loading}
+            {statement}
+            {signature}
+            {onChangeValue}
+            {sign}
+            {back}
+            {advance}
+        />
+    {/if}
+    {#if state === "witness"}
+        <WitnessFormWitness
+            {instructions}
+            {loading}
+            {verified}
+            {type}
+            {proof}
+            {onChangeValue}
+            {getCredential}
+            {post}
+            {back}
+            {advance}
+        />
     {/if}
     {#if state === "complete"}
-        <div class="inner-center">
-            <h4>Step 4: Complete!</h4>
-            <p>
-                Please return to the <Link to="/account">main page</Link> to download
-                your credential
-            </p>
-        </div>
+        <WitnessFormComplete
+            {navigate}
+        />
     {/if}
 {:else}
-    <div class="inner-center">Connect Signer to Create Credential</div>
+    <div class="w-full text-center">
+        <b>No Signer connected</b><br />
+        Please, connect a Signer to Create Credentials
+    </div>
 {/if}
-
-<style>
-    .inner-center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: 5vh;
-        margin-right: 5vh;
-    }
-</style>

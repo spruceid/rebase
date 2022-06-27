@@ -1,7 +1,7 @@
 <script lang="ts">
-  let clazz: string = '';
+  let clazz: string = "";
   export { clazz as class };
-  import {iconColor as color} from "../../util";
+  import { iconColor as color } from "util";
 </script>
 
 <svg

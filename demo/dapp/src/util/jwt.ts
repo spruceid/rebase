@@ -3,7 +3,6 @@ const encode = (c): string => {
     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
 };
 
-// TODO: Properly Type?
 export const parseJWT = (jwt_str: string): any => {
     const v = jwt_str.split('.');
 

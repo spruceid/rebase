@@ -3,7 +3,6 @@
   export { clazz as class };
   export let color: string = 'black';
 </script>
-<!-- NOTE: width, height set here to get around Safari bug with tailwind or SVGs?-->
 
 <svg 
   viewBox="0 0 32 32"

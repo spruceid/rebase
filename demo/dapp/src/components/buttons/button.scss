@@ -1,0 +1,71 @@
+  .button-container {
+    @apply transition delay-100 font-bold px-4;
+  }
+
+  .primary-button-container:not(.reverse) {
+    @apply font-bold py-3 px-6 transition delay-100 text-gray-850 border border-purple-550;
+
+    svg path {
+      @apply fill-purple-550;
+    }
+
+    &:hover {
+      @apply text-white transition delay-100 bg-purple-550;
+
+      svg path {
+        @apply fill-white;
+      }
+
+    }
+  }
+
+    .primary-button-container.reverse {
+      @apply font-bold py-3 px-6 transition delay-100 border border-purple-550 bg-purple-550 text-white;
+
+      svg path {
+        @apply fill-purple-550;
+      }
+
+      &:hover {
+        @apply text-white transition delay-100 bg-purple-550 scale-105;
+
+        svg path {
+          @apply fill-white;
+        }
+
+      }
+    }
+
+  .secondary-button-container {
+    @apply text-black bg-beige-2 transition delay-100;
+
+    &:hover {
+      @apply bg-beige-3;
+    }
+  }
+
+  .action-button-container {
+    @apply font-bold bg-purple-550 py-3 px-6 transition delay-100 text-white border border-purple-550;
+
+    &:hover {
+      @apply bg-purple-550 transition delay-100 text-white;
+    }
+  }
+
+  .toggle-button-container {
+    @apply w-fit m-auto transition delay-100 bg-white border border-purple-550 rounded-2xl;
+
+    & .toggle-button {
+      @apply px-4 font-bold capitalize rounded-2xl w-[100px] transition-all duration-75
+    }
+
+    & .toggle-button:not(.selected):hover {
+      @apply scale-105
+    }
+
+    & .toggle-button.selected {
+      @apply bg-purple-550 text-white
+    }
+
+
+  }
