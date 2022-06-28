@@ -136,7 +136,7 @@ impl Generator<Claim, Schema> for ClaimGenerator {
         let client = reqwest::Client::new();
         let request_url = format!(
             "https://cloudflare-dns.com/dns-query?name={}&type=txt",
-            proof.domain
+            &proof.domain
         );
 
         let res: DnsResponse = client
@@ -149,21 +149,27 @@ impl Generator<Claim, Schema> for ClaimGenerator {
             .await
             .map_err(|e| WitnessError::BadLookup(e.to_string()))?;
 
-        let mut sig = String::new();
         for answer in res.answer {
-            let mut trimmed_signature: &str = &answer.data;
-            if trimmed_signature.starts_with('"') && trimmed_signature.ends_with('"') {
-                trimmed_signature = &answer.data[1..answer.data.len() - 1];
+            let mut sig: &str = &answer.data;
+            if sig.starts_with('"') && sig.ends_with('"') {
+                sig = &answer.data[1..answer.data.len() - 1];
             }
-            if trimmed_signature.starts_with(&proof.prefix) {
-                sig = trimmed_signature.to_owned();
-                break;
+
+            if sig.starts_with(&proof.prefix) {
+                sig = sig.trim_start_matches(&proof.prefix);
+                let s = format!(
+                    "{}{}{}",
+                    proof.generate_statement()?,
+                    proof.delimitor(),
+                    sig
+                );
+                return Ok(s);
             }
         }
 
-        // NOTE: We intercept the post and change it to match the <statement>=<signature>
-        // style format.
-        Ok(format!("{}={}", proof.generate_statement()?, sig))
+        Err(WitnessError::BadLookup(
+            "expected record not found".to_string(),
+        ))
     }
 
     fn _unchecked_to_schema(
