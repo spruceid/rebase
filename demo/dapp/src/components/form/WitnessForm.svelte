@@ -23,7 +23,7 @@
 
     const witnessUrl = process.env.WITNESS_URL;
 
-    const dnsPrefix = "rebase_sig";
+    const dnsPrefix = "rebase_sig=";
 
     let signer: Signer | false = false;
     let verified: boolean = false;
@@ -92,7 +92,7 @@
             case "twitter":
                 return `${statement}${delimitor}${signature}`;
             case "dns":
-                return `${dnsPrefix}${delimitor}${signature}`;
+                return `${dnsPrefix}${signature}`;
         }
     };
 

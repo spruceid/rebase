@@ -55,7 +55,7 @@ where
         let d = self.delimitor();
         let v: Vec<&str> = post.split(&d).collect();
         if v.len() != 2 {
-            return Err(WitnessError::ParseError(format!("incorrect post format")));
+            return Err(WitnessError::ParseError(format!("incorrect post format, got: {}", post)));
         };
 
         let (statement, signature) = (v[0].to_owned(), v[1].to_owned());
