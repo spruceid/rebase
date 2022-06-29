@@ -10,7 +10,7 @@ pub struct BasicProfile {
     // TODO: Type as URL?
     pub website: String,
     pub logo: String,
-    pub subject_id: String
+    pub subject_id: String,
 }
 
 impl SchemaType for BasicProfile {
@@ -18,13 +18,16 @@ impl SchemaType for BasicProfile {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
             {
-              "alias": "https://schema.org/name",
-              "description": "https://schema.org/description",
-              "website": "https://schema.org/url",
-              "logo": "https://schema.org/logo",
-              // TODO: Establish new place for this URL to point.
-              "BasicProfile": "https://example.com/BasicProfile",
-          },
+              "BasicProfile": {
+                    "@id": "https://example.com/BasicProfile",
+                    "@context": {
+                        "alias": "https://schema.org/name",
+                        "description": "https://schema.org/description",
+                        "website": "https://schema.org/url",
+                        "logo": "https://schema.org/logo",
+                    }
+                }
+            },
         ]))
     }
 
@@ -38,6 +41,7 @@ impl SchemaType for BasicProfile {
     fn subject(&self) -> Result<serde_json::Value, SchemaError> {
         Ok(json!({
             "id": self.subject_id,
+            "type": ["BasicProfile"],
             "alias": self.alias,
             "description": self.description,
             "logo": self.logo,
