@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CredentialType, Instructions, Workflow, Claim } from "util";
+    import type { CredentialType, Instructions, Workflow, Claim } from "utils";
     import {
         _currentType,
         _signerMap,
@@ -10,16 +10,10 @@
         witnessState,
         sign,
         Signer,
-        alert,
-    } from "util";
+    } from "utils";
     import { onMount } from "svelte";
     import { useNavigate } from "svelte-navigator";
-    import {
-        Button,
-        CopyTextArea,
-        WitnessFormStepper,
-        WitnessFormHeader,
-    } from "components";
+    import { WitnessFormHeader } from "components";
     import WitnessFormStatement from "./WitnessFormStatement.svelte";
     import WitnessFormSignature from "./WitnessFormSignature.svelte";
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
@@ -180,7 +174,7 @@
                 opts["github"]["statement_opts"] = {};
                 opts["github"]["statement_opts"]["handle"] = handle;
                 opts["github"]["statement_opts"]["key_type"] = getKeyType();
-                opts["github"]["gist_id"] = proof;
+                opts["github"]["gist_id"] = proof.split("/").pop();
                 break;
             case "twitter":
                 opts["twitter"] = {};
@@ -256,9 +250,7 @@
         />
     {/if}
     {#if state === "complete"}
-        <WitnessFormComplete
-            {navigate}
-        />
+        <WitnessFormComplete {navigate} />
     {/if}
 {:else}
     <div class="w-full text-center">

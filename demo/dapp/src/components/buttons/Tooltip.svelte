@@ -34,7 +34,7 @@
     padding: 7px;
     width: 100%;
     min-width: 130px;
-    max-width: 400px;
+    max-width: 10.5rem;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;
@@ -51,7 +51,7 @@
   }
 
   [data-tooltip].bottom:before {
-    bottom: -60%;
+    bottom: -65%;
   }
   [data-tooltip].left:before {
     left: -250%;

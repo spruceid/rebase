@@ -1,10 +1,14 @@
 <script lang="ts">
-    import { claims, Claim } from "util";
+    import { claims, Claim } from "utils";
     import { ObtainedClaim } from "components";
 
     let bcClaims: Array<Claim> = [];
     let pbClaims: Array<Claim> = [];
     let _claims: Array<Claim> = [];
+    let showCredentials: boolean;
+
+
+    $: $claims, hasCredentials();
 
     claims.subscribe((x) => {
         _claims = x;
@@ -23,17 +27,39 @@
             newClaims.push(c);
         });
         claims.set(newClaims);
+        hasCredentials();
     };
+
+    const hasCredentials = () => {
+        for (let claim of _claims) {
+            if (claim.credentials.length > 0) {
+                showCredentials = true;
+                return;
+            }
+        }
+        showCredentials = false;
+    };
+
+    // onMount(() => {
+    //     hasCredentials();
+    // });
 </script>
 
-<div class="w-full">
-    <h3 class="py-4 px-4">My Credentials</h3>
-    <div class="max-h-[350px] overflow-auto px-4">
-        {#each pbClaims as claim}
-            <ObtainedClaim {claim} {removeClaim} />
-        {/each}
-        {#each bcClaims as claim}
-            <ObtainedClaim {claim} {removeClaim} />
-        {/each}
+{#if showCredentials}
+    <div class="w-full h-96">
+        <h3 class="py-4 px-4">My Credentials</h3>
+        <div class="max-h-[350px] overflow-auto px-4">
+            {#each pbClaims as claim}
+                <ObtainedClaim {claim} {removeClaim} />
+            {/each}
+            {#each bcClaims as claim}
+                <ObtainedClaim {claim} {removeClaim} />
+            {/each}
+        </div>
     </div>
-</div>
+{:else}
+    <div class="w-full text-center">
+        <b>You don't have credentials yet</b><br />
+        Click on "Available" and start generating your credentials
+    </div>
+{/if}

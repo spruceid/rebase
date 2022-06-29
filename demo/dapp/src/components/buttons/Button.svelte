@@ -15,6 +15,7 @@
   export let small: boolean = false;
   export let rounded: boolean = false;
   export let loading: boolean = false;
+  export let avatar: string | false = false;
 </script>
 
 <button
@@ -25,7 +26,7 @@
   class:opacity-50={disabled}
   class:cursor-not-allowed={disabled}
   class:primary-button-container={primary}
-  class:reverse={reverse}
+  class:reverse
   class:secondary-button-container={secondary}
   class:action-button-container={action}
   class:rounded-25={rounded}
@@ -38,6 +39,15 @@
     <div class="flex flex-wrap items-center justify-center">
       <SpinnerIcon class="w-6 h-6 mr-2 animate-spin" />
       {text}
+    </div>
+  {:else if avatar}
+    <div class="flex flex-wrap items-center justify-center w-full">
+      <div class="w-5 h-5 mr-1">
+        <img class="w-5 h-5 rounded-full object-cover" src={avatar} alt="ENS avatar" />
+      </div>
+      <span class="w-9/12 sm:w-auto whitespace-nowrap sm:whitespace-normal overflow-hidden sm:overflow-visible text-ellipsis">
+        {text}
+      </span>
     </div>
   {:else}
     {text}

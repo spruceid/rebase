@@ -1,7 +1,9 @@
 <script lang="ts">
     import {
         _currentType,
+        _currentType2nd,
         _signerMap,
+        _signerMap2nd,
         currentType,
         connect,
         disconnect,
@@ -9,14 +11,15 @@
         signerMap,
         Signer,
         SignerType,
-        alert
-    } from "util";
+        alert,
+    } from "utils";
     import { Tooltip, Button, DropdownButton, RebaseLogo } from "components";
     import { scale } from "svelte/transition";
     import { Link, useNavigate } from "svelte-navigator";
-    
-    let moreDropdown;
+
     const navigate = useNavigate();
+    let moreDropdown;
+    let loading: boolean = false;
 
     let signer: Signer | false = false;
     currentType.subscribe((x) => (signer = _signerMap[x]));
@@ -24,6 +27,7 @@
 
     const connectNew = async (nextType): Promise<void> => {
         try {
+            loading = true;
             currentType.set(nextType as SignerType);
             await connect();
         } catch (e) {
@@ -32,6 +36,7 @@
                 variant: "error",
             });
         }
+        loading = false;
     };
 
     const capitalizeFirstLetter = (string) => {
@@ -45,12 +50,14 @@
     <Link to="/">
         <RebaseLogo class="w-fit flex items-center" xl />
     </Link>
+
     {#if !signer}
         <DropdownButton
-            class="menu focus:outline-none focus:shadow-solid w-full min-w-42 my-[16px] rounded-xl border border-gray-250"
-            text="Connect"
+            class="menu w-full min-w-42 my-[16px] rounded-xl"
+            text="Connect Wallet"
+            primary
+            {loading}
         >
-            <!-- class="origin-top-right absolute right-0 w-48 py-2 mt-1 bg-white rounded-xl shadow-md" -->
             <div
                 in:scale={{ duration: 100, start: 0.95 }}
                 out:scale={{ duration: 75, start: 0.95 }}
@@ -73,16 +80,19 @@
         <div class="flex flex-wrap">
             <Tooltip tooltip="Currently using {_currentType} signer" bottom>
                 <Button
-                    class="w-full max-w-42 my-[16px] border border-gray-250"
+                    class="max-w-42 sm:max-w-full my-[16px]"
                     onClick={() => navigate("/account")}
-                    text={signer.id()}
+                    text={signer.ens.name ?? signer.id()}
+                    primary
+                    avatar={signer.ens.avatar ?? false}
                 />
             </Tooltip>
             <DropdownButton
                 bind:this={moreDropdown}
-                class="w-[55px] my-[16px] pl-[16px] rounded-xl border border-gray-250"
+                class="w-[65px] my-[16px] rounded-xl"
                 ml
                 text="&#8226;&#8226;&#8226;"
+                primary
             >
                 <div
                     in:scale={{ duration: 100, start: 0.95 }}

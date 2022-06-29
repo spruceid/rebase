@@ -1,15 +1,25 @@
 <script lang="ts">
     import {
         _currentType,
+        _currentType2nd,
+        currentType2nd,
+        signerMap,
         _signerMap,
+        _signerMap2nd,
         signer,
+        signer2nd,
+        connect2nd,
+        disconnect2nd,
         claims,
         getKeyType,
+        getKeyType2nd,
         sign,
+        sign2nd,
+        SignerType,
         Claim,
         KeyType,
         alert,
-    } from "util";
+    } from "utils";
     import { useNavigate } from "svelte-navigator";
     import {
         WitnessFormHeader,
@@ -18,8 +28,11 @@
         GlobeIcon,
     } from "components";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
+    import { onMount } from "svelte";
 
     const navigate = useNavigate();
+
+    $: $signerMap, signerChanged();
 
     $: display1 = "";
     $: display2 = "";
@@ -38,19 +51,26 @@
 
     const getKey1 = () => {
         key1 = getKeyType();
+        key2 = false;
         if (signer) {
-            display1 = `${_currentType} signer: ${signer.id()}`;
+            display1 = `${signer.id()}`;
         }
     };
 
-    const getKey2 = () => {
-        key2 = getKeyType();
+    const getKey2 = async () => {
+        currentType2nd.set("ethereum" as SignerType);
+        await connect2nd();
+        key2 = getKeyType2nd();
 
         if (JSON.stringify(key1) === JSON.stringify(key2)) {
             key2 = false;
-            throw new Error("Cannot use same signer for both entries");
-        } else if (signer) {
-            display2 = `${_currentType} signer: ${signer.id()}`;
+            if(signer.provider.connection.url === 'metamask') {
+                throw new Error("Cannot use same signer for both entries. Please change accounts if you want to proceed with MetaMask.");
+            } else {
+                throw new Error("Cannot use same signer for both entries.");
+            }
+        } else if (signer2nd) {
+            display2 = `${signer2nd.id()}`;
         }
     };
 
@@ -87,11 +107,11 @@
     };
 
     const signKey2 = async () => {
-        if (JSON.stringify(key2) !== JSON.stringify(getKeyType())) {
+        if (JSON.stringify(key2) !== JSON.stringify(getKeyType2nd())) {
             throw new Error(`Signer connected is not expected Signer`);
         }
 
-        signature2 = await sign(statement);
+        signature2 = await sign2nd(statement);
     };
 
     const signKey1 = async () => {
@@ -113,6 +133,7 @@
         }
 
         claims.set(next);
+        disconnect2nd();
     };
 
     const getCredential = async (): Promise<void> => {
@@ -187,13 +208,44 @@
                 return;
         }
     };
+
+    const signerChanged = () => {
+        const connectSignerMessageElem = document.querySelector(
+            '[for="form-step-q-1-i-1"] span'
+        );
+        if (signer) {
+            getKey1();
+            if (connectSignerMessageElem) {
+                connectSignerMessageElem.innerHTML =
+                    "We've identified that you already have a signer connected";
+            }
+        } else {
+            key1 = false;
+            key2 = false;
+            display1 = 'none';
+            display2 = 'none';
+            disconnect2nd();
+            if (connectSignerMessageElem) {
+                connectSignerMessageElem.innerHTML =
+                    "Using the connection controls in the header, select the first of two signers you would like to link";
+            }
+        }
+    };
+
+    onMount(() => {
+        if (signer) {
+            getKey1();
+            document.querySelector('[for="form-step-q-1-i-1"] span').innerHTML =
+                "We've identified that you already have a signer connected";
+        }
+    });
 </script>
 
 <WitnessFormHeader
     icon={GlobeIcon}
-    title={"Self Signed Verification Workflow"}
-    subtitle={`Fist signer is ${display1 ? display1 : "none"}`}
-    subsubtitle={`Second signer is ${display2 ? display2 : "none"}`}
+    title={"Ethereum Account Verification Workflow"}
+    subtitle={`Fist signer: ${display1 ? display1 : "none"}`}
+    subsubtitle={`Second signer: ${display2 ? display2 : "none"}`}
 />
 {#if current === "key1"}
     <WitnessFormStepper
@@ -252,7 +304,7 @@
         step={2}
         totalSteps={5}
         label={"Connect Second Key"}
-        question={"Using the connection controls in the header, select the second (DIFFERENT than the key used in the last step) of two signers you would like to link"}
+        question={"Click the button to connect the second of two signers you would like to link"}
         labelFor={"form-step-q-2-i-1"}
     >
         <div id="form-step-q-2-i-1">
@@ -263,7 +315,7 @@
                 onClick={async () => {
                     try {
                         loading = true;
-                        getKey2();
+                        await getKey2();
                         await getStatement();
                     } catch (e) {
                         alert.set({
@@ -309,7 +361,7 @@
         step={3}
         totalSteps={5}
         label={"Sign with the Second Key"}
-        question={"Keeping the same signer as was connected in the last step, sign the statement"}
+        question={"Sign the statement with the second signer"}
         labelFor={"form-step-q-3-i-1"}
     >
         <div id="form-step-q-3-i-1">
@@ -365,7 +417,7 @@
         step={4}
         totalSteps={5}
         label={"Sign with First Key"}
-        question={"Using the controls in the header, reconnect the signer that was connected for the first step, then sign the statement. The signatures will then be used to generate a credential"}
+        question={"Sign the statement with the first signer. The signatures will then be used to generate a credential"}
         labelFor={"form-step-q-4-i-1"}
     >
         <div id="form-step-q-4-i-1">

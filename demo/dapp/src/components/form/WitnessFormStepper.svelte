@@ -8,13 +8,10 @@
 
 <div>
     <div class="flex flex-wrap justify-center content-between h-full">
-        <div class="step-counter">
-            {step}
-        </div>
-        <div class="w-3/4 px-4">
+        <div class="w-full mx-6 px-4">
             <label for={labelFor}>
                 <p class="font-bold">{label}</p>
-                {question}
+                <span>{question}</span>
             </label>
             <slot />
         </div>
@@ -23,9 +20,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .step-counter {
-        @apply w-8 h-8 border border-purple-550 rounded-full text-center bg-purple-550 font-bold text-white leading-8 text-[15px];
-    }
-</style>

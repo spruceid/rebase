@@ -1,13 +1,13 @@
 <script lang="ts">
   let clazz: string = "";
   export { clazz as class };
-  import { iconColor as color } from "util";
+  import { iconColor as color } from "utils";
 </script>
 
 <svg
-  width="18"
-  height="18"
-  viewBox="0 0 18 18"
+  width="20"
+  height="20"
+  viewBox="0 0 20 20"
   fill="none"
   class={clazz}
   xmlns="http://www.w3.org/2000/svg"

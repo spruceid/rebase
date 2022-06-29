@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Claim } from "util";
+    import type { Claim } from "utils";
     import { useNavigate } from "svelte-navigator";
     import { Tooltip } from "components";
 
@@ -9,10 +9,10 @@
 </script>
 
 <div
-    class="py-2 w-full flex flex-wrap justify-between border-b border-gray-200"
+    class="py-2 w-full flex flex-wrap items-center justify-between border-b border-gray-200"
 >
-    <div class="flex flex-wrap w-fit">
-        <div class="w-8"><svelte:component this={claim.icon} /></div>
+    <div class="flex flex-wrap items-center w-fit">
+        <div><svelte:component this={claim.icon} /></div>
         <span>&nbsp;{claim.title}</span>
     </div>
     {#if claim.available}

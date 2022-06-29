@@ -88,4 +88,5 @@ export type Claim = {
     icon: ClaimIcon,
     title: string,
     type: ClaimType,
+    available: boolean,
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { CloseIcon } from "components";
-  import { alert } from "util";
+  import { alert } from "utils";
   import { onMount } from "svelte";
 
   let resetTimeout: NodeJS.Timeout = null;
