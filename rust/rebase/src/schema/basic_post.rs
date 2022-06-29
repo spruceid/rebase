@@ -16,10 +16,15 @@ impl SchemaType for BasicPost {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
             {
-              "title": "https://schema.org/name",
-              "body": "https://schema.org/articleBody",
-              "BasicPost": "https://schema.org/BlogPosting"
-          },
+                "BasicPostCredential": "https://example.com/BasicPostCredential",
+                "BasicPost": {
+                    "@id": "https://schema.org/BasicPost",
+                    "@context": {
+                        "title": "https://schema.org/name",
+                        "body": "https://schema.org/articleBody",
+                    }
+                }
+            },
         ]))
     }
 
@@ -33,6 +38,7 @@ impl SchemaType for BasicPost {
     fn subject(&self) -> Result<serde_json::Value, SchemaError> {
         Ok(json!({
             "id": self.subject_id,
+            "type": ["BasicPost"],
             "title": self.title,
             "body": self.body,
         }))
