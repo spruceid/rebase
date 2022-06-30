@@ -19,22 +19,22 @@
     }
   }
 
-    .primary-button-container.reverse {
-      @apply font-bold py-3 px-6 transition duration-100 border border-purple-550 bg-purple-550 text-white;
+  .primary-button-container.reverse {
+    @apply font-bold py-3 px-6 transition duration-100 border border-purple-550 bg-purple-550 text-white;
+
+    svg path {
+      @apply fill-purple-550;
+    }
+
+    &:hover {
+      @apply text-white transition duration-100 bg-purple-550 scale-105;
 
       svg path {
-        @apply fill-purple-550;
+        @apply fill-white;
       }
 
-      &:hover {
-        @apply text-white transition duration-100 bg-purple-550 scale-105;
-
-        svg path {
-          @apply fill-white;
-        }
-
-      }
     }
+  }
 
   .secondary-button-container {
     @apply text-black bg-beige-2 transition duration-100;
@@ -66,6 +66,4 @@
     & .toggle-button.selected {
       @apply bg-purple-550 text-white
     }
-
-
   }
