@@ -231,7 +231,7 @@
     };
 
     const signerChanged2nd = () => {
-        if (signer && !signer2nd) {
+        if (signer && !signer2nd && current !== "sig1") {
             key2 = false;
             display2 = "none";
             current = "key2";
@@ -259,24 +259,6 @@
         question={"Click the button to connect the first of two signers you would like to link"}
         labelFor={"form-step-q-1-i-1"}
     >
-        <!-- <div id="form-step-q-1-i-1">
-            <Button
-                class="w-fit mt-[16px]"
-                disabled={current !== "key1" || key1 !== false}
-                onClick={async () => {
-                    try {
-                        getKey1();
-                    } catch (e) {
-                        alert.set({
-                            variant: "error",
-                            message: e?.message ? e.message : e,
-                        });
-                    }
-                }}
-                text="Connect First"
-                action
-            />
-        </div> -->
         <ConnectSignerButton
             class="menu w-full max-w-52.5 mt-[16px] rounded-xl"
             text="Connect First"
@@ -318,27 +300,6 @@
         labelFor={"form-step-q-2-i-1"}
     >
         <div id="form-step-q-2-i-1">
-            <!-- <Button
-                {loading}
-                class="w-fit mt-[16px]"
-                disabled={current !== "key2" || key2 !== false}
-                onClick={async () => {
-                    try {
-                        loading = true;
-                        await getKey2();
-                        await getStatement();
-                    } catch (e) {
-                        alert.set({
-                            variant: "error",
-                            message: e?.message ? e.message : e,
-                        });
-                    }
-                    loading = false;
-                }}
-                text="Connect Second"
-                action
-            />
-        </div> -->
             <Connect2ndSignerButton
                 class="menu w-full max-w-52.5 mt-[16px] rounded-xl"
                 text="Connect Second"
