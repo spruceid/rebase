@@ -31,6 +31,18 @@
     currentType.subscribe((x) => (signer = _signerMap[x]));
     signerMap.subscribe((x) => (signer = x[_currentType]));
 
+    $: $signerMap, signerChanged();
+    const signerChanged = () => {
+        if (!signer) {
+            statement = "";
+            signature = "";
+            delimitor = "";
+            handle = "";
+            proof = "";
+            witnessState.set("statement");
+        }
+    };
+
     let c: Array<Claim> = [];
     claims.subscribe((x) => (c = x));
 

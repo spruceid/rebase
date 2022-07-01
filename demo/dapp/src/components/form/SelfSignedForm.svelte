@@ -1,6 +1,7 @@
 <script lang="ts">
     import {
         signerMap,
+        signerMap2nd,
         signer,
         signer2nd,
         disconnect2nd,
@@ -28,6 +29,7 @@
     const navigate = useNavigate();
 
     $: $signerMap, signerChanged();
+    $: $signerMap2nd, signerChanged2nd();
 
     $: display1 = "";
     $: display2 = "";
@@ -224,14 +226,21 @@
                 connectSignerMessageElem.innerHTML =
                     "Click the button to connect the first of two signers you would like to link";
             }
+            current = "key1";
+        }
+    };
+
+    const signerChanged2nd = () => {
+        if (signer && !signer2nd) {
+            key2 = false;
+            display2 = "none";
+            current = "key2";
         }
     };
 
     onMount(() => {
         if (signer) {
             getKey1();
-            document.querySelector('[for="form-step-q-1-i-1"] span').innerHTML =
-                "We've identified that you already have a signer connected";
         }
     });
 </script>

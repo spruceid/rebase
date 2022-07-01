@@ -150,6 +150,17 @@ export const getKeyType2nd = (): KeyType => {
     };
 };
 
+const accountsChanged = (accounts: Array<string>): void => {
+    if (accounts.length === 0) {
+        if (signer && signer?.provider?.connection?.url === 'metamask'){
+            disconnect();
+        }
+        if (signer2nd && signer2nd?.provider?.connection?.url === 'metamask') {
+            disconnect2nd();
+        }
+    }
+}
+
 export const connect = async (): Promise<void> => {
     let s = await connectSigner(_currentType);
     let next = Object.assign({}, _signerMap);
@@ -157,6 +168,7 @@ export const connect = async (): Promise<void> => {
     next[_currentType] = s;
 
     signerMap.set(next);
+    window.ethereum.on('accountsChanged', accountsChanged)
 }
 
 export const connect2nd = async (): Promise<void> => {
@@ -179,6 +191,7 @@ export const disconnect = async (): Promise<void> => {
     signerMap.set(next);
     claims.set(copyObjArray(defaultClaims));
     await disconnectSigner(_currentType);
+    window.ethereum.removeListener('accountsChanged', accountsChanged)
 };
 
 export const disconnect2nd = async (): Promise<void> => {
