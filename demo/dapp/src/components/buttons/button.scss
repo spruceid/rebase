@@ -45,7 +45,7 @@
   }
 
   .action-button-container {
-    @apply font-bold bg-purple-550 py-3 px-6 transition duration-100 text-white border border-purple-550;
+    @apply font-bold bg-purple-550 py-3 px-6 transition duration-100 text-white border border-y-2 border-purple-550;
 
     &:hover {
       @apply bg-purple-550 transition duration-100 text-white;
@@ -56,7 +56,7 @@
     @apply w-fit m-auto transition duration-100 bg-white border border-purple-550 rounded-2xl;
 
     & .toggle-button {
-      @apply px-4 font-bold capitalize rounded-2xl w-[100px] transition-all duration-75
+      @apply px-4 font-bold capitalize rounded-xl w-[100px] transition-all duration-75
     }
 
     & .toggle-button:not(.selected):hover {

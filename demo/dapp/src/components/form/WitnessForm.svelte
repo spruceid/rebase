@@ -13,7 +13,7 @@
     } from "utils";
     import { onMount } from "svelte";
     import { useNavigate } from "svelte-navigator";
-    import { WitnessFormHeader } from "components";
+    import { WitnessFormHeader, ConnectSignerButton } from "components";
     import WitnessFormStatement from "./WitnessFormStatement.svelte";
     import WitnessFormSignature from "./WitnessFormSignature.svelte";
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
@@ -254,7 +254,11 @@
     {/if}
 {:else}
     <div class="w-full text-center">
-        <b>No Signer connected</b><br />
-        Please, connect a Signer to Create Credentials
+        Please connect your wallet
+        <ConnectSignerButton
+            class="menu w-full max-w-52.5 my-[16px] rounded-xl"
+            text="Connect Wallet"
+            action
+        />
     </div>
 {/if}

@@ -35,7 +35,7 @@ const defaultClaims: Claim[] = [
         credentials: [],
         credential_type: "github",
         icon: GitHubIcon,
-        title: "Github",
+        title: "GitHub",
         type: "public",
         available: true,
     },
@@ -116,7 +116,7 @@ signerMap2nd.subscribe(x => (signer2nd = x[_currentType2nd]));
 
 export const getKeyType = (): KeyType => {
     if (!signer) {
-        throw new Error("No signer set");
+        throw new Error("Please connect your wallet");
     }
 
     switch (_currentType) {

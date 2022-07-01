@@ -1,21 +1,14 @@
 <script lang="ts">
     import {
-        _currentType,
-        _currentType2nd,
-        currentType2nd,
         signerMap,
-        _signerMap,
-        _signerMap2nd,
         signer,
         signer2nd,
-        connect2nd,
         disconnect2nd,
         claims,
         getKeyType,
         getKeyType2nd,
         sign,
         sign2nd,
-        SignerType,
         Claim,
         KeyType,
         alert,
@@ -29,6 +22,8 @@
     } from "components";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
     import { onMount } from "svelte";
+    import { ConnectSignerButton } from "components";
+    import Connect2ndSignerButton from "../buttons/Connect2ndSignerButton.svelte";
 
     const navigate = useNavigate();
 
@@ -58,14 +53,14 @@
     };
 
     const getKey2 = async () => {
-        currentType2nd.set("ethereum" as SignerType);
-        await connect2nd();
         key2 = getKeyType2nd();
 
         if (JSON.stringify(key1) === JSON.stringify(key2)) {
             key2 = false;
-            if(signer.provider.connection.url === 'metamask') {
-                throw new Error("Cannot use same signer for both entries. Please change accounts if you want to proceed with MetaMask.");
+            if (signer.provider.connection.url === "metamask") {
+                throw new Error(
+                    "Cannot use same signer for both entries. Please change accounts if you want to proceed with MetaMask."
+                );
             } else {
                 throw new Error("Cannot use same signer for both entries.");
             }
@@ -222,12 +217,12 @@
         } else {
             key1 = false;
             key2 = false;
-            display1 = 'none';
-            display2 = 'none';
+            display1 = "none";
+            display2 = "none";
             disconnect2nd();
             if (connectSignerMessageElem) {
                 connectSignerMessageElem.innerHTML =
-                    "Using the connection controls in the header, select the first of two signers you would like to link";
+                    "Click the button to connect the first of two signers you would like to link";
             }
         }
     };
@@ -252,10 +247,10 @@
         step={1}
         totalSteps={5}
         label={"Connect First Key"}
-        question={"Using the connection controls in the header, select the first of two signers you would like to link"}
+        question={"Click the button to connect the first of two signers you would like to link"}
         labelFor={"form-step-q-1-i-1"}
     >
-        <div id="form-step-q-1-i-1">
+        <!-- <div id="form-step-q-1-i-1">
             <Button
                 class="w-fit mt-[16px]"
                 disabled={current !== "key1" || key1 !== false}
@@ -272,7 +267,13 @@
                 text="Connect First"
                 action
             />
-        </div>
+        </div> -->
+        <ConnectSignerButton
+            class="menu w-full max-w-52.5 mt-[16px] rounded-xl"
+            text="Connect First"
+            disabled={current !== "key1" || key1 !== false}
+            action
+        />
     </WitnessFormStepper>
     <div class="w-full my-[16px] text-center">
         <Button
@@ -308,7 +309,7 @@
         labelFor={"form-step-q-2-i-1"}
     >
         <div id="form-step-q-2-i-1">
-            <Button
+            <!-- <Button
                 {loading}
                 class="w-fit mt-[16px]"
                 disabled={current !== "key2" || key2 !== false}
@@ -328,8 +329,28 @@
                 text="Connect Second"
                 action
             />
-        </div>
-    </WitnessFormStepper>
+        </div> -->
+            <Connect2ndSignerButton
+                class="menu w-full max-w-52.5 mt-[16px] rounded-xl"
+                text="Connect Second"
+                disabled={current !== "key2" || key2 !== false}
+                cb={async () => {
+                    try {
+                        loading = true;
+                        await getKey2();
+                        await getStatement();
+                    } catch (e) {
+                        alert.set({
+                            variant: "error",
+                            message: e?.message ? e.message : e,
+                        });
+                    }
+                    loading = false;
+                }}
+                action
+            />
+        </div></WitnessFormStepper
+    >
     <div class="w-full my-[16px] text-center">
         <Button
             class="w-2/5"
