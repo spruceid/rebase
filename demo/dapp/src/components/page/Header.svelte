@@ -47,7 +47,7 @@
 <div
     class="min-w-screen px-4 h-[70px] w-full flex items-center justify-between bg-white shadow"
 >
-    <Link to="/">
+    <Link to="/account">
         <RebaseLogo class="w-fit flex items-center" xl />
     </Link>
 

@@ -60,6 +60,6 @@
 {:else}
     <div class="w-full text-center">
         <b>You don't have credentials yet</b><br />
-        Click on "Available" and start generating your credentials
+        Click on "Available" and start obtaining credentials
     </div>
 {/if}

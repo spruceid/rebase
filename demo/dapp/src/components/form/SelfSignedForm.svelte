@@ -19,7 +19,7 @@
         WitnessFormHeader,
         WitnessFormStepper,
         Button,
-        GlobeIcon,
+        EthereumIcon,
     } from "components";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
     import { onMount } from "svelte";
@@ -246,7 +246,7 @@
 </script>
 
 <WitnessFormHeader
-    icon={GlobeIcon}
+    icon={EthereumIcon}
     title={"Ethereum Account Verification Workflow"}
     subtitle={`First signer: ${display1 ? display1 : "none"}`}
     subsubtitle={`Second signer: ${display2 ? display2 : "none"}`}
