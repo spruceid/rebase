@@ -1,6 +1,6 @@
 <script lang="ts">
-    import type { Instructions, CredentialType } from "util";
-    import { alert } from "util";
+    import type { Instructions, CredentialType } from "utils";
+    import { alert } from "utils";
     import { Button, WitnessFormStepper, CopyTextArea } from "components";
 
     export let step: number | string = 3;

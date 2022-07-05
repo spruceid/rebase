@@ -7,7 +7,7 @@ $ npm i
 $ npm run dev
 ```
 
-Then the UI should be running on `localhost:8080` and simple to operate. Signers (currently limited to Ethereum) can be connected through the header and claims can be created by visiting the `available` option at the top of the body.
+Then the UI should be running on `localhost:3000` and simple to operate. Signers (currently limited to Ethereum) can be connected through the header and claims can be created by visiting the `available` option at the top of the body.
 
 The witness flows should contain sufficient instructions for a user to follow. If using the default configuration, `rebase/demo/witness` will need to be running on `localhost:8787`. If using a different witness, change the const `witnessUrl` in `demo/dapp/src/components/claims/WitnessForm.svelte` to the location of the witness you want to use.
 

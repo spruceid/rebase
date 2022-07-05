@@ -5,3 +5,5 @@ export { default as IconLink } from './IconLink.svelte';
 export { default as IconButton } from './IconButton.svelte';
 export { default as ToggleButton } from './ToggleButton.svelte';
 export { default as CopyButton } from './CopyButton.svelte';
+export { default as ConnectSignerButton } from './ConnectSignerButton.svelte';
+export { default as Connect2ndSignerButton } from './Connect2ndSignerButton.svelte';

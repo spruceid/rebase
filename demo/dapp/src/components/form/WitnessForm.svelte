@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CredentialType, Instructions, Workflow, Claim } from "util";
+    import type { CredentialType, Instructions, Workflow, Claim } from "utils";
     import {
         _currentType,
         _signerMap,
@@ -10,16 +10,10 @@
         witnessState,
         sign,
         Signer,
-        alert,
-    } from "util";
+    } from "utils";
     import { onMount } from "svelte";
     import { useNavigate } from "svelte-navigator";
-    import {
-        Button,
-        CopyTextArea,
-        WitnessFormStepper,
-        WitnessFormHeader,
-    } from "components";
+    import { WitnessFormHeader, ConnectSignerButton } from "components";
     import WitnessFormStatement from "./WitnessFormStatement.svelte";
     import WitnessFormSignature from "./WitnessFormSignature.svelte";
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
@@ -36,6 +30,18 @@
     let loading: boolean = false;
     currentType.subscribe((x) => (signer = _signerMap[x]));
     signerMap.subscribe((x) => (signer = x[_currentType]));
+
+    $: $signerMap, signerChanged();
+    const signerChanged = () => {
+        if (!signer) {
+            statement = "";
+            signature = "";
+            delimitor = "";
+            handle = "";
+            proof = "";
+            witnessState.set("statement");
+        }
+    };
 
     let c: Array<Claim> = [];
     claims.subscribe((x) => (c = x));
@@ -180,7 +186,7 @@
                 opts["github"]["statement_opts"] = {};
                 opts["github"]["statement_opts"]["handle"] = handle;
                 opts["github"]["statement_opts"]["key_type"] = getKeyType();
-                opts["github"]["gist_id"] = proof;
+                opts["github"]["gist_id"] = proof.split("/").pop();
                 break;
             case "twitter":
                 opts["twitter"] = {};
@@ -256,13 +262,15 @@
         />
     {/if}
     {#if state === "complete"}
-        <WitnessFormComplete
-            {navigate}
-        />
+        <WitnessFormComplete {navigate} />
     {/if}
 {:else}
     <div class="w-full text-center">
-        <b>No Signer connected</b><br />
-        Please, connect a Signer to Create Credentials
+        Please connect your wallet
+        <ConnectSignerButton
+            class="menu w-full max-w-52.5 my-[16px] rounded-xl"
+            text="Connect Wallet"
+            action
+        />
     </div>
 {/if}

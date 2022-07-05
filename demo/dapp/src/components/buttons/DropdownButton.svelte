@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+import SpinnerIcon from "../icons/SpinnerIcon.svelte";
   import "./button.scss";
 
   let clazz: string = "";
@@ -11,6 +12,7 @@
   export let disabled: boolean = false;
   export let small: boolean = false;
   export let ml: boolean = false;
+  export let loading: boolean = false;
 
   let showDropdown = false;
   let dropdownRef = null;
@@ -54,7 +56,14 @@
     aria-label={title}
     {title}
   >
-    {text}
+    {#if loading}
+      <div class="flex flex-wrap items-center justify-center">
+        <SpinnerIcon class="w-6 h-6 mr-2 animate-spin" />
+        {text}
+      </div>
+    {:else}
+      {text}
+    {/if}
   </button>
   {#if showDropdown}
     <slot />

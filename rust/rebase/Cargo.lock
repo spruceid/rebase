@@ -126,6 +126,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-recursion"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2cda8f4bcc10624c4e85bc66b3f452cca98cfa5ca002dc83a16aad2367641bea"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "async-std"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -377,12 +388,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "const-oid"
-version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d6f2aa4d0537bcc1c74df8755072bd31c1ef1a3a1b85a68e8404a8c353b7b8b"
-
-[[package]]
 name = "constant_time_eq"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -588,9 +593,6 @@ name = "der"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "79b71cca7d95d7681a4b3b9cdf63c8dbc3730d0584c2c74e31416d64a90493f4"
-dependencies = [
- "const-oid",
-]
 
 [[package]]
 name = "derive_builder"
@@ -625,7 +627,7 @@ dependencies = [
  "http",
  "reqwest",
  "serde_json",
- "ssi",
+ "ssi 0.4.0",
 ]
 
 [[package]]
@@ -712,7 +714,6 @@ dependencies = [
  "ff",
  "generic-array 0.14.5",
  "group",
- "pkcs8",
  "rand_core 0.6.3",
  "subtle 2.4.1",
  "zeroize",
@@ -1251,7 +1252,6 @@ dependencies = [
  "cfg-if",
  "ecdsa 0.12.4",
  "elliptic-curve 0.10.6",
- "sha2 0.9.9",
  "sha3",
 ]
 
@@ -1513,17 +1513,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "p256"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d053368e1bae4c8a672953397bd1bd7183dde1c72b0b7612a15719173148d186"
-dependencies = [
- "ecdsa 0.12.4",
- "elliptic-curve 0.10.6",
- "sha2 0.9.9",
-]
-
-[[package]]
 name = "pairing-plus"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1635,16 +1624,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
-name = "pkcs8"
-version = "0.7.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee3ef9b64d26bad0536099c816c6734379e45bbd5f14798def6809e5cc350447"
-dependencies = [
- "der",
- "spki",
-]
-
-[[package]]
 name = "pkg-config"
 version = "0.3.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1714,20 +1693,9 @@ checksum = "6a6b1679d49b24bbfe0c803429aa1874472f50d9b363131f0e89fc356b544d03"
 dependencies = [
  "getrandom 0.1.16",
  "libc",
- "rand_chacha 0.2.2",
+ "rand_chacha",
  "rand_core 0.5.1",
  "rand_hc",
-]
-
-[[package]]
-name = "rand"
-version = "0.8.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
-dependencies = [
- "libc",
- "rand_chacha 0.3.1",
- "rand_core 0.6.3",
 ]
 
 [[package]]
@@ -1738,16 +1706,6 @@ checksum = "f4c8ed856279c9737206bf725bf36935d8666ead7aa69b52be55af369d193402"
 dependencies = [
  "ppv-lite86",
  "rand_core 0.5.1",
-]
-
-[[package]]
-name = "rand_chacha"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
-dependencies = [
- "ppv-lite86",
- "rand_core 0.6.3",
 ]
 
 [[package]]
@@ -1834,7 +1792,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha3",
- "ssi",
+ "ssi 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
  "tokio",
  "url",
@@ -2141,13 +2099,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "spki"
-version = "0.4.1"
+name = "spin"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c01a0c15da1b0b0e1494112e7af814a678fec9bd157881b49beac661e9b6f32"
-dependencies = [
- "der",
-]
+checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
 name = "sshkeys"
@@ -2179,7 +2134,6 @@ dependencies = [
  "derive_builder",
  "digest 0.9.0",
  "ecdsa 0.11.1",
- "ed25519-dalek",
  "ff-zeroize",
  "flate2",
  "futures",
@@ -2189,28 +2143,25 @@ dependencies = [
  "iref",
  "json",
  "json-ld",
- "k256",
  "lazy_static",
  "multibase",
  "num-bigint 0.4.3",
- "p256",
  "pairing-plus",
  "pest",
  "pest_derive",
  "rand 0.7.3",
- "rand 0.8.5",
  "rand_xorshift 0.3.0",
  "reqwest",
+ "ring",
  "serde",
  "serde_jcs",
  "serde_json",
  "serde_urlencoded",
  "serde_with",
  "sha2 0.8.2",
- "sha2 0.9.9",
  "simple_asn1",
  "sshkeys",
- "ssi-contexts",
+ "ssi-contexts 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
  "url",
  "zeroize",
@@ -2219,6 +2170,12 @@ dependencies = [
 [[package]]
 name = "ssi-contexts"
 version = "0.1.3"
+
+[[package]]
+name = "ssi-contexts"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c5cc45c2b1fcd5ee3c09b30369a585c811c92403f708a2f0816a1bcd09b193"
 
 [[package]]
 name = "strsim"
@@ -2458,6 +2415,12 @@ name = "unicode-xid"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "957e51f3646910546462e67d5f7599b9e4fb8acdd304b087a6494730f9eebf04"
+
+[[package]]
+name = "untrusted"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a156c684c91ea7d62626509bce3cb4e1d9ed5c4d978f7b4352658f96a4c26b4a"
 
 [[package]]
 name = "url"

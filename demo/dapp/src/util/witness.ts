@@ -33,7 +33,11 @@ const ICONS = {
 };
 
 const capitalizeFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+    if(string === 'github'){
+        return 'GitHub';
+    } else {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
 }
 
 export const instructions = async (t: CredentialType): Promise<Instructions> => {
@@ -79,7 +83,7 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
                         a message.`,
                 statement: "Enter the Web Domain you wish to prove ownership of.",
                 statement_label: "Enter the Domain",
-                statement_placeholder: `Enter your domain`,
+                statement_placeholder: `Enter your domain (example.com)`,
                 signature: `Sign the message presented to you containing your domain and additional 
                             information.`,
                 signature_label: `Signature Prompt`,

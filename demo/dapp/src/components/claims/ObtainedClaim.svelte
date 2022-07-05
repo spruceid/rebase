@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Claim, credentialToDisplay } from "util";
+    import { Claim, credentialToDisplay } from "utils";
     import { IconButton, DownloadIcon, DeleteIcon, IconLink } from "components";
 
     export let claim: Claim;
@@ -11,21 +11,17 @@
     };
 </script>
 
-<div
-    class="py-2 w-full flex flex-wrap justify-between border-b border-gray-200"
->
-    <div class="flex flex-wrap w-full">
-        <div class="flex flex-wrap justify-center items-center">
-            <div class="w-8 h-fit"><svelte:component this={claim.icon} /></div>
-            <div class="font-semibold">
-                {claim.title}
+{#if claim.credentials.length !== 0}
+    <div class="obtained-claim py-2 w-full flex flex-wrap justify-between ">
+        <div class="flex flex-wrap w-full">
+            <div class="flex flex-wrap justify-center items-center">
+                <div class="w-8 h-fit">
+                    <svelte:component this={claim.icon} />
+                </div>
+                <div class="font-semibold">
+                    {claim.title}
+                </div>
             </div>
-        </div>
-        {#if claim.credentials.length == 0}
-            <div class="w-full  px-4">
-                No {claim.title} credentials
-            </div>
-        {:else}
             {#each claim.credentials as credential}
                 <div
                     class="w-full px-4 flex flex-wrap justify-between items-center"
@@ -66,11 +62,15 @@
                     </div>
                 </div>
             {/each}
-        {/if}
+        </div>
     </div>
-</div>
+{/if}
 
 <style>
+    .obtained-claim:nth-child(n + 2) {
+        @apply border-t border-gray-200;
+    }
+
     .obtained-claim-action :global(a) {
         margin: auto;
     }

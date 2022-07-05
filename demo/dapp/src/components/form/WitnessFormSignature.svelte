@@ -1,6 +1,6 @@
 <script lang="ts">
-    import type { Instructions } from "util";
-    import { alert } from "util";
+    import type { Instructions } from "utils";
+    import { alert } from "utils";
     import { Button, WitnessFormStepper } from "components";
 
     export let step: number | string = 2;
