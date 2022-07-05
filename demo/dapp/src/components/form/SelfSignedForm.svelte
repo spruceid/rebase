@@ -248,7 +248,7 @@
 <WitnessFormHeader
     icon={GlobeIcon}
     title={"Ethereum Account Verification Workflow"}
-    subtitle={`Fist signer: ${display1 ? display1 : "none"}`}
+    subtitle={`First signer: ${display1 ? display1 : "none"}`}
     subsubtitle={`Second signer: ${display2 ? display2 : "none"}`}
 />
 {#if current === "key1"}
