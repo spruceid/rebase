@@ -52,7 +52,7 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
                         message using your private key, entering your ${capitalizeFirstLetter(t)} handle, and finally, generating
                         a message to post.`,
                 statement: `Enter your ${capitalizeFirstLetter(t)} account handle to verify
-                        and include in a message signed via your wallet.`,
+                        and include it in a message signed via your wallet.`,
                 statement_label: `Enter Account Handle`,
                 statement_placeholder: `Enter your ${capitalizeFirstLetter(t)} handle`,
                 signature: `Sign the message presented to you containing your ${capitalizeFirstLetter(t)} handle and additional 

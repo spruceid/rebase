@@ -69,7 +69,7 @@
                 <hr />
                 {#each signerTypes as t}
                     <Button
-                        class="w-full bg-dark-1 text-white"
+                        class="w-full bg-dark-1 text-white py-4"
                         onClick={() => connectNew(t)}
                         text={capitalizeFirstLetter(t)}
                     />
@@ -100,7 +100,7 @@
                     class="origin-top-right absolute right-4 w-48 py-0 mt-1 bg-dark-1 rounded-xl shadow-md"
                 >
                     <Button
-                        class="w-full bg-dark-1 text-white"
+                        class="w-full bg-dark-1 text-white py-4"
                         onClick={() => {
                             navigate("/");
                             moreDropdown.closeDropdown();
@@ -108,7 +108,7 @@
                         text="About"
                     />
                     <Button
-                        class="w-full bg-dark-1 text-white"
+                        class="w-full bg-dark-1 text-white py-4"
                         onClick={() => {
                             disconnect();
                             moreDropdown.closeDropdown();

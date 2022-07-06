@@ -214,7 +214,7 @@
             getKey1();
             if (connectSignerMessageElem) {
                 connectSignerMessageElem.innerHTML =
-                    "We've identified that you already have a signer connected";
+                    "We've identified that you already have a signer connected.";
             }
         } else {
             key1 = false;
@@ -224,7 +224,7 @@
             disconnect2nd();
             if (connectSignerMessageElem) {
                 connectSignerMessageElem.innerHTML =
-                    "Click the button to connect the first of two signers you would like to link";
+                    "Click the button to connect the first of two signers you would like to link.";
             }
             current = "key1";
         }
@@ -256,7 +256,7 @@
         step={1}
         totalSteps={5}
         label={"Connect First Key"}
-        question={"Click the button to connect the first of two signers you would like to link"}
+        question={"Click the button to connect the first of two signers you would like to link."}
         labelFor={"form-step-q-1-i-1"}
     >
         <ConnectSignerButton
@@ -266,7 +266,9 @@
             action
         />
     </WitnessFormStepper>
-    <div class="w-full my-[16px] text-center">
+    <div
+        class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center  content-end"
+    >
         <Button
             class="w-2/5"
             onClick={() => navigate("/account")}
@@ -296,7 +298,7 @@
         step={2}
         totalSteps={5}
         label={"Connect Second Key"}
-        question={"Click the button to connect the second of two signers you would like to link"}
+        question={"Click the button to connect the second of two signers you would like to link."}
         labelFor={"form-step-q-2-i-1"}
     >
         <div id="form-step-q-2-i-1">
@@ -321,7 +323,9 @@
             />
         </div></WitnessFormStepper
     >
-    <div class="w-full my-[16px] text-center">
+    <div
+        class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center  content-end"
+    >
         <Button
             class="w-2/5"
             onClick={back}
@@ -352,7 +356,7 @@
         step={3}
         totalSteps={5}
         label={"Sign with the Second Key"}
-        question={"Sign the statement with the second signer"}
+        question={"Sign the statement with the second signer."}
         labelFor={"form-step-q-3-i-1"}
     >
         <div id="form-step-q-3-i-1">
@@ -377,7 +381,9 @@
             />
         </div>
     </WitnessFormStepper>
-    <div class="w-full my-[16px] text-center">
+    <div
+        class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center  content-end"
+    >
         <Button
             class="w-2/5"
             onClick={back}
@@ -408,7 +414,7 @@
         step={4}
         totalSteps={5}
         label={"Sign with First Key"}
-        question={"Sign the statement with the first signer. The signatures will then be used to generate a credential"}
+        question={"Sign the statement with the first signer. The signatures will then be used to generate a credential."}
         labelFor={"form-step-q-4-i-1"}
     >
         <div id="form-step-q-4-i-1">
@@ -434,7 +440,9 @@
             />
         </div>
     </WitnessFormStepper>
-    <div class="w-full my-[16px] text-center">
+    <div
+        class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end"
+    >
         <Button
             class="w-2/5"
             onClick={back}
