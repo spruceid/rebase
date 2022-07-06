@@ -1,12 +1,14 @@
 # rebase
 
-Rebase is a library for handling the witnessing of cryptographically verifiable claims and issuance of Verifiable Credentials based on this programmatic witnessing. More specifically, Rebase simplifies the process of creating links between identity providers, or self attested claims using VCs by providing a convient wrapper around SSI. Rebase is intended for a wide variety of uses ranging from server-side "witness" serivces, to VC reading validation services, to in-browser usage via WASM. 
+Rebase is a library for handling the witnessing of cryptographically verifiable claims, and the issuance of Verifiable Credentials (VC) based on this programmatic witnessing. Rebase simplifies the process of creating links between identity providers, or self attested claims using VCs by providing a convient wrapper around [`ssi`](https://github.com/spruceid/ssi). Rebase is intended for a wide variety of uses ranging from server-side "witness" serivces, to VC reading validation services, to in-browser usage via WASM. 
 
 ## Architectural Overview
 
-The heart of the project is found in `rust/rebase/src`. The high level goal is to collect data from the end user, create a statement for the user to sign, ask for the signature from the user (in addition to some other information in some cases), and presuming the statement and the signature match, issue a credential. Some flows are simpler than others, but all follow this basic format. Other uses of Rebase also exist, like verifying existing credentials produced by the described workflow, but most exist in that context.
+The heart of the project is found in `rust/rebase/src`. The high level goal of this implementation is to receive data from the end user, create a statement for the user to sign, ask for the signature from the user (in addition to some other information in some cases), and presuming the statement and the signature match, issue a credential. Some flows are simpler than others, but all follow this basic format. 
 
-Rebase works by layering several abstractions over each other. At the base is the `SignerType`, which defines what cryptographic signature could be read in a claim and how it could be verified. A layer above that is the `Signer<T: SignerType>` which is struct capable of signing both plain text (in the case of a client) and a VC (in the case of an issuer). In the simplest flow, the issuer is the client, but these types of claims don't link identities, simply show the signer signed whatever is stated in the VC (in other words "self attested"). Self attested claims still can be useful in the case of things like decentralized social media posts, etc.
+Rebase works by layering several abstractions over each other. At the base is the `SignerType`, which defines what cryptographic signature could be read in a claim and how it could be verified. A layer above that is the `Signer<T: SignerType>` which is struct capable of signing both plain text (in the case of a client) and a VC (in the case of an issuer). 
+
+In the simplest flow, the issuer is the client, but these types of claims don't link identities, simply show the signer signed whatever is stated in the VC (in other words "self-attested"). 
 
 The next important abstraction is the `SchemaType` which is a trait that takes a simple struct, something like:
 ```rust
@@ -75,7 +77,7 @@ The witnessing flow looks like:
 
 3) The user signs the statement. The user returns the statement and enough information to verify the signature. In the case of linking public profiles, this would be retrieving a public post (a tweet, a gist, etc) that contains the statement and signature, parsing them, then verifing that signature is of the statement and by the `SignerType` described in the statement. In the case of linking two keys, this would just be the two `SignerTypes` and two signatures.
 
-4) The witness preforms the steps described above and either issues a VC or returns the error.
+4) The witness preforms the steps described above and either issues a VC or returns an error.
 
 To make this possible, first a struct must implement the `Statement` trait in `src/witness/witness`, then when a user supplies such a struct, they are given back a statement to sign and a delimitor (if applicable) to place between the statement and the signature.
 
@@ -381,7 +383,7 @@ impl Signer<Ed25519> for Ed25519DidWebJwk {
 }
 ```
 
-As can be seen, the `SignerType` for a given `Signer` is often going to be concrete at the `impl Signer<...>` level. The key here is to be able to provide a `proof` entry for the VC and to be able to `sign` bytes and `sign_vc` for VCs. If a `Signer` implements `sign`, it can be used to sign claims as a client, if it implements `sign_vc`, it can be used to author VCs as a witness.
+The `SignerType` for a given `Signer` is often going to be concrete at the `impl Signer<...>` level. The key here is to be able to provide a `proof` entry for the VC and to be able to `sign` bytes and `sign_vc` for VCs. If a `Signer` implements `sign`, it can be used to sign claims as a client, if it implements `sign_vc`, it can be used to author VCs as a witness.
 
 It is not neccesary to implement `Signer` if the expectation is that a particular `SignerType` will only be used by the client. As of writing, `ethereum` only implements `SignerType` and cannot be used to issue VCs, only to sign claims that a witness can validate.
 

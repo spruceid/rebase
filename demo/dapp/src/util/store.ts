@@ -1,5 +1,5 @@
 import { writable, Writable } from "svelte/store";
-import { GlobeIcon, TwitterIcon, GitHubIcon } from 'components/icons';
+import { GlobeIcon, TwitterIcon, GitHubIcon, EthereumIcon } from 'components/icons';
 import type { Claim } from "./claim";
 import { connectSigner, connectSigner2nd, disconnectSigner, disconnectSigner2nd, Signer, SignerMap, SignerType } from "./signer";
 import type { KeyType, Workflow } from "./witness";
@@ -50,7 +50,7 @@ const defaultClaims: Claim[] = [
     {
         credentials: [],
         credential_type: "self_signed",
-        icon: GlobeIcon,
+        icon: EthereumIcon,
         title: "Ethereum Account",
         type: "public",
         available: true,

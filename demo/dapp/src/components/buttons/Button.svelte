@@ -18,10 +18,10 @@
   export let avatar: string | false = false;
 </script>
 
+<!-- class:py-4={!small} -->
 <button
   {disabled}
   class={`${clazz} button-container text-ellipsis overflow-hidden `}
-  class:py-4={!small}
   class:py-3={small}
   class:opacity-50={disabled}
   class:cursor-not-allowed={disabled}

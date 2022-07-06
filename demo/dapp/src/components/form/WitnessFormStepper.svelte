@@ -6,8 +6,8 @@
     export let labelFor: string;
 </script>
 
-<div>
-    <div class="flex flex-wrap justify-center content-between h-full">
+<div class="w-full">
+    <div class="w-full flex flex-wrap justify-center content-between h-full">
         <div class="w-full mx-6 px-4">
             <label for={labelFor}>
                 <p class="font-bold">{label}</p>

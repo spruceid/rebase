@@ -39,14 +39,10 @@
         }
         showCredentials = false;
     };
-
-    // onMount(() => {
-    //     hasCredentials();
-    // });
 </script>
 
 {#if showCredentials}
-    <div class="w-full h-96">
+    <div class="w-full min-h-[24rem] h-auto">
         <h3 class="py-4 px-4">My Credentials</h3>
         <div class="max-h-[350px] overflow-auto px-4">
             {#each pbClaims as claim}
@@ -60,6 +56,6 @@
 {:else}
     <div class="w-full text-center">
         <b>You don't have credentials yet</b><br />
-        Click on "Available" and start generating your credentials
+        Click on "Available" and start obtaining credentials
     </div>
 {/if}

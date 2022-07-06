@@ -24,7 +24,7 @@
             </div>
             {#each claim.credentials as credential}
                 <div
-                    class="w-full px-4 flex flex-wrap justify-between items-center"
+                    class="w-full px-4 py-1 flex flex-wrap justify-between items-center"
                 >
                     {#if credentialToDisplay(credential).type === "basic_public"}
                         <div

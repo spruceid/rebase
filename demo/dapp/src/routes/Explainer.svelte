@@ -10,27 +10,20 @@
         <RebaseLogo class="w-full flex items-center justify-center my-[16px]" logo/>
         <div>
             <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-                vitae egestas ipsum. Quisque pharetra felis nunc, eu tristique
-                metus lobortis sed. Ut viverra, quam viverra vulputate
-                vulputate, tortor libero pretium quam, quis ullamcorper neque
-                nulla efficitur purus. Maecenas egestas, mauris non mollis
-                porttitor, orci felis consequat ante, eu pellentesque metus
-                nulla at ligula. Sed mauris nunc, laoreet nec nisl ac,
-                ullamcorper mollis nibh. Nunc vel varius justo. Sed cursus
-                sollicitudin lorem vitae dictum
+                Rebase is a decentralized service that allows people and organizations
+                to map their identities to cryptographic keys using accounts in a 
+                user-centric and publicly auditable way. This instance allows users 
+                to incrementally build their identity through various workflows for 
+                social media accounts, self-attested information, and more.  
             </p>
             <br />
             <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-                vitae egestas ipsum. Quisque pharetra felis nunc, eu tristique
-                metus lobortis sed. Ut viverra, quam viverra vulputate
-                vulputate, tortor libero pretium quam, quis ullamcorper neque
-                nulla efficitur purus. Maecenas egestas, mauris non mollis
-                porttitor, orci felis consequat ante, eu pellentesque metus
-                nulla at ligula. Sed mauris nunc, laoreet nec nisl ac,
-                ullamcorper mollis nibh. Nunc vel varius justo. Sed cursus
-                sollicitudin lorem vitae dictum
+                Credentials are issued as W3C Verifiable Credentials to a user's 
+                decentralized identifier, and are saved locally unless a storage system 
+                is provided. This instance begins with a user's Ethereum account as the 
+                core identifier, with various credentials being issued to that account
+                as the subject. In the future, this could be augmented with different
+                identifiers, workflows, and more. 
             </p>
         </div>
         <div class="w-full flex justify-center items-center">

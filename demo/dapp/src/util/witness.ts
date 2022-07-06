@@ -50,18 +50,18 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
                 title: `${capitalizeFirstLetter(t)} Verification Workflow`,
                 subtitle: `This process is used to link your ${capitalizeFirstLetter(t)} account to your identifier by signing a 
                         message using your private key, entering your ${capitalizeFirstLetter(t)} handle, and finally, generating
-                        a message.`,
+                        a message to post.`,
                 statement: `Enter your ${capitalizeFirstLetter(t)} account handle to verify
-                        and include in a message signed via your wallet.`,
+                        and include it in a message signed via your wallet.`,
                 statement_label: `Enter Account Handle`,
                 statement_placeholder: `Enter your ${capitalizeFirstLetter(t)} handle`,
                 signature: `Sign the message presented to you containing your ${capitalizeFirstLetter(t)} handle and additional 
                             information.`,
                 signature_label: `Signature Prompt`,
                 witness: t === "twitter" ?
-                    "Tweet out your signed message to create a link between your identifier and your Twitter handle" :
+                    "Tweet out your signed message to create a link between your identifier and your Twitter handle." :
                     t === "github" ?
-                        "Create a Gist with this message to create a link between your identifier and your GitHub handle" :
+                        "Create a Gist with this message to create a link between your identifier and your GitHub handle." :
                         "",
                 witness_label: t === "twitter"
                     ? "Tweet Message" :
@@ -78,9 +78,8 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
             return {
                 icon: ICONS[t],
                 title: `${t.toUpperCase()} Verification Workflow`,
-                subtitle: `This process is used to link your Web Domain to your identifier by signing a 
-                        message using your private key, entering your domain, and finally, generating
-                        a message.`,
+                subtitle: `This process is used to link your Web Domain to your identifier by entering your domain, 
+                            signing a message using your private key, and finally, generating a message to verify.`,
                 statement: "Enter the Web Domain you wish to prove ownership of.",
                 statement_label: "Enter the Domain",
                 statement_placeholder: `Enter your domain (example.com)`,
@@ -88,7 +87,7 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
                             information.`,
                 signature_label: `Signature Prompt`,
                 witness: `In your DNS settings, add a new TXT record for @ and copy and put the
-                        following text as the value. Keep in mind that DNS propagation can take
+                        following message as the value. Keep in mind that DNS propagation can take
                         some time. This process may take a few minutes for the verification to
                         successfully complete.`,
                 witness_label: "Add a TXT record with the Message",
