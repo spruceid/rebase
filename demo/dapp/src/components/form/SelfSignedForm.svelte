@@ -13,6 +13,8 @@
         Claim,
         KeyType,
         alert,
+        fetchStatement,
+        fetchJwt,
     } from "utils";
     import { useNavigate } from "svelte-navigator";
     import {
@@ -44,8 +46,6 @@
     let c: Array<Claim> = [];
     claims.subscribe((x) => (c = x));
 
-    const witnessUrl = process.env.WITNESS_URL;
-
     const getKey1 = () => {
         key1 = getKeyType();
         key2 = false;
@@ -76,25 +76,17 @@
             throw new Error(`Need two keys set to use cross signed credential`);
         }
 
-        let res = await fetch(`${witnessUrl}/statement`, {
-            method: "POST",
-            headers: new Headers({
-                "Content-Type": "application/json",
-            }),
-            body: JSON.stringify({
-                opts: {
-                    self_signed: {
-                        key_1: key1,
-                        key_2: key2,
-                    },
+        let b = JSON.stringify({
+            opts: {
+                self_signed: {
+                    key_1: key1,
+                    key_2: key2,
                 },
-            }),
+            },
         });
 
-        if (!res.ok || res.status !== 200) {
-            throw new Error(`failed in getStatement: ${res.statusText}`);
-        }
-        let body = await res.json();
+        let res = await fetchStatement(b);
+        let body = JSON.parse(res);
 
         if (!body.statement) {
             throw new Error("Did not find statement in response.");
@@ -152,19 +144,9 @@
         };
 
         let b = JSON.stringify({ proof });
-        let res = await fetch(`${witnessUrl}/witness?type=self_signed`, {
-            method: "POST",
-            headers: new Headers({
-                "Content-Type": "application/json",
-            }),
-            body: b,
-        });
+        let res = await fetchJwt(b);
 
-        if (!res.ok || res.status !== 200) {
-            throw new Error(`failed in getCredential: ${res.statusText}`);
-        }
-
-        let { jwt } = await res.json();
+        let { jwt } = JSON.parse(res);
 
         setNew(jwt);
     };

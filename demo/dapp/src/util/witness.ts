@@ -1,5 +1,6 @@
 import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon } from "components/icons";
 import type { CredentialType } from "./claim";
+import { Client, statement, jwt  } from "@rebase-xyz/rebase-client";
 export interface KeyType {
     pkh: {
         eip155: {
@@ -96,4 +97,18 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
     }
 
     throw new Error(`No instructions found for credential type: ${t}`);
+}
+
+const witnessUrl = process.env.WITNESS_URL;
+const statementUrl = `${witnessUrl}/statement`;
+const jwtUrl = `${witnessUrl}/witness`;
+
+const newClient = (): Client => new Client(statementUrl, jwtUrl);
+
+export const fetchStatement = async (body: string): Promise<any> => {
+    return await statement(newClient(), body);
+}
+
+export const fetchJwt = async (body: string): Promise<any> => {
+    return await jwt(newClient(), body);
 }

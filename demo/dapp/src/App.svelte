@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Router, Route } from "svelte-navigator";
 	import { Account, Explainer, Witness } from "routes";
+	
 </script>
 
 <Router>

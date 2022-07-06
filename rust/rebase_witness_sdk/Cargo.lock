@@ -2215,9 +2215,21 @@ dependencies = [
  "sha3 0.9.1",
  "ssi",
  "thiserror",
- "tokio",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "rebase_witness_sdk"
+version = "0.1.0"
+dependencies = [
+ "rebase",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "url",
 ]
 
 [[package]]
