@@ -13,7 +13,7 @@
                 Rebase is a decentralized service that allows people and organizations
                 to map their identities to cryptographic keys using accounts in a 
                 user-centric and publicly auditable way. This instance allows users 
-                to incrimentally build their identity through various workflows for 
+                to incrementally build their identity through various workflows for 
                 social media accounts, self-attested information, and more.  
             </p>
             <br />
