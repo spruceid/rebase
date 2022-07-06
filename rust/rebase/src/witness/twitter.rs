@@ -16,7 +16,7 @@ use url::Url;
 // TODO: Add Serde
 // TODO: Support the more specific TZProfiles attestation. Requires TZProfiles specific text.
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Opts {
     pub handle: String,
     pub key_type: SignerDID,
@@ -46,7 +46,7 @@ impl Statement for Opts {
 // NOTE: One could impl Proof for Opts but there's no corresponding schema + generator.
 // impl Proof for Opts {}
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Claim {
     pub statement_opts: Opts,
     pub tweet_url: String,

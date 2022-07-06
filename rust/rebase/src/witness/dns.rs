@@ -16,7 +16,7 @@ use url::Url;
 // TODO: Add Serde
 // TODO: Support the more specific TZProfiles attestation. Requires TZProfiles specific text.
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Claim {
     pub domain: String,
     pub prefix: String,

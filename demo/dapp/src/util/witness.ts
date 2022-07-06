@@ -1,5 +1,12 @@
 import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon } from "components/icons";
 import type { CredentialType } from "./claim";
+import { Client } from "@rebase-xyz/rebase-client";
+
+const witnessUrl = process.env.WITNESS_URL;
+const statementUrl = `${witnessUrl}/statement`;
+const jwtUrl = `${witnessUrl}/witness`;
+
+export const client = new Client(statementUrl, jwtUrl);
 export interface KeyType {
     pkh: {
         eip155: {

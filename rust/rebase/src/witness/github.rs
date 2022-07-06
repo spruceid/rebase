@@ -17,7 +17,7 @@ use url::Url;
 // TODO: Move to own dir, maybe w/ schema?
 // TODO: Add Serde
 // TODO: Support the more specific TZProfiles attestation. Requires TZProfiles specific text.
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Opts {
     pub handle: String,
     pub key_type: SignerDID,
@@ -44,7 +44,7 @@ impl Statement for Opts {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Claim {
     pub gist_id: String,
     pub statement_opts: Opts,

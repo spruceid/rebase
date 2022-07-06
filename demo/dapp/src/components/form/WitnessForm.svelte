@@ -10,6 +10,7 @@
         witnessState,
         sign,
         Signer,
+        client,
     } from "utils";
     import { onMount } from "svelte";
     import { useNavigate } from "svelte-navigator";
@@ -19,9 +20,9 @@
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
 
-    const navigate = useNavigate();
+    // TODO: Use client instead of fetch for credential generation.
 
-    const witnessUrl = process.env.WITNESS_URL;
+    const navigate = useNavigate();
 
     const dnsPrefix = "rebase_sig=";
 
@@ -55,7 +56,6 @@
             }
             next.push(claim);
         }
-
         claims.set(next);
     };
 
@@ -146,21 +146,9 @@
                 throw new Error(`${type} flow is currently unsupported`);
         }
 
-        let res = await fetch(`${witnessUrl}/statement`, {
-            method: "POST",
-            headers: new Headers({
-                "Content-Type": "application/json",
-            }),
-            body: JSON.stringify({
-                opts,
-            }),
-        });
+        let res = await client.statement(JSON.stringify({ opts }));
 
-        if (!res.ok || res.status !== 200) {
-            throw new Error(`failed in getStatement: ${res.statusText}`);
-        }
-
-        let body = await res.json();
+        let body = JSON.parse(res);
         if (!body.statement || !body.delimitor) {
             throw new Error(
                 "Did not find statement and delimitor in response."
@@ -200,20 +188,9 @@
         }
 
         let b = JSON.stringify({ proof: opts });
-        let res = await fetch(`${witnessUrl}/witness?type=${type}`, {
-            method: "POST",
-            headers: new Headers({
-                "Content-Type": "application/json",
-            }),
-            body: b,
-        });
+        let res = await client.jwt(b);
 
-        if (!res.ok || res.status !== 200) {
-            throw new Error(`failed in getCredential: ${res.statusText}`);
-        }
-
-        let { jwt } = await res.json();
-
+        let { jwt } = JSON.parse(res);
         setNew(jwt);
     };
 </script>
