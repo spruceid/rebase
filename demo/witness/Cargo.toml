@@ -27,6 +27,7 @@ console_error_panic_hook = { version = "0.1" }
 wee_alloc = { version = "0.4" }
 
 rebase = { path = "../../rust/rebase" }
+rebase_witness_sdk = { path = "../../rust/rebase_witness_sdk" }
 
 serde = "1"
 serde_json = "1"

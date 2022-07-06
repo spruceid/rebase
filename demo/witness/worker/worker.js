@@ -199,15 +199,6 @@ async function wtns(request) {
     const contentType = h.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
-      const { searchParams } = new URL(request.url);
-      // type is used to set any generator options from
-      // this side, where the secrets are available:
-      // TODO: Use, rather than blindly passing in twitter API key.
-      const t = searchParams.get("type");
-      if (!t) {
-        throw new Error("No type query param");
-      }
-
       let body = await request.json();
 
       const credential = await witness(REBASE_SK, JSON.stringify(body), TWITTER_BEARER_TOKEN);

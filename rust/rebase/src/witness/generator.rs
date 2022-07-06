@@ -11,7 +11,10 @@ use crate::{
     },
 };
 
-use ssi::vc::Credential;
+use ssi::vc::Credential as VC;
+
+pub type Credential = VC;
+
 pub struct WitnessGenerator {
     // DNS takes no configuration so is supported by default.
     // TODO: Make consistent?
