@@ -1,12 +1,12 @@
 # rebase
 
-Rebase is a library for handling the witnessing of cryptographically verifiable claims, and the issuance of Verifiable Credentials (VC) based on this programmatic witnessing. Rebase simplifies the process of creating links between identity providers, or self attested claims using VCs by providing a convient wrapper around [`ssi`](https://github.com/spruceid/ssi). Rebase is intended for a wide variety of uses ranging from server-side "witness" serivces, to VC reading validation services, to in-browser usage via WASM. 
+Rebase is a library for handling the witnessing of cryptographically verifiable claims, and the issuance of Verifiable Credentials (VC) based on this programmatic witnessing. Rebase simplifies the process of creating links between identity providers, or self-attested claims using VCs by providing a convenient wrapper around [`ssi`](https://github.com/spruceid/ssi). Rebase is intended for a wide variety of uses ranging from server-side "witness" services, to VC reading validation services, to in-browser usage via WASM. 
 
 ## Architectural Overview
 
-The heart of the project is found in `rust/rebase/src`. The high level goal of this implementation is to receive data from the end user, create a statement for the user to sign, ask for the signature from the user (in addition to some other information in some cases), and presuming the statement and the signature match, issue a credential. Some flows are simpler than others, but all follow this basic format. 
+The heart of the project is found in `rust/rebase/src`. The high-level goal of this implementation is to receive data from the end-user, create a statement for the user to sign, ask for the signature from the user (in addition to some other information in some cases), and presuming the statement and the signature match, issue a credential. Some flows are simpler than others, but all follow this basic format. 
 
-Rebase works by layering several abstractions over each other. At the base is the `SignerType`, which defines what cryptographic signature could be read in a claim and how it could be verified. A layer above that is the `Signer<T: SignerType>` which is struct capable of signing both plain text (in the case of a client) and a VC (in the case of an issuer). 
+Rebase works by layering several abstractions over each other. At the base is the `SignerType`, which defines what cryptographic signature could be read in a claim and how it could be verified. A layer above that is the `Signer<T: SignerType>` which is a struct capable of signing both plain text (in the case of a client) and a VC (in the case of an issuer). 
 
 In the simplest flow, the issuer is the client, but these types of claims don't link identities, simply show the signer signed whatever is stated in the VC (in other words "self-attested"). 
 
@@ -75,13 +75,13 @@ The witnessing flow looks like:
 
 2) Give the user a statement to sign that describes the `SignerType` that should be used to sign the statement.
 
-3) The user signs the statement. The user returns the statement and enough information to verify the signature. In the case of linking public profiles, this would be retrieving a public post (a tweet, a gist, etc) that contains the statement and signature, parsing them, then verifing that signature is of the statement and by the `SignerType` described in the statement. In the case of linking two keys, this would just be the two `SignerTypes` and two signatures.
+3) The user signs the statement. The user returns the statement and enough information to verify the signature. In the case of linking public profiles, this would be retrieving a public post (a tweet, a gist, etc) that contains the statement and signature, parsing them, then verifying that signature is of the statement and by the `SignerType` described in the statement. In the case of linking two keys, this would just be the two `SignerTypes` and two signatures.
 
-4) The witness preforms the steps described above and either issues a VC or returns an error.
+4) The witness performs the steps described above and either issues a VC or returns an error.
 
-To make this possible, first a struct must implement the `Statement` trait in `src/witness/witness`, then when a user supplies such a struct, they are given back a statement to sign and a delimitor (if applicable) to place between the statement and the signature.
+To make this possible, first, a struct must implement the `Statement` trait in `src/witness/witness`, then when a user supplies such a struct, they are given back a statement to sign and a delimiter (if applicable) to place between the statement and the signature.
 
-Once the user has the statement to sign, then they often have to post the combination of `format!("{}{}{}", statement, delimitor, signature)` (DNS is an exception to this rule, using a `prefix` and `format!("{}{}{}", prefix, delimitor, signature)`). Once they have posted the statement (if neccesary), they then have to provide enough information to create a struct that implements `Proof`. `Proof` must implement `Statement` to allow the witness to make sure that the statement found is the same as expected. Often, the same struct implements `Proof` and `SchemaType`. 
+Once the user has the statement to sign, then they often have to post the combination of `format!("{}{}{}", statement, delimiter, signature)` (DNS is an exception to this rule, using a `prefix` and `format!("{}{}{}", prefix, delimiter, signature)`). Once they have posted the statement (if necessary), they then have to provide enough information to create a struct that implements `Proof`. `Proof` must implement `Statement` to allow the witness to make sure that the statement found is the same as expected. Often, the same struct implements `Proof` and `SchemaType`. 
 
 The final abstraction is the witness, contained in the `Generator` trait. This trait requires the user to implement a pair of functions:
 ```rust
@@ -128,30 +128,30 @@ Which then derives the following functions:
         Ok(self.schema(proof).await?.jwt(signer).await?)
     }
 ```
-This allows a witness to be as simple as a struct that implements `Generator` to recieve a valid `Proof` and return a `Schema`, a `Credential`, or a JWT `String` depending on what is requested. The derived `schema` function only allows the creation of credentials if they pass the parsing stage.
+This allows a witness to be as simple as a struct that implements `Generator` to receive a valid `Proof` and return a `Schema`, a `Credential`, or a JWT `String` depending on what is requested. The derived `schema` function only allows the creation of credentials if they pass the parsing stage.
 
 In the case of `DNS`, the `Generator` is an empty struct, in the case of `Twitter`, the `Generator` has an `api_key` field. Any required information for the post retrieval process can be specified in a struct, then that struct made to implement `Generator`.
 
-To maximize the ability to mix and match credentials several helper structs can be found in `src/witness`, specifically `ProofTypes`, `StatementTypes` and `SignerTypes`, these are two enums which encompass all supported `Proof`s and `SignerType`s, then implement `Proof` and `SignerType` on the enum by calling their inner, concrete representation.
+To maximize the ability to mix and match credentials several helper structs can be found in `src/witness`, specifically `ProofTypes`, `StatementTypes` and `SignerTypes`, these are two enums that encompass all supported `Proof`s and `SignerType`s, then implement `Proof` and `SignerType` on the enum by calling their inner, concrete representation.
 
 Similiarly, in `src/signer/signer` there is a `DID` enum which captures all the supported `SignerType`s in a generic struct. To implement `SignerType`, it's required to have the following function implemented:
 ```rust
     fn new(t: &DID) -> Result<Self, SignerError>;
 ```
 
-This allows us to capture all valid `SignerType`s in `src/signer/signer` but not have circular dependencies, and also allows for easy converstion back and forth between `DID` and `SignerType`.
+This allows us to capture all valid `SignerType`s in `src/signer/signer` but not have circular dependencies, and also allows for easy conversion back and forth between `DID` and `SignerType`.
 
 The useful result of these enum abstractions is the ability to create a universal generator, available for import from `src/witness/generator`. Given a supported `Proof` (i.e. those listed in `ProofTypes`) and a supported `SignerType` (i.e. those listed in `SignerTypes`), the generator can validate a claim and produce a VC.
 
-Statements work similiarly with `StatementTypes` and `SignerTypes`. Thus, the calling application doesn't even have to be aware of all the possible claims it can validate -- seen in the example worker.
+Statements work similarly with `StatementTypes` and `SignerTypes`. Thus, the calling application doesn't even have to be aware of all the possible claims it can validate -- seen in the example worker.
 
 ## Examples
 
 The `demo` directory includes a Cloudflare Worker that acts as a server-side witness (`demo/witness`) and a front-end UI for interacting with the witness (`demo/dapp`). Installation and usage instructions are found in those respective directories, but the high-level overview is given here. 
 
-The Cloudflare Worker acts a proof-of-concept that Rebase can be packaged for WASM environments, including the browser. Otherwise, it essentially functions as a tiny HTTP server. It contains 2 routes, `/statement`, where client is expected to post a struct that implements `Statement` then recieves the generated statement from the witness and `/witness` where a struct that implements `Proof` is posted, and the witness uses it's generator to produce a VC (assuming all the details check out).
+The Cloudflare Worker acts a proof-of-concept that Rebase can be packaged for WASM environments, including the browser. Otherwise, it essentially functions as a tiny HTTP server. It contains 2 routes, `/statement`, where the client is expected to post a struct that implements `Statement` and then receives the generated statement from the witness and `/witness` where a struct that implements `Proof` is posted, and the witness uses its generator to produce a VC (assuming all the details check out).
 
-The UI is a thin client that simply gathers the information required to generate the statement, interacts with browser extensions to get the user to sign the statement, informs the user where to post the statement (if neccesary), then gathers the information on the location of the post (again, if neccesary), returns it to the witness for a VC, then displays the VC and allows the user to download it.
+The UI is a thin client that simply gathers the information required to generate the statement, interacts with browser extensions to get the user to sign the statement, informs the user where to post the statement (if necessary), then gathers the information on the location of the post (again, if necessary), returns it to the witness for a VC, then displays the VC and allows the user to download it.
 
 ## Implementing New Features
 
@@ -281,7 +281,7 @@ pub enum SignerTypes {
 }
 ```
 
-In the `impl SignerType` for `SignerTypes`, and the `statement_id` function for `SignerTypes`. The `statement_id` function is used for putting the indentifier in public claims, and often the `did_id` is not desired, so it usually parses the `did_id` into something simpler. This _should_ be made part of `SignerType` trait, and may be moved there in the future.
+In the `impl SignerType` for `SignerTypes`, and the `statement_id` function for `SignerTypes`. The `statement_id` function is used for putting the identifier in public claims, and often the `did_id` is not desired, so it usually parses the `did_id` into something simpler. This _should_ be made part of `SignerType` trait, and may be moved there in the future.
 
 At that point a new `SignerType` is implemented, and implementing a `Signer` is going to be a bit easier. The `Signer` for `ed25519` is implemented like so:
 ```rust
@@ -385,11 +385,11 @@ impl Signer<Ed25519> for Ed25519DidWebJwk {
 
 The `SignerType` for a given `Signer` is often going to be concrete at the `impl Signer<...>` level. The key here is to be able to provide a `proof` entry for the VC and to be able to `sign` bytes and `sign_vc` for VCs. If a `Signer` implements `sign`, it can be used to sign claims as a client, if it implements `sign_vc`, it can be used to author VCs as a witness.
 
-It is not neccesary to implement `Signer` if the expectation is that a particular `SignerType` will only be used by the client. As of writing, `ethereum` only implements `SignerType` and cannot be used to issue VCs, only to sign claims that a witness can validate.
+It is not necessary to implement `Signer` if the expectation is that a particular `SignerType` will only be used by the client. As of writing, `ethereum` only implements `SignerType` and cannot be used to issue VCs, only to sign claims that a witness can validate.
 
 ### Implementing New Schemas
 
-It is very simple to implement a new schema on it's own (implementing the witness flow is a seperate concern covered shortly). The most basic `Schema` supported by Rebase is the `basic_post` credential. It is not expected to be witnessed, but rather self-produced and self-signed, so it is a very simple credential. It looks like:
+It is very simple to implement a new schema on its own (implementing the witness flow is a separate concern covered shortly). The most basic `Schema` supported by Rebase is the `basic_post` credential. It is not expected to be witnessed, but rather self-produced and self-signed, so it is a very simple credential. It looks like:
 ```rust
 // src/schema/basic_post
 #[derive(Deserialize, Serialize)]
@@ -532,7 +532,7 @@ impl Generator<Claim, Schema> for ClaimGenerator {
 }
 ```
 
-A more complex generator is found in `src/witness/twitter` where an `api_key` is used to make the look up. Once the `Generator` is implemented, it can be added to the `WitnessGenerator` in `src/witness/generator` and the generator will then support the new witness flow with no change to the calling applications.
+A more complex generator is found in `src/witness/twitter` where an `api_key` is used to make the lookup. Once the `Generator` is implemented, it can be added to the `WitnessGenerator` in `src/witness/generator` and the generator will then support the new witness flow with no change to the calling applications.
 
 ## Current Features
 
