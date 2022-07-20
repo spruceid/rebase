@@ -16,9 +16,9 @@ pub enum ClientError {
 }
 
 pub struct Endpoints {
-    jwt: Option<Url>,
-    ld: Option<Url>,
-    statement: Url,
+    pub jwt: Option<Url>,
+    pub ld: Option<Url>,
+    pub statement: Url,
 }
 
 pub struct Client {
