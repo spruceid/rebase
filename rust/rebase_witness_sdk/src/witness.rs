@@ -12,6 +12,9 @@ use thiserror::Error;
 
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
+
 pub type Credential = VC;
 pub type WitnessGenerator = Generator;
 
@@ -24,27 +27,32 @@ pub enum WitnessError {
 }
 
 #[derive(Deserialize, Serialize)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub struct StatementReq {
     pub opts: StatementTypes,
 }
 
 #[derive(Deserialize, Serialize)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub struct StatementRes {
     pub statement: String,
     pub delimitor: String,
 }
 
 #[derive(Deserialize, Serialize)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub struct WitnessReq {
     pub proof: ProofTypes,
 }
 
 #[derive(Deserialize, Serialize)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub struct WitnessJWTRes {
     pub jwt: String,
 }
 
 #[derive(Deserialize, Serialize)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub struct WitnessLDRes {
     pub credential: Credential,
 }

@@ -1,6 +1,7 @@
 mod utils;
 
 use rebase_witness_sdk::client::{Client, Endpoints};
+// use serde_json::from_str;
 use url::Url;
 use wasm_bindgen::prelude::*;
 
@@ -27,4 +28,10 @@ pub fn greet() {
         Ok(_) => alert("The client initialized!"),
         Err(e) => alert(&format!("Oh no: {}", e.to_string())),
     };
+}
+
+#[wasm_bindgen]
+pub fn new(endpoints: Endpoints) -> Result<Client, String> {
+    // let endpoints: Endpoints = from_str(endpoints).map_err(|e| e.to_string())?;
+    Client::new(endpoints).map_err(|e| e.to_string())
 }

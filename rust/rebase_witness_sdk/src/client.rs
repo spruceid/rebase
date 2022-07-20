@@ -3,6 +3,9 @@ use reqwest::Client as HttpClient;
 use thiserror::Error;
 use url::Url;
 
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
+
 #[derive(Error, Debug)]
 pub enum ClientError {
     #[error("failed in configuration: {0}")]
@@ -15,18 +18,22 @@ pub enum ClientError {
     Ld(String),
 }
 
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub struct Endpoints {
     pub jwt: Option<Url>,
     pub ld: Option<Url>,
     pub statement: Url,
 }
 
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub struct Client {
     endpoints: Endpoints,
 }
 
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 impl Client {
-    pub fn new(endpoints: Endpoints) -> Result<Self, ClientError> {
+    #[cfg_attr(feature = "wasm", wasm_bindgen(constructor))]
+    pub fn new(endpoints: Endpoints) -> Result<Client, ClientError> {
         if endpoints.jwt.is_none() && endpoints.ld.is_none() {
             return Err(ClientError::Config("No witness url found".to_string()));
         };
