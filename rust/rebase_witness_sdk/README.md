@@ -1,10 +1,10 @@
 # Rebase Witness SDK
 
-This software development kit enables creating server-side "Witness" ([Verifiable Credential]() issuing) services over HTTP as well as creating corresponding clients. Because it is developed in Rust, this allows for many languages to call it through FFIs and for compilation of the client supporting code into WebAssembly (available [in this package]()).
+This software development kit enables creating server-side "Witness" ([Verifiable Credential](https://www.w3.org/TR/vc-data-model/) issuing) services over HTTP as well as creating corresponding clients. Because it is developed in Rust, this allows for many languages to call it through FFIs and for compilation of the client supporting code into WebAssembly (available [in this package](https://github.com/spruceid/rebase/tree/main/js/rebase-client), published to [npm](https://www.npmjs.com/package/@rebase-xyz/rebase-client)).
 
 ## Creating Witness Services
 
-A full working example of the witness services can be found [here]() implemented as [Cloudflare Worker](). The `witness` portion of the library contains the majority of the implementation details including the structures used by the `client` portion. The structures used are:
+A full working example of the witness services can be found [here](https://github.com/spruceid/rebase/tree/main/demo/witness) implemented as [Cloudflare Worker](https://workers.cloudflare.com/). The `witness` portion of the library contains the majority of the implementation details including the structures used by the `client` portion. The structures used are:
 
 ```rust
 #[derive(Deserialize, Serialize)]
@@ -34,9 +34,9 @@ pub struct WitnessLDRes {
 }
 ```
 
-[StatementTypes]() and [ProofTypes]() are enums representing all of the possible witness flows supported by the underlying [Rebase]() library. The advantage of this approach is that addition variants are added to underlying library, they are automatically supported by this SDK.
+[StatementTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/statement_type.rs) and [ProofTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/proof_type.rs) are enums representing all of the possible witness flows supported by the underlying [Rebase](https://github.com/spruceid/rebase/tree/main/rust/rebase) library. The advantage of this approach is that addition variants are added to underlying library, they are automatically supported by this SDK. The TypeScript/JSON format of these structures are described [here](https://github.com/spruceid/rebase/blob/main/demo/witness/endpoints.md).
 
-The response types (`StatementRes`, `WitnessJWTRes`, and `WitnessLDRes`) are universal for all witness flows, making developing a consumer of the witness flows automatically backwards compatible to new flows. The [Credential]() type found in the body of the `WitnessLDRes` comes from the [SSI]() library.
+The response types (`StatementRes`, `WitnessJWTRes`, and `WitnessLDRes`) are universal for all witness flows, making developing a consumer of the witness flows automatically backwards compatible to new flows. The [Credential](https://github.com/spruceid/ssi/blob/main/src/vc.rs#L44) type found in the body of the `WitnessLDRes` comes from the [SSI](https://github.com/spruceid/ssi) library.
 
 The exposed functions have the following signatures:
 
@@ -62,7 +62,7 @@ pub async fn witness_ld<T: SignerType, S: Signer<T>>(
 }
 ```
 
-`Signer`, `SignerType`, and `WitnessGenerator` correspond to the underlying Rebase library, and are better described in it's [README](). `WitnessGenerator` is just a re-exported type of Rebase's `Generator` type. A concrete implementation can be found in the `demo/witness` section of the [Rebase repository]().
+`Signer`, `SignerType`, and `WitnessGenerator` correspond to the underlying Rebase library, and are better described in it's [README](https://github.com/spruceid/rebase/blob/main/README.md). `WitnessGenerator` is just a re-exported type of Rebase's `Generator` type. A concrete implementation can be found in the `demo/witness` section of the [Rebase repository](https://github.com/spruceid/rebase/tree/main/demo/witness).
 
 The most common way to structure a witness service is to have a constant `Signer` and `WitnessGenerator` which are composed with incoming `StatementReq`/`WitnessReq` from clients, then returning the results.
 
