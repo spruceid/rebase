@@ -1,5 +1,7 @@
-use crate::signer::signer::{DID, EIP155, PKH};
-use crate::witness::witness::{Proof, WitnessError};
+use crate::{
+    signer::signer::{DID, EIP155, PKH},
+    witness::witness::{Proof, WitnessError},
+};
 
 pub const TEST_2KEY_ETH_SIG_1: &str = "0x56e48e0dbca9eebd31b23a69d56be84e8fa359d27e70e62c3999fbe2f43659845cee0d976ff83ed576e556cd8fbc377eeb4a0cb38f6949f9ac8ff6f8794b869f1b";
 pub const TEST_2KEY_ETH_SIG_2: &str = "0x4f5448421f13e597f20ccfbe31ba62ab16bacc6ec93654a1131f126005ffd4cc7688c9c74b492e91cb5c795f53351ee87a05dbe32b9e11dde9d6cf3771506a101c";

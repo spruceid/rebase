@@ -1,6 +1,10 @@
-use crate::schema::schema_type::{SchemaError, SchemaType};
-use crate::signer::signer::{Signer, SignerError, SignerType};
-use crate::witness::signer_type::SignerTypes;
+use crate::{
+    schema::schema_type::{SchemaError, SchemaType},
+    signer::signer::{Signer, SignerError, SignerType},
+    witness::{
+        signer_type::SignerTypes,
+    }
+};
 use async_trait::async_trait;
 use ssi::vc::Credential;
 use thiserror::Error;
@@ -55,7 +59,10 @@ where
         let d = self.delimitor();
         let v: Vec<&str> = post.split(&d).collect();
         if v.len() != 2 {
-            return Err(WitnessError::ParseError(format!("incorrect post format, got: {}", post)));
+            return Err(WitnessError::ParseError(format!(
+                "incorrect post format, got: {}",
+                post
+            )));
         };
 
         let (statement, signature) = (v[0].to_owned(), v[1].to_owned());
@@ -94,10 +101,10 @@ pub trait Generator<P: Proof, S: SchemaType> {
         Ok(self._unchecked_to_schema(proof, &statement, &signature)?)
     }
 
-    async fn unsigned_credential<T: SignerType>(
+    async fn unsigned_credential<St: SignerType>(
         &self,
         proof: &P,
-        signer_type: &T,
+        signer_type: &St,
     ) -> Result<Credential, WitnessError> {
         Ok(self
             .schema(proof)
@@ -107,19 +114,19 @@ pub trait Generator<P: Proof, S: SchemaType> {
     }
 
     // From the proof structure, create a LD credential.
-    async fn credential<T: SignerType>(
+    async fn credential<St: SignerType>(
         &self,
         proof: &P,
-        signer: &dyn Signer<T>,
+        signer: &dyn Signer<St>,
     ) -> Result<Credential, WitnessError> {
         Ok(self.schema(proof).await?.credential(signer).await?)
     }
 
     // From the proof structure, create a JWT.
-    async fn jwt<T: SignerType>(
+    async fn jwt<St: SignerType>(
         &self,
         proof: &P,
-        signer: &dyn Signer<T>,
+        signer: &dyn Signer<St>,
     ) -> Result<String, WitnessError> {
         Ok(self.schema(proof).await?.jwt(signer).await?)
     }

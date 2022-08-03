@@ -2,7 +2,7 @@ mod utils;
 
 use rebase_witness_sdk::{
     client::{Client as RebaseClient, Endpoints},
-    witness::{StatementReq, WitnessReq},
+    witness::{InstructionReq, StatementReq, WitnessReq},
 };
 // use serde_json::from_str;
 use js_sys::Promise;
@@ -37,6 +37,7 @@ pub struct Client {
 impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new(
+        instructions: String,
         statement: String,
         jwt: Option<String>,
         ld: Option<String>,
@@ -52,10 +53,26 @@ impl Client {
         };
 
         let statement = Url::parse(&statement).map_err(|e| e.to_string())?;
+        let instructions = Url::parse(&instructions).map_err(|e| e.to_string())?;
         Ok(Client {
             client: Arc::new(
-                RebaseClient::new(Endpoints { jwt, ld, statement }).map_err(|e| e.to_string())?,
+                RebaseClient::new(Endpoints {
+                    jwt,
+                    ld,
+                    statement,
+                    instructions,
+                })
+                .map_err(|e| e.to_string())?,
             ),
+        })
+    }
+
+    pub fn instructions(&self, req: String) -> Promise {
+        let client = self.client.clone();
+        future_to_promise(async move {
+            let req: InstructionReq = jserr!(serde_json::from_str(&req));
+            let res = jserr!(client.instructions(req).await);
+            Ok(jserr!(serde_json::to_string(&res)).into())
         })
     }
 

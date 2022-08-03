@@ -28,19 +28,23 @@ wrangler publish
 
 > For development, you should use `wrangler dev`. This will launch the worker to listen on `localhost:8787`.
 
-Regardless of where it's deployed, the worker responds to two routes `/statement` and `/witness`, both expect a POST. The former expects the `POST` body to conform to:
+Regardless of where it's deployed, the worker responds to three routes `/instructions`, `/statement` and `/witness`, each expect a POST. The former expects the `POST` body to conform to:
 ```rust
+#[derive(Deserialize, Serialize)]
+pub struct InstructionReq {
+    #[serde(rename = "type")]
+    pub instruction_type: InstructionTypes,
+}
+
 #[derive(Deserialize, Serialize)]
 pub struct StatementReq {
     pub opts: StatementTypes,
 }
-```
-for Statement and for Witness:
-```rust
+
 #[derive(Deserialize, Serialize)]
 pub struct WitnessReq {
     pub proof: ProofTypes,
 }
 ```
 
-Details on `StatementTypes` and `ProofTypes` can be found in the top-level README and their implementations can be found in `rebase/rust/src`.
+Details on `InstructionTypes`, `StatementTypes` and `ProofTypes` can be found in the top-level README and their implementations can be found in `rebase/rust/src`.

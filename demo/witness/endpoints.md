@@ -262,3 +262,34 @@ The body:
   }
 }
 ```
+
+### Instructions Flow
+
+An optional instructions flow is made avaiable through a `POST` route using `/instructions`. The body of this request would be defined in Typescript like so:
+
+```typescript
+interface InstructionsReq {
+    type: InstructionsType
+}
+
+type InstructionsType = "dns" | "github" | "self_signed" | "twitter"
+```
+
+The response is defined in Typescript as:
+(Where JSONSchema is a valid JSONSchema)
+
+```typescript
+interface InstructionsRes {
+    instructions: Instructions,
+    statement_schema: JSONSchema,
+    witness_schema: JSONSchema
+}
+
+interface Instructions {
+    statement: string,
+    signature: string,
+    witness: string
+}
+```
+
+This response provides several useful features, first a set of text instructions that could be used to automatically generate UI flows corresponding to the requested flow type. Secondly, a pair of JSONSchemas, which allow for at minimum checking the outgoing `POST` bodies for formatting errors, or in the extereme, generating forms that correspond to the witness flow. If used to their maximum, one could simply generate the entire UI flows dynamically.

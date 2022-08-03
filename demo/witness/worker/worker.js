@@ -167,7 +167,7 @@ function handleOptions(request) {
   }
 }
 
-const {statement, witness} = wasm_bindgen;
+const {statement, witness, instructions} = wasm_bindgen;
 const instance = wasm_bindgen(wasm);
 
 async function stmt(request) {
@@ -213,10 +213,32 @@ async function wtns(request) {
   }
 }
 
+async function inst(request) {
+  try {
+    await instance;
+    const h = request.headers;
+
+    const contentType = h.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      let body = await request.json();
+
+      const res = await instructions(JSON.stringify(body), TWITTER_BEARER_TOKEN);
+
+      return new Response(res, {status: 200, headers: headers});
+    } else {
+      throw new Error(`Expected content-type application/json, got: ${contentType}`)
+    }
+  } catch (e) {
+    return new Response(JSON.stringify({error: e?.message ? e.message : e}), { status: 400, headers: headers});
+  }
+}
+
 async function handleRequest(request) {
   const r = new Router();
   r.post("/statement", (request) => stmt(request));
   r.post("/witness", (request) => wtns(request));
+  r.post("/instructions", (request) => inst(request));
   // r.post("/verify", (request) => verify(request))
   const resp = await r.route(request);
   return resp;

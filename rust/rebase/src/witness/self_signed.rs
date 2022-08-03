@@ -1,11 +1,18 @@
-use crate::schema::schema_type::{SchemaError, SchemaType};
-use crate::signer::signer::{SignerType, DID as SignerDID};
-use crate::witness::{signer_type::SignerTypes, witness::WitnessError};
+use crate::{
+    schema::schema_type::{SchemaError, SchemaType},
+    signer::signer::{SignerType, DID as SignerDID},
+    witness::{
+        signer_type::SignerTypes,
+        witness::WitnessError,
+    },
+};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[serde(rename = "opts")]
 pub struct Opts {
     pub key_1: SignerDID,
     pub key_2: SignerDID,
@@ -25,12 +32,15 @@ impl Opts {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[serde(rename = "claim")]
 pub struct Claim {
     pub statement_opts: Opts,
     pub signature_1: String,
     pub signature_2: String,
 }
+
+pub struct ClaimFlow {}
 
 impl SchemaType for Claim {
     fn context(&self) -> Result<serde_json::Value, SchemaError> {

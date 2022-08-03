@@ -13,6 +13,7 @@ fn new_client(base_url: &str) -> Result<Client, String> {
         jwt: Some(Url::parse(&format!("{}/witness", base_url)).unwrap()),
         ld: None,
         statement: Url::parse(&format!("{}/statement", base_url)).unwrap(),
+        instructions: Url::parse(&format!("{}/instructions", base_url)).unwrap(),
     };
 
     Client::new(endpoints).map_err(|e| e.to_string())

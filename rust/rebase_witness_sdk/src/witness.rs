@@ -1,6 +1,7 @@
 use rebase::{
     signer::signer::{Signer, SignerType},
     witness::{
+        instructions::InstructionTypes,
         generator::{Credential as VC, WitnessGenerator as Generator},
         proof_type::ProofTypes,
         statement_type::StatementTypes,
@@ -17,10 +18,18 @@ pub type WitnessGenerator = Generator;
 
 #[derive(Error, Debug)]
 pub enum WitnessError {
+    #[error("issue in instruction flow: {0}")]
+    Instruction(String),
     #[error("issue in statement flow: {0}")]
     Statement(String),
     #[error("issue in witness flow: {0}")]
     Witness(String),
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct InstructionReq {
+    #[serde(rename = "type")]
+    pub instruction_type: InstructionTypes,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -47,6 +56,14 @@ pub struct WitnessJWTRes {
 #[derive(Deserialize, Serialize)]
 pub struct WitnessLDRes {
     pub credential: Credential,
+}
+
+pub fn instructions(
+    req: InstructionReq,
+) -> Result<serde_json::Value, WitnessError> {
+    req.instruction_type
+        .ui_hints()
+        .map_err(|e| WitnessError::Instruction(e.to_string()))
 }
 
 pub async fn statement(req: StatementReq) -> Result<StatementRes, WitnessError> {

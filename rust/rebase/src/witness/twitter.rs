@@ -1,22 +1,22 @@
-use crate::schema::schema_type::{SchemaError, SchemaType};
-use crate::signer::signer::{SignerError, SignerType, DID as SignerDID};
-use crate::witness::{
-    signer_type::SignerTypes,
-    witness::{Generator, Proof, Statement, WitnessError},
+use crate::{
+    schema::schema_type::{SchemaError, SchemaType},
+    signer::signer::{SignerError, SignerType, DID as SignerDID},
+    witness::{
+        signer_type::SignerTypes,
+        witness::{Generator, Proof, Statement, WitnessError},
+    },
 };
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
 use reqwest::header::{HeaderMap, AUTHORIZATION};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
 use url::Url;
 
-// TODO: Move to own dir, maybe w/ schema?
-// TODO: Add Serde
-// TODO: Support the more specific TZProfiles attestation. Requires TZProfiles specific text.
-
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[serde(rename = "opts")]
 pub struct Opts {
     pub handle: String,
     pub key_type: SignerDID,
@@ -46,7 +46,8 @@ impl Statement for Opts {
 // NOTE: One could impl Proof for Opts but there's no corresponding schema + generator.
 // impl Proof for Opts {}
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[serde(rename = "claim")]
 pub struct Claim {
     pub statement_opts: Opts,
     pub tweet_url: String,

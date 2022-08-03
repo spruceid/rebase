@@ -1,6 +1,7 @@
 pub mod dns;
 pub mod generator;
 pub mod github;
+pub mod instructions;
 pub mod proof_type;
 pub mod self_signed;
 pub mod signer_type;

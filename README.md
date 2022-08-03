@@ -4,6 +4,14 @@ Rebase is a library for handling the witnessing of cryptographically verifiable 
 
 ## Architectural Overview
 
+Several projects are hosted in this repo.
+* The [main library](https://github.com/spruceid/rebase/tree/main/rust/rebase) written in Rust supports the creation of VCs from simpler structs, the signing of VCs using a `Signer` abstraction, and witness flows for public issuers of VCs (along with their consuming clients).
+* The [witness library](https://github.com/spruceid/rebase/tree/main/rust/rebase_witness_sdk) also written in Rust which supports specifically applications seeking to act as Issuer Witnesses or clients of Issuer Witnesses.
+* The [client library](https://github.com/spruceid/rebase/tree/main/js/rebase-client) published to NPM using Rust->WASM compilation, allowing in browser usage of the client half of the witness library.
+* [Demos!](https://github.com/spruceid/rebase/tree/main/demo) Which make use of all of the above.
+
+### The Rebase Rust library
+
 The heart of the project is found in `rust/rebase/src`. The high-level goal of this implementation is to receive data from the end-user, create a statement for the user to sign, ask for the signature from the user (in addition to some other information in some cases), and presuming the statement and the signature match, issue a credential. Some flows are simpler than others, but all follow this basic format. 
 
 Rebase works by layering several abstractions over each other. At the base is the `SignerType`, which defines what cryptographic signature could be read in a claim and how it could be verified. A layer above that is the `Signer<T: SignerType>` which is a struct capable of signing both plain text (in the case of a client) and a VC (in the case of an issuer). 
@@ -183,7 +191,6 @@ The implementation for `ed25519` looks like:
 // src/signer/ed25519
 #[derive(Clone)]
 pub enum Ed25519 {
-	// TODO: Change name?
 	DIDWebJWK(Option<String>),
 }
 
@@ -533,6 +540,75 @@ impl Generator<Claim, Schema> for ClaimGenerator {
 ```
 
 A more complex generator is found in `src/witness/twitter` where an `api_key` is used to make the lookup. Once the `Generator` is implemented, it can be added to the `WitnessGenerator` in `src/witness/generator` and the generator will then support the new witness flow with no change to the calling applications.
+
+To support consumer-side generation of witness flow forms, there is also an `Instructions` implementation utilized by all `witness` flows, which is used down-stream in the Witness and Client libraries. The `Instructions` struct can be used to create user-facing instructions by the consuming web app. (NOTE: Internationalization would take place at the `InstructionTypes` level when implemented).
+
+```rust
+#[derive(Clone, Deserialize, Serialize)]
+pub struct Instructions {
+    pub statement: String,
+    pub signature: String,
+    pub witness: String,
+}
+```
+
+The `InstructionTypes` enum found in `src/witness/instructions.rs` is the list of flows with a corresponding instruction generation. At time of writing it looks like this:
+
+```rust
+#[derive(Clone, Deserialize, Serialize)]
+pub enum InstructionTypes {
+    #[serde(rename = "dns")]
+    Dns,
+    #[serde(rename = "github")]
+    GitHub,
+    #[serde(rename = "self_signed")]
+    SelfSigned,
+    #[serde(rename = "twitter")]
+    Twitter,
+}
+```
+
+To add a new `InstructionTypes`, one must add a case to two of the functions it implements, shown abridge here for examples:
+```rust
+impl InstructionTypes {
+    fn instructions(&self) -> Instructions {
+        match self {
+            // ,,,
+            &InstructionTypes::GitHub => Instructions {
+                statement: "Enter your GitHub account handle to verify and include in a signed message using your wallet.".to_string(),
+                signature: "Sign the message presented to you containing your GitHub handle and additional information.".to_string(),
+                witness: "Create a Gist with this message to create a link between your identifier and your GitHub handle.".to_string(),
+            },
+            // ...
+        }
+    }
+
+    fn schemas(&self) -> (RootSchema, RootSchema) {
+        match &self {
+            // ...
+            &InstructionTypes::GitHub => (schema_for!(GitHubOpts), schema_for!(GitHubClaim)),
+            // ...
+        }
+    }
+}
+```
+
+Once these two cases have been provided, they are used in the public function:
+```rust
+impl InstructionTypes {
+    // ...
+    pub fn ui_hints(&self) -> Result<serde_json::Value, WitnessError> {
+        let (statement, witness) = self.schemas();
+        Ok(json!({
+            "instructions": &self.instructions(),
+            "statement_schema": statement,
+            "witness_schema": witness
+        }))
+    }
+}
+```
+
+The result is that the client can get instructions to display to the user, JSON Schemas defining what is needed to generate a statement and complete a witness flow, the ability to use those Schemas to validate what they `POST` back to the worker, and possibly to use those Schemas to generate forms. It is also possible to entirely ignore the `InstructionTypes` flow, but it does allow for the possiblity of fully dynamic front-ends.
 
 ## Current Features
 
