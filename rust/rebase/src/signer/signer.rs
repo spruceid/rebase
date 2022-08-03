@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use ssi::{
     one_or_many::OneOrMany,
@@ -48,19 +49,22 @@ where
     fn did(&self) -> DID;
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[serde(rename = "eip155")]
 pub struct EIP155 {
     pub address: String,
     pub chain_id: String,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[serde(rename = "pkh")]
 pub enum PKH {
     #[serde(rename = "eip155")]
     EIP155(Option<EIP155>),
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[serde(rename = "did")]
 pub enum DID {
     #[serde(rename = "pkh")]
     PKH(PKH),

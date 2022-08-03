@@ -1,6 +1,7 @@
-use crate::witness::{StatementReq, StatementRes, WitnessJWTRes, WitnessLDRes, WitnessReq};
+use crate::witness::{InstructionReq, StatementReq, StatementRes, WitnessJWTRes, WitnessLDRes, WitnessReq};
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
+use serde_json;
 use thiserror::Error;
 use url::Url;
 
@@ -21,6 +22,7 @@ pub struct Endpoints {
     pub jwt: Option<Url>,
     pub ld: Option<Url>,
     pub statement: Url,
+    pub instructions: Url,
 }
 
 #[derive(Clone)]
@@ -35,6 +37,22 @@ impl Client {
         };
 
         Ok(Client { endpoints })
+    }
+
+    pub async fn instructions(&self, req: InstructionReq) -> Result<serde_json::Value, ClientError> {
+        let client = HttpClient::new();
+
+        let res = client
+            .post(self.endpoints.instructions.clone())
+            .json(&req)
+            .send()
+            .await
+            .map_err(|e| ClientError::Statement(e.to_string()))?
+            .json()
+            .await
+            .map_err(|e| ClientError::Statement(e.to_string()))?;
+
+        Ok(res)
     }
 
     pub async fn statement(&self, req: StatementReq) -> Result<StatementRes, ClientError> {

@@ -4,9 +4,10 @@ import { Client } from "@rebase-xyz/rebase-client";
 
 const witnessUrl = process.env.WITNESS_URL;
 const statementUrl = `${witnessUrl}/statement`;
+const instructionsUrl = `${witnessUrl}/instructions`;
 const jwtUrl = `${witnessUrl}/witness`;
 
-export const client = new Client(statementUrl, jwtUrl);
+export const client = new Client(instructionsUrl, statementUrl, jwtUrl);
 export interface KeyType {
     pkh: {
         eip155: {

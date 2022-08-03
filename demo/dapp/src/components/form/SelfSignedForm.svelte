@@ -26,8 +26,12 @@
     import { onMount } from "svelte";
     import { ConnectSignerButton } from "components";
     import Connect2ndSignerButton from "../buttons/Connect2ndSignerButton.svelte";
+    import Ajv from "ajv";
 
     const navigate = useNavigate();
+    const ajv = new Ajv();
+    let statement_schema = null,
+        witness_schema = null;
 
     $: $signerMap, signerChanged();
     $: $signerMap2nd, signerChanged2nd();
@@ -75,15 +79,24 @@
             throw new Error(`Need two keys set to use cross signed credential`);
         }
 
-        let b = JSON.stringify({
+        let o = {
             opts: {
                 self_signed: {
                     key_1: key1,
                     key_2: key2,
                 },
             },
-        });
+        };
 
+        if (!statement_schema) {
+            throw new Error("No JSON Schema found for Statement Request");
+        }
+
+        if (!ajv.validate(statement_schema, o.opts.self_signed)) {
+            throw new Error("Validation of Statement Request failed");
+        }
+
+        let b = JSON.stringify(o);
         let res = await client.statement(b);
         let body = JSON.parse(res);
 
@@ -141,6 +154,14 @@
                 signature_2: signature2,
             },
         };
+
+        if (!witness_schema) {
+            throw new Error("No JSON Schema found for Witness Request");
+        }
+
+        if (!ajv.validate(witness_schema, proof.self_signed)) {
+            throw new Error("Validation of Witness Request failed");
+        }
 
         let b = JSON.stringify({ proof });
         let res = await client.jwt(b);
@@ -219,10 +240,17 @@
         }
     };
 
-    onMount(() => {
+    onMount(async () => {
         if (signer) {
             getKey1();
         }
+
+        let instructions_res = JSON.parse(
+            await client.instructions(JSON.stringify({ type: "self_signed" }))
+        );
+
+        statement_schema = instructions_res.statement_schema;
+        witness_schema = instructions_res.witness_schema;
     });
 </script>
 

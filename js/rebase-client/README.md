@@ -14,9 +14,20 @@ The `Client` struct exposed by the library (and made available to JavaScript con
 #[wasm_bindgen]
 impl Client {
     #[wasm_bindgen(constructor)]
-    pub fn new(statement: String, jwt: Option<String>, ld: Option<String>) -> Result<Client, String> {
+    pub fn new(
+        instructions: String,
+        statement: String,
+        jwt: Option<String>,
+        ld: Option<String>,
+    ) -> Result<Client, String> {
+
         // ...
     }
+
+    pub fn instructions(&self, req: String) -> Promise {
+        // ...
+    }
+
     pub  fn statement(&self, req: String) -> Promise {
         // ...
     }
@@ -42,29 +53,34 @@ The statement URL is required and at least one of the two optional URLs must be 
 import { Client } from "@rebase-xyz/rebase-client";
 
 const statementUrl = "https://example.com/statement";
+const instructionsUrl = "https://example.com/instructions";
 const jwtUrl = "https://example.com/witness/jwt";
 const ldUrl = "https://example.com/witness/ld";
 
-let client = new Client(statementUrl, jwtUrl);
-client = new Client(statementUrl, jwtUrl, null);
-client = new Client(statementUrl, null, ldUrl);
-client = new Client(statementUrl, jwtUrl, ldUrl);
+let client = new Client(instructionsUrl, statementUrl, jwtUrl);
+client = new Client(instructionsUrl, statementUrl, jwtUrl, null);
+client = new Client(instructionsUrl, statementUrl, null, ldUrl);
+client = new Client(instructionsUrl, statementUrl, jwtUrl, ldUrl);
 ```
 
-All of the following would be invalid.
+All of the following (and more!) would be invalid.
 ```JavaScript
-client = new Client(null, null, null);
-client = new Client(null, jwtUrl, null);
-client = new Client(null, null, ldUrl);
-client = new Client(null, jwtUrl, ldUrl);
-client = new Client(statementUrl, null, null);
+client = new Client();
+client = new Client(null, null);
+client = new Client(null, null, null, null);
+client = new Client(null, statementUrl, jwtUrl, null);
+client = new Client(instructionsUrl, null, jwtUrl, null);
+client = new Client(null, null, jwtUrl);
+client = new Client(null, statementUrl, jwtUrl, ldUrl);
+client = new Client(instructionsUrl, null, jwtUrl, ldUrl);
+client = new Client(instructionsUrl, statementUrl, null, null);
 ```
 
 Once a valid client has been constructed, it can be used like so (where `req` is a JSON stringified valid request):
 ```JavaScript
 let res = await client.statement(req);
 ```
-This would produce a JSON stringified version of the StatementRes found [here](https://github.com/spruceid/rebase/blob/b5f5a6f6e5bb0031dd8310a7e9510026ee81dbe2/rust/rebase_witness_sdk/src/witness.rs#L32).
+This would produce a JSON stringified version of the StatementRes found [here](https://github.com/spruceid/rebase/blob/b5f5a6f6e5bb0031dd8310a7e9510026ee81dbe2/rust/rebase_witness_sdk/src/witness.rs#L32). Instructions requests work the same way and produce output found [here]().
 ```JavaScript
 let jwtRes = await client.jwt(req);
 let ldRes = await client.ld(req);

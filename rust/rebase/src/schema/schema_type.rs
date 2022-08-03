@@ -1,4 +1,3 @@
-// TODO: Make this less ugly.
 use crate::signer::signer::{Signer, SignerError, SignerType};
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};

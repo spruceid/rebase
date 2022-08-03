@@ -15,6 +15,7 @@
     import { onMount } from "svelte";
     import { useNavigate } from "svelte-navigator";
     import { WitnessFormHeader, ConnectSignerButton } from "components";
+    import Ajv from "ajv";
     import WitnessFormStatement from "./WitnessFormStatement.svelte";
     import WitnessFormSignature from "./WitnessFormSignature.svelte";
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
@@ -23,6 +24,9 @@
     // TODO: Use client instead of fetch for credential generation.
 
     const navigate = useNavigate();
+    const ajv = new Ajv();
+    let statement_schema = null,
+        witness_schema = null;
 
     const dnsPrefix = "rebase_sig=";
 
@@ -100,6 +104,10 @@
     witnessState.subscribe((x) => (state = x));
 
     onMount(async () => {
+        let res = await client.instructions(JSON.stringify({ type }));
+        let instruction_res = JSON.parse(res);
+        statement_schema = instruction_res?.statement_schema;
+        witness_schema = instruction_res?.witness_schema;
         witnessState.set("statement");
     });
 
@@ -146,6 +154,14 @@
                 throw new Error(`${type} flow is currently unsupported`);
         }
 
+        if (!statement_schema) {
+            throw new Error("No JSON Schema found for Statement Request");
+        }
+
+        if (!ajv.validate(statement_schema, opts[type])) {
+            throw new Error("Validation of Statement Request failed");
+        }
+
         let res = await client.statement(JSON.stringify({ opts }));
 
         let body = JSON.parse(res);
@@ -185,6 +201,14 @@
                 break;
             default:
                 throw new Error(`${type} flow is currently unsupported`);
+        }
+
+        if (!witness_schema) {
+            throw new Error("No JSON Schema found for Witness Request");
+        }
+
+        if (!ajv.validate(witness_schema, opts[type])) {
+            throw new Error("Validation of Witness Request failed");
         }
 
         let b = JSON.stringify({ proof: opts });

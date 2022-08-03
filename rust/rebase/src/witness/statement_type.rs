@@ -1,16 +1,18 @@
-use crate::witness::{
-    dns::Claim as DnsStatement, github::Opts as GitHubStatement,
-    self_signed::Opts as SelfSignedStatement, twitter::Opts as TwitterStatement,
-    witness::Statement,
+use crate::{
+    signer::signer::SignerError,
+    witness::{
+        dns::Claim as DnsStatement,
+        github::Opts as GitHubStatement,
+        self_signed::Opts as SelfSignedStatement,
+        signer_type::SignerTypes,
+        twitter::Opts as TwitterStatement,
+        witness::{Statement, WitnessError},
+    },
 };
-
-use crate::signer::signer::SignerError;
-use crate::witness::signer_type::SignerTypes;
-use crate::witness::witness::WitnessError;
-
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
 pub enum StatementTypes {
     #[serde(rename = "dns")]
     Dns(DnsStatement),

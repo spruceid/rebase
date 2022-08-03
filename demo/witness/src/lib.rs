@@ -5,8 +5,8 @@ use js_sys::Promise;
 
 use rebase::signer::ed25519::Ed25519DidWebJwk;
 use rebase_witness_sdk::witness::{
-    statement as handle_statement, witness_jwt as handle_jwt, StatementReq, WitnessGenerator,
-    WitnessReq,
+    statement as handle_statement, instructions as handle_instructions, witness_jwt as handle_jwt, InstructionReq, StatementReq,
+    WitnessGenerator, WitnessReq,
 };
 
 use serde_json;
@@ -36,6 +36,15 @@ const SPRUCE_USER_AGENT: &str = "Spruce Systems";
 // TODO: Make generator take opts enum/struct?
 pub async fn create_generator(twitter_api_key: Option<String>) -> WitnessGenerator {
     WitnessGenerator::new(twitter_api_key, Some(SPRUCE_USER_AGENT.to_owned()))
+}
+
+#[wasm_bindgen]
+pub fn instructions(req: String, twitter_api_key: String) -> Promise {
+    future_to_promise(async move {
+        let req: InstructionReq = jserr!(serde_json::from_str(&req));
+        let res = jserr!(handle_instructions(req));
+        Ok(jserr!(serde_json::to_string(&res)).into())
+    })
 }
 
 #[wasm_bindgen]

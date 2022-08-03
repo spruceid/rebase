@@ -5,7 +5,7 @@ use crate::{
         dns::ClaimGenerator as DnsGen,
         github::ClaimGenerator as GithubGen,
         proof_type::ProofTypes,
-        self_signed::Claim as SelfSignedClaim,
+        self_signed::{Claim as SelfSignedClaim},
         twitter::ClaimGenerator as TwitterGen,
         witness::{Generator, WitnessError},
     },
@@ -16,7 +16,8 @@ use ssi::vc::Credential as VC;
 pub type Credential = VC;
 
 pub struct WitnessGenerator {
-    // DNS takes no configuration so is supported by default.
+    // DNS and no configuration so is supported by default.
+    // SelfSigned only is included for useage in flows.
     // TODO: Make consistent?
     pub dns: DnsGen,
     pub github: Option<GithubGen>,
