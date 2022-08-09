@@ -97,6 +97,8 @@
                 return `${statement}${delimitor}${signature}`;
             case "dns":
                 return `${dnsPrefix}${signature}`;
+            case "reddit":
+                return `${signature}`;
         }
     };
 
@@ -147,6 +149,7 @@
                 break;
             case "github":
             case "twitter":
+            case "reddit":
                 opts[type]["handle"] = handle;
                 opts[type]["key_type"] = getKeyType();
                 break;
@@ -184,6 +187,11 @@
                 opts["dns"]["domain"] = handle;
                 opts["dns"]["prefix"] = dnsPrefix;
                 opts["dns"]["key_type"] = getKeyType();
+                break;
+            case "reddit": 
+                opts["reddit"] = {};
+                opts["reddit"]["handle"] = handle;
+                opts["reddit"]["key_type"] = getKeyType();
                 break;
             case "github":
                 opts["github"] = {};

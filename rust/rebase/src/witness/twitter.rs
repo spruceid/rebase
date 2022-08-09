@@ -154,6 +154,7 @@ impl SchemaType for Schema {
     }
 }
 
+#[derive(Clone, Deserialize, Serialize)]
 pub struct ClaimGenerator {
     pub api_key: String,
 }

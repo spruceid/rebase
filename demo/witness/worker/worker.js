@@ -167,6 +167,18 @@ function handleOptions(request) {
   }
 }
 
+// TODO: Make a secret to be consistent in witnessOpts
+const GITHUB_USER_AGENT = "Spruce Systems";
+
+const witnessOpts = {
+  github: {
+    user_agent: GITHUB_USER_AGENT
+  },
+  twitter: {
+    api_key: TWITTER_BEARER_TOKEN
+  }
+};
+
 const {statement, witness, instructions} = wasm_bindgen;
 const instance = wasm_bindgen(wasm);
 
@@ -201,7 +213,7 @@ async function wtns(request) {
     if (contentType.includes('application/json')) {
       let body = await request.json();
 
-      const credential = await witness(REBASE_SK, JSON.stringify(body), TWITTER_BEARER_TOKEN);
+      const credential = await witness(REBASE_SK, JSON.stringify(body), JSON.stringify(witnessOpts));
 
       return new Response(credential, {status: 200, headers: headers});
 

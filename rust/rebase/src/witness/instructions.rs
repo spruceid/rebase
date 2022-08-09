@@ -1,6 +1,7 @@
 use crate::witness::{
     dns::Claim as DnsClaim,
     github::{Claim as GitHubClaim, Opts as GitHubOpts},
+    reddit::{Claim as RedditClaim},
     self_signed::{Claim as SelfSignedClaim, Opts as SelfSignedOpts},
     twitter::{Claim as TwitterClaim, Opts as TwitterOpts},
     witness::WitnessError,
@@ -22,6 +23,8 @@ pub enum InstructionTypes {
     Dns,
     #[serde(rename = "github")]
     GitHub,
+    #[serde(rename = "reddit")]
+    Reddit,
     #[serde(rename = "self_signed")]
     SelfSigned,
     #[serde(rename = "twitter")]
@@ -41,6 +44,11 @@ impl InstructionTypes {
                 signature: "Sign the message presented to you containing your GitHub handle and additional information.".to_string(),
                 witness: "Create a Gist with this message to create a link between your identifier and your GitHub handle.".to_string(),
             },
+            &InstructionTypes::Reddit => Instructions {
+                statement: "Enter your Reddit account handle to verify and include in a signed message using your wallet.".to_string(),
+                signature: "Sign the message presented to you containing your Reddit handle and additional information.".to_string(),
+                witness: "Update the Reddit profile of the handle given earlier so that the About section only includes the statement and signature shown.".to_string(),
+            },
             &InstructionTypes::SelfSigned => Instructions {
                 statement: "Please enter both of the signers you wish to link along with what type of signer they are".to_string(),
                 signature: "Please sign the presented statement with the signers entered in the previous step in the same order as provided".to_string(),
@@ -58,9 +66,10 @@ impl InstructionTypes {
         match &self {
             &InstructionTypes::Dns => (schema_for!(DnsClaim), schema_for!(DnsClaim)),
             &InstructionTypes::GitHub => (schema_for!(GitHubOpts), schema_for!(GitHubClaim)),
+            &InstructionTypes::Reddit => (schema_for!(RedditClaim), schema_for!(RedditClaim)),
             &InstructionTypes::SelfSigned => {
                 (schema_for!(SelfSignedOpts), schema_for!(SelfSignedClaim))
-            }
+            },
             &InstructionTypes::Twitter => (schema_for!(TwitterOpts), schema_for!(TwitterClaim)),
         }
     }

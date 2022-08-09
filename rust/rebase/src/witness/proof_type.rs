@@ -1,5 +1,9 @@
 use crate::witness::{
-    dns::Claim as DnsProof, github::Claim as GitHubProof, self_signed::Claim as SelfSignedProof, twitter::Claim as TwitterProof,
+    dns::Claim as DnsProof, 
+    github::Claim as GitHubProof, 
+    reddit::Claim as RedditProof, 
+    self_signed::Claim as SelfSignedProof, 
+    twitter::Claim as TwitterProof,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -10,6 +14,8 @@ pub enum ProofTypes {
     Dns(DnsProof),
     #[serde(rename = "github")]
     GitHub(GitHubProof),
+    #[serde(rename = "reddit")]
+    Reddit(RedditProof),
     #[serde(rename = "self_signed")]
     SelfSigned(SelfSignedProof),
     #[serde(rename = "twitter")]

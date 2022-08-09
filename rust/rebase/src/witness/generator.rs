@@ -5,12 +5,14 @@ use crate::{
         dns::ClaimGenerator as DnsGen,
         github::ClaimGenerator as GithubGen,
         proof_type::ProofTypes,
-        self_signed::{Claim as SelfSignedClaim},
+        reddit::ClaimGenerator as RedditGen,
+        self_signed::Claim as SelfSignedClaim,
         twitter::ClaimGenerator as TwitterGen,
         witness::{Generator, WitnessError},
     },
 };
 
+use serde::{Deserialize, Serialize};
 use ssi::vc::Credential as VC;
 
 pub type Credential = VC;
@@ -21,22 +23,24 @@ pub struct WitnessGenerator {
     // TODO: Make consistent?
     pub dns: DnsGen,
     pub github: Option<GithubGen>,
+    pub reddit: RedditGen,
+    pub twitter: Option<TwitterGen>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Opts {
+    pub github: Option<GithubGen>,
     pub twitter: Option<TwitterGen>,
 }
 
 impl WitnessGenerator {
     // TODO: Streamline this into opts struct?
-    pub fn new(twitter_api_key: Option<String>, user_agent: Option<String>) -> Self {
+    pub fn new(opts: Opts) -> Self {
         WitnessGenerator {
             dns: DnsGen {},
-            github: match user_agent {
-                Some(s) => Some(GithubGen { user_agent: s }),
-                None => None,
-            },
-            twitter: match twitter_api_key {
-                Some(s) => Some(TwitterGen { api_key: s }),
-                None => None,
-            },
+            github: opts.github,
+            reddit: RedditGen {},
+            twitter: opts.twitter,
         }
     }
 
@@ -67,6 +71,7 @@ impl WitnessGenerator {
                     claim_type: "github".to_owned(),
                 }),
             },
+            ProofTypes::Reddit(x) => self.reddit.credential(x, signer).await,
             ProofTypes::Twitter(x) => match &self.twitter {
                 Some(gen) => gen.credential(x, signer).await,
                 _ => Err(WitnessError::NoWitnessConfig {
@@ -103,6 +108,7 @@ impl WitnessGenerator {
                     claim_type: "github".to_owned(),
                 }),
             },
+            ProofTypes::Reddit(x) => self.reddit.jwt(x, signer).await,
             ProofTypes::Twitter(x) => match &self.twitter {
                 Some(gen) => gen.jwt(x, signer).await,
                 _ => Err(WitnessError::NoWitnessConfig {

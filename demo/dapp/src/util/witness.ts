@@ -1,4 +1,4 @@
-import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon } from "components/icons";
+import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, RedditIcon } from "components/icons";
 import type { CredentialType } from "./claim";
 import { Client } from "@rebase-xyz/rebase-client";
 
@@ -38,6 +38,7 @@ const ICONS = {
     dns: GlobeIcon,
     github: GitHubIcon,
     discord: DiscordIcon,
+    reddit: RedditIcon,
 };
 
 const capitalizeFirstLetter = (string) => {
@@ -53,6 +54,7 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
         case "discord":
         case "github":
         case "twitter":
+        case "reddit":
             return {
                 icon: ICONS[t],
                 title: `${capitalizeFirstLetter(t)} Verification Workflow`,
@@ -66,21 +68,26 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
                 signature: `Sign the message presented to you containing your ${capitalizeFirstLetter(t)} handle and additional 
                             information.`,
                 signature_label: `Signature Prompt`,
+                // TODO: Change these to use the remote instructions
                 witness: t === "twitter" ?
                     "Tweet out your signed message to create a link between your identifier and your Twitter handle." :
                     t === "github" ?
                         "Create a Gist with this message to create a link between your identifier and your GitHub handle." :
+                        t === "reddit" ?
+                        "Update your Reddit account's About section to only include this signature" :
                         "",
                 witness_label: t === "twitter"
                     ? "Tweet Message" :
                     t === "github" ?
                         "Create a Gist" :
+                        t === "reddit" ?
+                        "Update your profile's About section" :
                         "",
                 witness_placeholder: t === "twitter"
                     ? "Paste your tweet URL" :
                     t === "github" ?
                         "Paste your gist URL" :
-                        ""
+                        "N/A"
             }
         case "dns":
             return {

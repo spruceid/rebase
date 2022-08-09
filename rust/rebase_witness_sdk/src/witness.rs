@@ -2,7 +2,7 @@ use rebase::{
     signer::signer::{Signer, SignerType},
     witness::{
         instructions::InstructionTypes,
-        generator::{Credential as VC, WitnessGenerator as Generator},
+        generator::{Credential as VC, WitnessGenerator as Generator, Opts as WOpts},
         proof_type::ProofTypes,
         statement_type::StatementTypes,
         witness::Statement,
@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 
 pub type Credential = VC;
 pub type WitnessGenerator = Generator;
+pub type WitnessOpts = WOpts;
 
 #[derive(Error, Debug)]
 pub enum WitnessError {
