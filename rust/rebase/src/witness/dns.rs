@@ -116,6 +116,7 @@ impl SchemaType for Schema {
     }
 }
 
+#[derive(Clone, Deserialize, Serialize)]
 pub struct ClaimGenerator {}
 
 #[derive(Deserialize, Debug)]

@@ -617,12 +617,14 @@ Current Schemas Defined:
 * basic_profile (unwitnessed)
 * dns
 * github
+* reddit
 * twitter
 * two-key linking
 
 Current Witness flows:
 * dns
 * github
+* reddit
 * twitter
 * two-key linking
 

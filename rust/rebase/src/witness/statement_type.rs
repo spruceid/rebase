@@ -3,6 +3,7 @@ use crate::{
     witness::{
         dns::Claim as DnsStatement,
         github::Opts as GitHubStatement,
+        reddit::Claim as RedditStatement,
         self_signed::Opts as SelfSignedStatement,
         signer_type::SignerTypes,
         twitter::Opts as TwitterStatement,
@@ -18,6 +19,8 @@ pub enum StatementTypes {
     Dns(DnsStatement),
     #[serde(rename = "github")]
     GitHub(GitHubStatement),
+    #[serde(rename = "reddit")]
+    Reddit(RedditStatement),
     #[serde(rename = "self_signed")]
     SelfSigned(SelfSignedStatement),
     #[serde(rename = "twitter")]
@@ -29,6 +32,7 @@ impl Statement for StatementTypes {
         match &self {
             StatementTypes::Dns(x) => x.generate_statement(),
             StatementTypes::GitHub(x) => x.generate_statement(),
+            StatementTypes::Reddit(x) => x.generate_statement(),
             StatementTypes::SelfSigned(x) => x.generate_statement(),
             StatementTypes::Twitter(x) => x.generate_statement(),
         }
@@ -38,6 +42,7 @@ impl Statement for StatementTypes {
         match &self {
             StatementTypes::Dns(x) => x.delimitor(),
             StatementTypes::GitHub(x) => x.delimitor(),
+            StatementTypes::Reddit(x) => x.delimitor(),
             // TODO / NOTE: Should this be an err? Permitted? A value?
             StatementTypes::SelfSigned(_) => String::new(),
             StatementTypes::Twitter(x) => x.delimitor(),
@@ -48,6 +53,7 @@ impl Statement for StatementTypes {
         match &self {
             StatementTypes::Dns(x) => x.signer_type(),
             StatementTypes::GitHub(x) => x.signer_type(),
+            StatementTypes::Reddit(x) => x.signer_type(),
             // TODO: Should this be seperated into a different trait?
             StatementTypes::SelfSigned(_) => Err(SignerError::InvalidId {
                 signer_type: "2 key".to_owned(),

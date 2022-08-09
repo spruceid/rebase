@@ -1,11 +1,9 @@
 import { writable, Writable } from "svelte/store";
-import { GlobeIcon, TwitterIcon, GitHubIcon, EthereumIcon } from 'components/icons';
+import { GlobeIcon, TwitterIcon, GitHubIcon, EthereumIcon, RedditIcon } from 'components/icons';
 import type { Claim } from "./claim";
 import { connectSigner, connectSigner2nd, disconnectSigner, disconnectSigner2nd, Signer, SignerMap, SignerType } from "./signer";
 import type { KeyType, Workflow } from "./witness";
 import { copyObjArray } from "./util";
-
-
 
 // TODO: Break into UI file?
 export type AccountState = "available" | "obtained";
@@ -57,6 +55,14 @@ const defaultClaims: Claim[] = [
         type: "public",
         available: true,
     },
+    {
+        credentials: [],
+        credential_type: "reddit",
+        icon: RedditIcon,
+        title: "Reddit",
+        type: "public",
+        available: true,
+    }
     // {
     //     credentials: [],
     //     credential_type: "discord",
