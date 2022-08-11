@@ -3,6 +3,7 @@ use crate::witness::{
     github::Claim as GitHubProof, 
     reddit::Claim as RedditProof, 
     self_signed::Claim as SelfSignedProof, 
+    soundcloud::Claim as SoundCloudProof,
     twitter::Claim as TwitterProof,
 };
 use schemars::JsonSchema;
@@ -18,6 +19,8 @@ pub enum ProofTypes {
     Reddit(RedditProof),
     #[serde(rename = "self_signed")]
     SelfSigned(SelfSignedProof),
+    #[serde(rename = "soundcloud")]
+    SoundCloud(SoundCloudProof),
     #[serde(rename = "twitter")]
     Twitter(TwitterProof),
 }

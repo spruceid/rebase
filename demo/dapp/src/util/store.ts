@@ -1,5 +1,5 @@
 import { writable, Writable } from "svelte/store";
-import { GlobeIcon, TwitterIcon, GitHubIcon, EthereumIcon, RedditIcon } from 'components/icons';
+import { GlobeIcon, TwitterIcon, GitHubIcon, EthereumIcon, RedditIcon, SoundCloudIcon } from 'components/icons';
 import type { Claim } from "./claim";
 import { connectSigner, connectSigner2nd, disconnectSigner, disconnectSigner2nd, Signer, SignerMap, SignerType } from "./signer";
 import type { KeyType, Workflow } from "./witness";
@@ -60,6 +60,14 @@ const defaultClaims: Claim[] = [
         credential_type: "reddit",
         icon: RedditIcon,
         title: "Reddit",
+        type: "public",
+        available: true,
+    },
+    {
+        credentials: [],
+        credential_type: "soundcloud",
+        icon: SoundCloudIcon,
+        title: "SoundCloud",
         type: "public",
         available: true,
     }

@@ -30,7 +30,7 @@ impl Statement for Claim {
         let signer_type = self.signer_type()?;
 
         Ok(format!(
-            "I am attesting that this Reddit handle {} is linked to the {} {}",
+            "I am attesting that this SoundCloud handle {} is linked to the {} {}",
             self.handle,
             signer_type.name(),
             signer_type.statement_id()?
@@ -45,10 +45,10 @@ impl Statement for Claim {
 impl Proof for Claim {}
 
 pub struct Schema {
-    pub handle: String,
     pub key_type: SignerDID,
     pub statement: String,
     pub signature: String,
+    pub handle: String,
 }
 
 impl SchemaType for Schema {
@@ -58,9 +58,9 @@ impl SchemaType for Schema {
             "https://www.w3.org/2018/credentials/v1",
             {
                 "sameAs": "http://schema.org/sameAs",
-                "RedditVerification": "https://example.com/RedditVerification",
-                "RedditVerificationMessage": {
-                    "@id": "https://example.com/RedditVerificationMessage",
+                "SoundCloudVerification": "https://example.com/SoundCloudVerification",
+                "SoundCloudVerificationMessage": {
+                    "@id": "https://example.com/SoundCloudVerificationMessage",
                     "@context": {
                         "@version": 1.1,
                         "@protected": true,
@@ -89,7 +89,7 @@ impl SchemaType for Schema {
 
         let evidence = Evidence {
             id: None,
-            type_: vec!["RedditVerificationMessage".to_string()],
+            type_: vec!["SoundCloudVerificationMessage".to_string()],
             property_set: Some(evidence_map),
         };
 
@@ -104,62 +104,115 @@ impl SchemaType for Schema {
 
         Ok(json!({
             "id": signer_did,
-            "sameAs": format!("https://reddit.com/user/{}/", self.handle)
+            "sameAs": format!("https://soundcloud.com/{}", self.handle)
         }))
     }
 
     fn types(&self) -> Result<Vec<String>, SchemaError> {
         Ok(vec![
             "VerifiableCredential".to_owned(),
-            "RedditVerification".to_owned(),
+            "SoundCloudVerification".to_owned(),
         ])
     }
 }
 
 #[derive(Clone, Deserialize, Serialize)]
-pub struct ClaimGenerator {}
-
-#[derive(Clone, Deserialize, Serialize)]
-pub struct AboutWrapper {
-    pub data: AboutData,
+pub struct ClaimGenerator {
+    pub client_id: String,
+    // Must be less than 200
+    pub limit: u64,
+    // Must be less that 10000 If less than limit, will only make one request.
+    pub max_offset: u64,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
-pub struct AboutData {
-    pub subreddit: AboutSubreddit,
+impl ClaimGenerator {
+    fn is_valid(&self) -> Result<(), WitnessError> {
+        if self.limit > 200 {
+            Err(WitnessError::BadConfig(
+                "limit must be less than 200".to_string(),
+            ))
+        } else if self.max_offset > 10000 {
+            Err(WitnessError::BadConfig(
+                "max_offset must be less than 10000".to_string(),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn generate_url(&self, proof: &Claim, offset: &u64) -> Result<Url, WitnessError> {
+        Url::parse(&format!(
+            "https://api-v2.soundcloud.com/search/users?q={}&client_id={}&limit={}&offset={}&app_locale=en",
+            proof.handle,
+            self.client_id,
+            self.limit,
+            offset
+        )).map_err(|e| WitnessError::BadLookup(format!("could not parse generated url, reason: {}", e)))
+    }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
-pub struct AboutSubreddit {
-    pub public_description: String,
+#[derive(Deserialize, Debug, Serialize)]
+struct SoundCloudRes {
+    pub collection: Vec<SoundCloudEntry>,
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+struct SoundCloudEntry {
+    pub username: Option<String>,
+    pub description: Option<String>,
 }
 
 #[async_trait(?Send)]
 impl Generator<Claim, Schema> for ClaimGenerator {
     async fn locate_post(&self, proof: &Claim) -> Result<String, WitnessError> {
-        let u = format!("https:/www.reddit.com/user/{}/about/.json", proof.handle);
+        self.is_valid()?;
+        let mut offset = 0;
         let client = reqwest::Client::new();
 
-        let res: AboutWrapper = client
-            .get(Url::parse(&u).map_err(|e| {
-                WitnessError::ParseError(format!(
-                    "Failed to parse reddit about URL: {} -- Reason: {}",
-                    u, e
-                ))
-            })?)
-            .send()
-            .await
-            .map_err(|e| WitnessError::BadLookup(e.to_string()))?
-            .json()
-            .await
-            .map_err(|e| WitnessError::BadLookup(e.to_string()))?;
+        while offset <= self.max_offset {
+            let u = self.generate_url(proof, &offset)?;
+            let res: SoundCloudRes = client
+                .get(u)
+                .send()
+                .await
+                .map_err(|e| WitnessError::BadLookup(e.to_string()))?
+                .json()
+                .await
+                .map_err(|e| WitnessError::BadLookup(e.to_string()))?;
 
-        Ok(format!(
-            "{}{}{}",
-            proof.generate_statement()?,
-            proof.delimitor(),
-            res.data.subreddit.public_description
-        ))
+            if res.collection.len() <= 0 {
+                break;
+            }
+
+            for entry in res.collection {
+                match entry.username {
+                    Some(username) => {
+                        if username.to_lowercase() == proof.handle.to_lowercase() {
+                            match entry.description {
+                                Some(description) => {
+                                    return Ok(format!(
+                                        "{}{}{}",
+                                        proof.generate_statement()?,
+                                        proof.delimitor(),
+                                        description.clone()
+                                    ));
+                                }
+                                None => {}
+                            }
+                        }
+                    }
+                    None => {}
+                }
+            }
+
+            offset = offset + self.limit;
+        }
+
+        Err(WitnessError::BadLookup(format!(
+            "soundcloud user {} not found after searching up to {} entries",
+            proof.handle,
+            self.max_offset + self.limit
+        )))
     }
 
     fn _unchecked_to_schema(
@@ -169,6 +222,7 @@ impl Generator<Claim, Schema> for ClaimGenerator {
         signature: &str,
     ) -> Result<Schema, WitnessError> {
         Ok(Schema {
+            // comment_id: proof.comment_id.clone(),
             handle: proof.handle.clone(),
             key_type: proof.key_type.clone(),
             statement: statement.to_owned(),
@@ -215,8 +269,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn mock_reddit() {
-        let sig = test_witness_signature(TestWitness::Reddit, TestKey::Eth).unwrap();
+    async fn mock_soundcloud() {
+        let sig = test_witness_signature(TestWitness::SoundCloud, TestKey::Eth).unwrap();
         let did = mock_proof(test_eth_did);
         let gen = MockGenerator::new(sig, || mock_proof(test_eth_did)).unwrap();
 

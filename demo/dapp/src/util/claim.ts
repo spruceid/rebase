@@ -1,15 +1,16 @@
-import type { DiscordIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon, RedditIcon } from 'components/icons';
+import type { DiscordIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon, RedditIcon, SoundCloudIcon } from 'components/icons';
 import { parseJWT } from './jwt';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
-export type CredentialType = "twitter" | "discord" | "github" | "dns" | "self_signed" | "reddit"
+export type CredentialType = "twitter" | "discord" | "github" | "dns" | "self_signed" | "reddit" | "soundcloud";
 export type ClaimIcon = typeof TwitterIcon 
     | typeof EthereumIcon 
     | typeof DiscordIcon 
     | typeof GitHubIcon
     | typeof SolanaIcon
     | typeof GlobeIcon
-    | typeof RedditIcon;
+    | typeof RedditIcon
+    | typeof SoundCloudIcon;
 
 export type BasicPublic = {
     type: "basic_public"
@@ -46,6 +47,7 @@ export const credentialToDisplay = (jwt: string): CredentialDisplay => {
         case "TwitterVerification": 
         case "GitHubVerification":
         case "RedditVerification":
+        case "SoundCloudVerification":
         {
             let handle = vc?.evidence?.handle;
             let did = vc?.credentialSubject?.id;
