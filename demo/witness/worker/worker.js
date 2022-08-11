@@ -174,6 +174,12 @@ const witnessOpts = {
   github: {
     user_agent: GITHUB_USER_AGENT
   },
+  soundcloud: {
+    client_id: SOUNDCLOUD_CLIENT_ID,
+    limit: 100,
+    // This will cause it to search the first 1k results.
+    max_offset: 900
+  },
   twitter: {
     api_key: TWITTER_BEARER_TOKEN
   }

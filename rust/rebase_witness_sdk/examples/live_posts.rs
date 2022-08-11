@@ -103,6 +103,61 @@ async fn main() {
     client.jwt(req).await.unwrap();
 
     println!("GitHub credential issued");
+
+    println!("Tesing Reddit...");
+    let did = test_eth_did();
+    let opts = reddit::Claim {
+        handle: "eval-apply-quote".to_string(),
+        key_type: did,
+    };
+
+    let statement = opts.generate_statement().unwrap();
+
+    check_statement(
+        &client,
+        statement_type::StatementTypes::Reddit(opts.clone()),
+        &statement,
+    )
+    .await
+    .unwrap();
+
+    println!("Reddit statement valid...");
+
+    let req = WitnessReq {
+        proof: proof_type::ProofTypes::Reddit(opts),
+    };
+
+    client.jwt(req).await.unwrap();
+
+    println!("Reddit credential issued");
+
+    println!("Tesing SoundCloud...");
+    let did = test_eth_did();
+    let opts = soundcloud::Claim {
+        handle: "spruce-systems-dev".to_string(),
+        key_type: did,
+    };
+
+    let statement = opts.generate_statement().unwrap();
+
+    check_statement(
+        &client,
+        statement_type::StatementTypes::SoundCloud(opts.clone()),
+        &statement,
+    )
+    .await
+    .unwrap();
+
+    println!("SoundCloud statement valid...");
+
+    let req = WitnessReq {
+        proof: proof_type::ProofTypes::SoundCloud(opts),
+    };
+
+    client.jwt(req).await.unwrap();
+
+    println!("SoundCloud credential issued");
+
     println!("Testing Twitter...");
 
     let did = test_eth_did();

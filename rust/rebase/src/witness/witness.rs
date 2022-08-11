@@ -11,6 +11,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum WitnessError {
+    #[error("improperly configured generator: {0}")]
+    BadConfig(String),
     #[error("failed to lookup claim: {0}")]
     BadLookup(String),
     #[error("no id in given signer type")]

@@ -618,6 +618,7 @@ Current Schemas Defined:
 * dns
 * github
 * reddit
+* soundcloud
 * twitter
 * two-key linking
 
@@ -625,6 +626,7 @@ Current Witness flows:
 * dns
 * github
 * reddit
+* soundcloud
 * twitter
 * two-key linking
 

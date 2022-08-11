@@ -6,6 +6,7 @@ use crate::{
         reddit::Claim as RedditStatement,
         self_signed::Opts as SelfSignedStatement,
         signer_type::SignerTypes,
+        soundcloud::Claim as SoundCloudStatement,
         twitter::Opts as TwitterStatement,
         witness::{Statement, WitnessError},
     },
@@ -23,6 +24,8 @@ pub enum StatementTypes {
     Reddit(RedditStatement),
     #[serde(rename = "self_signed")]
     SelfSigned(SelfSignedStatement),
+    #[serde(rename = "soundcloud")]
+    SoundCloud(SoundCloudStatement),
     #[serde(rename = "twitter")]
     Twitter(TwitterStatement),
 }
@@ -34,6 +37,7 @@ impl Statement for StatementTypes {
             StatementTypes::GitHub(x) => x.generate_statement(),
             StatementTypes::Reddit(x) => x.generate_statement(),
             StatementTypes::SelfSigned(x) => x.generate_statement(),
+            StatementTypes::SoundCloud(x) => x.generate_statement(),
             StatementTypes::Twitter(x) => x.generate_statement(),
         }
     }
@@ -45,6 +49,7 @@ impl Statement for StatementTypes {
             StatementTypes::Reddit(x) => x.delimitor(),
             // TODO / NOTE: Should this be an err? Permitted? A value?
             StatementTypes::SelfSigned(_) => String::new(),
+            StatementTypes::SoundCloud(x) => x.delimitor(),
             StatementTypes::Twitter(x) => x.delimitor(),
         }
     }
@@ -59,6 +64,7 @@ impl Statement for StatementTypes {
                 signer_type: "2 key".to_owned(),
                 reason: "cannot call signer_type on 2 key statement opts".to_owned(),
             }),
+            StatementTypes::SoundCloud(x) => x.signer_type(),
             StatementTypes::Twitter(x) => x.signer_type(),
         }
     }

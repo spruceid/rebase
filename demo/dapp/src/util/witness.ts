@@ -1,4 +1,4 @@
-import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, RedditIcon } from "components/icons";
+import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, RedditIcon, SoundCloudIcon } from "components/icons";
 import type { CredentialType } from "./claim";
 import { Client } from "@rebase-xyz/rebase-client";
 
@@ -39,13 +39,16 @@ const ICONS = {
     github: GitHubIcon,
     discord: DiscordIcon,
     reddit: RedditIcon,
+    soundcloud: SoundCloudIcon,
 };
 
-const capitalizeFirstLetter = (string) => {
-    if(string === 'github'){
+const capitalizeFirstLetter = (s) => {
+    if(s === 'github'){
         return 'GitHub';
+    } else if (s == 'soundcloud'){
+        return 'SoundCloud';
     } else {
-        return string.charAt(0).toUpperCase() + string.slice(1);
+        return s.charAt(0).toUpperCase() + s.slice(1);
     }
 }
 
@@ -55,6 +58,7 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
         case "github":
         case "twitter":
         case "reddit":
+        case "soundcloud":
             return {
                 icon: ICONS[t],
                 title: `${capitalizeFirstLetter(t)} Verification Workflow`,
@@ -75,14 +79,17 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
                         "Create a Gist with this message to create a link between your identifier and your GitHub handle." :
                         t === "reddit" ?
                         "Update your Reddit account's About section to only include this signature" :
-                        "",
+                            t === "soundcloud" ? "Update your Soundcloud account's Bio section to only include this signature" :
+                            "",
                 witness_label: t === "twitter"
                     ? "Tweet Message" :
                     t === "github" ?
                         "Create a Gist" :
                         t === "reddit" ?
                         "Update your profile's About section" :
-                        "",
+                            t === "soundcloud" ?
+                            "Update your profile's Bio section" :
+                            "",
                 witness_placeholder: t === "twitter"
                     ? "Paste your tweet URL" :
                     t === "github" ?

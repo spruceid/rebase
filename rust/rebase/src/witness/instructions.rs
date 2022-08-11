@@ -1,8 +1,9 @@
 use crate::witness::{
     dns::Claim as DnsClaim,
     github::{Claim as GitHubClaim, Opts as GitHubOpts},
-    reddit::{Claim as RedditClaim},
+    reddit::Claim as RedditClaim,
     self_signed::{Claim as SelfSignedClaim, Opts as SelfSignedOpts},
+    soundcloud::Claim as SoundCloudClaim,
     twitter::{Claim as TwitterClaim, Opts as TwitterOpts},
     witness::WitnessError,
 };
@@ -27,6 +28,8 @@ pub enum InstructionTypes {
     Reddit,
     #[serde(rename = "self_signed")]
     SelfSigned,
+    #[serde(rename = "soundcloud")]
+    SoundCloud,
     #[serde(rename = "twitter")]
     Twitter,
 }
@@ -47,17 +50,22 @@ impl InstructionTypes {
             &InstructionTypes::Reddit => Instructions {
                 statement: "Enter your Reddit account handle to verify and include in a signed message using your wallet.".to_string(),
                 signature: "Sign the message presented to you containing your Reddit handle and additional information.".to_string(),
-                witness: "Update the Reddit profile of the handle given earlier so that the About section only includes the statement and signature shown.".to_string(),
+                witness: "Update your Reddit profile so that the About section only includes the signature shown.".to_string(),
             },
             &InstructionTypes::SelfSigned => Instructions {
                 statement: "Please enter both of the signers you wish to link along with what type of signer they are".to_string(),
                 signature: "Please sign the presented statement with the signers entered in the previous step in the same order as provided".to_string(),
                 witness: "Send the signatures and signer information to the witness".to_string(),
             },
+            &InstructionTypes::SoundCloud => Instructions {
+                statement: "Enter your SoundCloud handle to verify and include in a signed message using your wallet.".to_string(),
+                signature: "Sign the message presented to you containing your SoundCloud handle and additional information.".to_string(),
+                witness: "Update the SoundCloud profile of the handle provided earlier so that the Description section only includes statement and signature shown.".to_string(),
+            },
             &InstructionTypes::Twitter =>  Instructions {
                 statement: "Enter your Twitter account handle to verify and include in a signed message using your wallet.".to_string(),
                 signature: "Sign the message presented to you containing your Twitter handle and additional information.".to_string(),
-                witness: "Tweet out your signed message to create a link between your identifier and your Twitter handle.".to_string(),
+                witness: "Update your SoundCloud profile so that the Bio section only includes the signature shown.".to_string(),
             }
         }
     }
@@ -69,7 +77,8 @@ impl InstructionTypes {
             &InstructionTypes::Reddit => (schema_for!(RedditClaim), schema_for!(RedditClaim)),
             &InstructionTypes::SelfSigned => {
                 (schema_for!(SelfSignedOpts), schema_for!(SelfSignedClaim))
-            },
+            }
+            &InstructionTypes::SoundCloud => (schema_for!(SoundCloudClaim), schema_for!(SoundCloudClaim)),
             &InstructionTypes::Twitter => (schema_for!(TwitterOpts), schema_for!(TwitterClaim)),
         }
     }
