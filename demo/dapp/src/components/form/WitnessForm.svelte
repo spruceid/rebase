@@ -93,6 +93,7 @@
         switch (type) {
             case "discord":
             case "github":
+            case "soundcloud":
             case "twitter":
                 return `${statement}${delimitor}${signature}`;
             case "dns":
