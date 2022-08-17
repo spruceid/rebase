@@ -37,7 +37,6 @@ pub struct Opts {
 }
 
 impl WitnessGenerator {
-    // TODO: Streamline this into opts struct?
     pub fn new(opts: Opts) -> Self {
         WitnessGenerator {
             dns: DnsGen {},

@@ -68,7 +68,6 @@ impl SignerType for Ethereum {
     }
 
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SignerError> {
-        // TODO: IMPLEMENT
         match self {
             // NOTE: THIS ASSUMES EIP191 SIGNING.
             // TODO: Call this out in the type system?

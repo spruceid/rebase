@@ -40,9 +40,9 @@ pub struct WitnessLDRes {
 }
 ```
 
-[InstructionTypes](), [StatementTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/statement_type.rs) and [ProofTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/proof_type.rs) are enums representing all of the possible witness flows supported by the underlying [Rebase](https://github.com/spruceid/rebase/tree/main/rust/rebase) library. The advantage of this approach is that addition variants are added to underlying library, they are automatically supported by this SDK. The TypeScript/JSON format of these structures are described [here](https://github.com/spruceid/rebase/blob/main/demo/witness/endpoints.md).
+[InstructionTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/instructions.rs#L21), [StatementTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/statement_type.rs) and [ProofTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/proof_type.rs) are enums representing all of the possible witness flows supported by the underlying [Rebase](https://github.com/spruceid/rebase/tree/main/rust/rebase) library. The advantage of this approach is that addition variants are added to underlying library, they are automatically supported by this SDK. The TypeScript/JSON format of these structures are described [here](https://github.com/spruceid/rebase/blob/main/demo/witness/endpoints.md).
 
-The response types (`StatementRes`, `WitnessJWTRes`, and `WitnessLDRes`, along with the result of the `Instructions` flow, found [here]()) are universal for all witness flows, making developing a consumer of the witness flows automatically backwards compatible to new flows. The [Credential](https://github.com/spruceid/ssi/blob/main/src/vc.rs#L44) type found in the body of the `WitnessLDRes` comes from the [SSI](https://github.com/spruceid/ssi) library.
+The response types (`StatementRes`, `WitnessJWTRes`, and `WitnessLDRes`, along with the result of the `Instructions` flow, found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase_witness_sdk/src/witness.rs)) are universal for all witness flows, making developing a consumer of the witness flows automatically backwards compatible to new flows. The [Credential](https://github.com/spruceid/ssi/blob/main/src/vc.rs#L44) type found in the body of the `WitnessLDRes` comes from the [SSI](https://github.com/spruceid/ssi) library.
 
 The exposed functions have the following signatures:
 
@@ -107,7 +107,7 @@ impl Client {
 }
 ```
 
-Once a client is created, it is able to exchange `StatementReq`s for `StatementRes`s, `InstructionReq`s for the structure described [here](), and exchange `WitnessReq`s for `WitnessJWTRes` or `WitnessLDRes` depending on what is requested. This is done through interaction with a witness specified at time of `Client` creation. A client is created by providing an `Endpoints` struct which looks like:
+Once a client is created, it is able to exchange `StatementReq`s for `StatementRes`s, `InstructionReq`s for the structure described [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/instructions.rs#L14), and exchange `WitnessReq`s for `WitnessJWTRes` or `WitnessLDRes` depending on what is requested. This is done through interaction with a witness specified at time of `Client` creation. A client is created by providing an `Endpoints` struct which looks like:
 
 ```rust
 pub struct Endpoints {

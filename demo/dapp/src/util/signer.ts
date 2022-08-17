@@ -12,12 +12,27 @@ export interface Signer {
 export type SignerType = "ethereum"; // | "tezos" | "solana" | "etc"
 export const signerTypes: Array<SignerType> = ["ethereum"];
 
+/* 
+TODO: 
+Make it so that SignerMap is a Record<
+    SignerType, 
+    Record<
+        ProviderType, 
+        Record<
+            String, 
+            [Signer, boolean]
+        >
+    >
+> 
+provider type describing different providers of the same signer type
+such as WalletConnect v. MetaMask
+the inner boolean indicating if the signer at a given ID and provider is active.
+*/
 export type SignerMap = Record<SignerType, Signer | false>;
 export type ENSType = {
     name: string | null;
     avatar: string | null;
 };
-
 
 export const connectSigner = async (signerType: SignerType): Promise<Signer> => {
     let ens: ENSType;

@@ -60,7 +60,7 @@ impl InstructionTypes {
             &InstructionTypes::SoundCloud => Instructions {
                 statement: "Enter your SoundCloud handle to verify and include in a signed message using your wallet.".to_string(),
                 signature: "Sign the message presented to you containing your SoundCloud handle and additional information.".to_string(),
-                witness: "Update the SoundCloud profile of the handle provided earlier so that the Description section only includes statement and signature shown.".to_string(),
+                witness: "Update the SoundCloud profile of the handle provided earlier so that the Bio section only includes statement and signature shown.".to_string(),
             },
             &InstructionTypes::Twitter =>  Instructions {
                 statement: "Enter your Twitter account handle to verify and include in a signed message using your wallet.".to_string(),

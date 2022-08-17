@@ -54,7 +54,6 @@ where
         Ok(format!("{}{}{}", statement, self.delimitor(), signature))
     }
 
-    // TODO: Allow parse flow to be over-ridden?
     // Parses post into statement and signature
     // And makes sure the signature and statement match the proof.
     async fn parse_post(&self, post: &str) -> Result<(String, String), WitnessError> {

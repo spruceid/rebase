@@ -21,8 +21,6 @@
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
 
-    // TODO: Use client instead of fetch for credential generation.
-
     const navigate = useNavigate();
     const ajv = new Ajv();
     let statement_schema = null,

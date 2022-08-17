@@ -1,4 +1,6 @@
-use crate::witness::{InstructionReq, StatementReq, StatementRes, WitnessJWTRes, WitnessLDRes, WitnessReq};
+use crate::witness::{
+    InstructionReq, StatementReq, StatementRes, WitnessJWTRes, WitnessLDRes, WitnessReq,
+};
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -39,7 +41,10 @@ impl Client {
         Ok(Client { endpoints })
     }
 
-    pub async fn instructions(&self, req: InstructionReq) -> Result<serde_json::Value, ClientError> {
+    pub async fn instructions(
+        &self,
+        req: InstructionReq,
+    ) -> Result<serde_json::Value, ClientError> {
         let client = HttpClient::new();
 
         let res = client
@@ -76,17 +81,15 @@ impl Client {
             Some(endpoint) => {
                 let client = HttpClient::new();
 
-                let res: WitnessJWTRes = client
+                client
                     .post(endpoint.clone())
                     .json(&req)
                     .send()
                     .await
                     .map_err(|e| ClientError::JWT(e.to_string()))?
-                    .json()
+                    .json::<WitnessJWTRes>()
                     .await
-                    .map_err(|e| ClientError::JWT(e.to_string()))?;
-
-                Ok(res)
+                    .map_err(|e| ClientError::JWT(e.to_string()))
             }
             None => Err(ClientError::JWT("No configured JWT endpoint".to_string())),
         }

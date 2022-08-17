@@ -129,11 +129,15 @@ impl ClaimGenerator {
     fn is_valid(&self) -> Result<(), WitnessError> {
         if self.limit > 200 {
             Err(WitnessError::BadConfig(
-                "limit must be less than 200".to_string(),
+                "limit must be less than or equal to 200".to_string(),
             ))
-        } else if self.max_offset > 10000 {
+        } else if self.limit <= 0 {
             Err(WitnessError::BadConfig(
-                "max_offset must be less than 10000".to_string(),
+                "limit must be greater than 0".to_string(),
+            ))
+        } else if (self.max_offset + self.limit) > 10000 {
+            Err(WitnessError::BadConfig(
+                "the sum of max_offset and limit must be less than 10000".to_string(),
             ))
         } else {
             Ok(())

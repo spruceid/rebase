@@ -3,7 +3,6 @@ import { GlobeIcon, TwitterIcon, GitHubIcon, EthereumIcon, RedditIcon, SoundClou
 import type { Claim } from "./claim";
 import { connectSigner, connectSigner2nd, disconnectSigner, disconnectSigner2nd, Signer, SignerMap, SignerType } from "./signer";
 import type { KeyType, Workflow } from "./witness";
-import { copyObjArray } from "./util";
 
 // TODO: Break into UI file?
 export type AccountState = "available" | "obtained";
@@ -22,83 +21,67 @@ export const alert: Writable<{
 
 export let witnessState: Writable<Workflow> = writable("statement");
 
-const defaultClaims: Claim[] = [
-    {
-        credentials: [],
-        credential_type: "twitter",
-        icon: TwitterIcon,
-        title: "Twitter",
-        type: "public",
-        available: true,
-    },
-    {
-        credentials: [],
-        credential_type: "github",
-        icon: GitHubIcon,
-        title: "GitHub",
-        type: "public",
-        available: true,
-    },
-    {
-        credentials: [],
-        credential_type: "dns",
-        icon: GlobeIcon,
-        title: "DNS",
-        type: "public",
-        available: true,
-    },
-    {
-        credentials: [],
-        credential_type: "self_signed",
-        icon: EthereumIcon,
-        title: "Ethereum Account",
-        type: "public",
-        available: true,
-    },
-    {
-        credentials: [],
-        credential_type: "reddit",
-        icon: RedditIcon,
-        title: "Reddit",
-        type: "public",
-        available: true,
-    },
-    {
-        credentials: [],
-        credential_type: "soundcloud",
-        icon: SoundCloudIcon,
-        title: "SoundCloud",
-        type: "public",
-        available: true,
-    }
-    // {
-    //     credentials: [],
-    //     credential_type: "discord",
-    //     icon: DiscordIcon,
-    //     title: "Discord",
-    //     type: "public",
-    //     available: false,
-    // },
-
-    // {
-    //     credentials: [],
-    //     credential_type: "ethereum",
-    //     icon: EthereumIcon,
-    //     title: "Ethereum Account",
-    //     type: "blockchain",
-    //     available: false,
-    // },
-
-    // {
-    //     credentials: [],
-    //     credential_type: "solana",
-    //     icon: SolanaIcon,
-    //     title: "Solana Account",
-    //     type: "blockchain",
-    //     available: false,
-    // },
-]
-export let claims: Writable<Array<Claim>> = writable(copyObjArray(defaultClaims));
+function defaultClaims(): Claim[] { 
+    return [
+        {
+            credentials: [],
+            credential_type: "twitter",
+            icon: TwitterIcon,
+            title: "Twitter",
+            type: "public",
+            available: true,
+        },
+        {
+            credentials: [],
+            credential_type: "github",
+            icon: GitHubIcon,
+            title: "GitHub",
+            type: "public",
+            available: true,
+        },
+        {
+            credentials: [],
+            credential_type: "dns",
+            icon: GlobeIcon,
+            title: "DNS",
+            type: "public",
+            available: true,
+        },
+        {
+            credentials: [],
+            credential_type: "self_signed",
+            icon: EthereumIcon,
+            title: "Ethereum Account",
+            type: "public",
+            available: true,
+        },
+        {
+            credentials: [],
+            credential_type: "reddit",
+            icon: RedditIcon,
+            title: "Reddit",
+            type: "public",
+            available: true,
+        },
+        {
+            credentials: [],
+            credential_type: "soundcloud",
+            icon: SoundCloudIcon,
+            title: "SoundCloud",
+            type: "public",
+            available: true,
+        }
+        // {
+        //     credentials: [],
+        //     credential_type: "discord",
+        //     icon: DiscordIcon,
+        //     title: "Discord",
+        //     type: "public",
+        //     available: false,
+        // },
+    ]
+}
+export let claims: Writable<Array<Claim>> = writable(defaultClaims());
 
 export let currentType: Writable<SignerType> = writable("ethereum");
 export let currentType2nd: Writable<SignerType> = writable("ethereum");
@@ -107,19 +90,26 @@ currentType.subscribe(x => (_currentType = x));
 export let _currentType2nd: SignerType = "ethereum";
 currentType.subscribe(x => (_currentType = x));
 
+// TODO: Make it so that SignerMap is a Record<SignerType, Record<Provider, Record<String, [Signer, boolean]>>> indicating if the signer at a given ID is active.
 export let signerMap: Writable<SignerMap> = writable({
     "ethereum": false,
 });
+
+// TODO: Remove, should only need one Signer Map.
 export let signerMap2nd: Writable<SignerMap> = writable({
     "ethereum": false,
 });
+
 export let _signerMap: SignerMap = {
     "ethereum": false,
 };
+
 export let _signerMap2nd: SignerMap = {
     "ethereum": false,
 };
+
 signerMap.subscribe(x => (_signerMap = x));
+
 signerMap2nd.subscribe(x => (_signerMap2nd = x));
 
 export let signer: Signer | false = false;
@@ -205,8 +195,11 @@ export const disconnect = async (): Promise<void> => {
     let next = Object.assign({}, _signerMap);
     next[_currentType] = false;
     signerMap.set(next);
-    claims.set(copyObjArray(defaultClaims));
+
+    // NOTE: This means a user can't add claims from multiple keys, is that the behavior we want?
+    claims.set(defaultClaims());
     await disconnectSigner(_currentType);
+
     window.ethereum.removeListener('accountsChanged', accountsChanged)
 };
 
