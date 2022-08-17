@@ -151,7 +151,6 @@ impl SchemaType for Schema {
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct ClaimGenerator {
-    // TODO: Remove?
     pub user_agent: String,
 }
 
@@ -270,7 +269,6 @@ mod tests {
 
     fn mock_proof(key: fn() -> SignerDID) -> Claim {
         Claim {
-            // TODO: Make test util
             statement_opts: Opts {
                 key_type: key(),
                 handle: "foo".to_owned(),

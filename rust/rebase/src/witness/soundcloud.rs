@@ -17,7 +17,7 @@ use url::Url;
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
 #[serde(rename = "claim")]
 pub struct Claim {
-    pub handle: String,
+    pub permalink: String,
     pub key_type: SignerDID,
 }
 
@@ -30,8 +30,8 @@ impl Statement for Claim {
         let signer_type = self.signer_type()?;
 
         Ok(format!(
-            "I am attesting that this SoundCloud handle {} is linked to the {} {}",
-            self.handle,
+            "I am attesting that this SoundCloud profile https://soundcloud.com/{} is linked to the {} {}",
+            self.permalink,
             signer_type.name(),
             signer_type.statement_id()?
         ))
@@ -48,7 +48,7 @@ pub struct Schema {
     pub key_type: SignerDID,
     pub statement: String,
     pub signature: String,
-    pub handle: String,
+    pub permalink: String,
 }
 
 impl SchemaType for Schema {
@@ -68,7 +68,7 @@ impl SchemaType for Schema {
                             "@id": "https://example.com/timestamp",
                             "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
                         },
-                        "handle": "https://example.com/handle",
+                        "permalink": "https://example.com/permalink",
                     }
                 }
             }
@@ -78,8 +78,8 @@ impl SchemaType for Schema {
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, SchemaError> {
         let mut evidence_map = std::collections::HashMap::new();
         evidence_map.insert(
-            "handle".to_string(),
-            serde_json::Value::String(self.handle.clone()),
+            "permalink".to_string(),
+            serde_json::Value::String(self.permalink.clone()),
         );
 
         evidence_map.insert(
@@ -104,7 +104,7 @@ impl SchemaType for Schema {
 
         Ok(json!({
             "id": signer_did,
-            "sameAs": format!("https://soundcloud.com/{}", self.handle)
+            "sameAs": format!("https://soundcloud.com/{}", self.permalink)
         }))
     }
 
@@ -129,11 +129,15 @@ impl ClaimGenerator {
     fn is_valid(&self) -> Result<(), WitnessError> {
         if self.limit > 200 {
             Err(WitnessError::BadConfig(
-                "limit must be less than 200".to_string(),
+                "limit must be less than or equal to 200".to_string(),
             ))
-        } else if self.max_offset > 10000 {
+        } else if self.limit <= 0 {
             Err(WitnessError::BadConfig(
-                "max_offset must be less than 10000".to_string(),
+                "limit must be greater than 0".to_string(),
+            ))
+        } else if (self.max_offset + self.limit) > 10000 {
+            Err(WitnessError::BadConfig(
+                "the sum of max_offset and limit must be less than 10000".to_string(),
             ))
         } else {
             Ok(())
@@ -143,7 +147,7 @@ impl ClaimGenerator {
     fn generate_url(&self, proof: &Claim, offset: &u64) -> Result<Url, WitnessError> {
         Url::parse(&format!(
             "https://api-v2.soundcloud.com/search/users?q={}&client_id={}&limit={}&offset={}&app_locale=en",
-            proof.handle,
+            proof.permalink,
             self.client_id,
             self.limit,
             offset
@@ -158,7 +162,7 @@ struct SoundCloudRes {
 
 #[derive(Deserialize, Debug, Serialize)]
 struct SoundCloudEntry {
-    pub username: Option<String>,
+    pub permalink: Option<String>,
     pub description: Option<String>,
 }
 
@@ -185,9 +189,9 @@ impl Generator<Claim, Schema> for ClaimGenerator {
             }
 
             for entry in res.collection {
-                match entry.username {
-                    Some(username) => {
-                        if username.to_lowercase() == proof.handle.to_lowercase() {
+                match entry.permalink {
+                    Some(permalink) => {
+                        if permalink.to_lowercase() == proof.permalink.to_lowercase() {
                             match entry.description {
                                 Some(description) => {
                                     return Ok(format!(
@@ -209,8 +213,8 @@ impl Generator<Claim, Schema> for ClaimGenerator {
         }
 
         Err(WitnessError::BadLookup(format!(
-            "soundcloud user {} not found after searching up to {} entries",
-            proof.handle,
+            "soundcloud profile {} not found after searching up to {} entries",
+            proof.permalink,
             self.max_offset + self.limit
         )))
     }
@@ -223,7 +227,7 @@ impl Generator<Claim, Schema> for ClaimGenerator {
     ) -> Result<Schema, WitnessError> {
         Ok(Schema {
             // comment_id: proof.comment_id.clone(),
-            handle: proof.handle.clone(),
+            permalink: proof.permalink.clone(),
             key_type: proof.key_type.clone(),
             statement: statement.to_owned(),
             signature: signature.to_owned(),
@@ -243,7 +247,7 @@ mod tests {
     fn mock_proof(key: fn() -> SignerDID) -> Claim {
         Claim {
             key_type: key(),
-            handle: "foo".to_owned(),
+            permalink: "foo".to_owned(),
         }
     }
 
@@ -261,7 +265,7 @@ mod tests {
         ) -> Result<Schema, WitnessError> {
             Ok(Schema {
                 key_type: proof.key_type.clone(),
-                handle: proof.handle.clone(),
+                permalink: proof.permalink.clone(),
                 statement: statement.to_owned(),
                 signature: signature.to_owned(),
             })

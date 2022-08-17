@@ -134,7 +134,7 @@ async fn main() {
     println!("Tesing SoundCloud...");
     let did = test_eth_did();
     let opts = soundcloud::Claim {
-        handle: "spruce-systems-dev".to_string(),
+        permalink: "spruce-systems-dev".to_string(),
         key_type: did,
     };
 

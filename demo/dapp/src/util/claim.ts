@@ -18,6 +18,7 @@ export type BasicPublic = {
     address: string
 }
 
+// TODO: Use this for cross key?
 export type BasicBlockchain = {
     type: "basic_blockchain"
     address: string
@@ -47,9 +48,19 @@ export const credentialToDisplay = (jwt: string): CredentialDisplay => {
         case "TwitterVerification": 
         case "GitHubVerification":
         case "RedditVerification":
-        case "SoundCloudVerification":
         {
             let handle = vc?.evidence?.handle;
+            let did = vc?.credentialSubject?.id;
+            let address = did.split(":")[did.split(":").length - 1]
+            return {
+                type: "basic_public",
+                handle,
+                address
+            }
+        }
+        case "SoundCloudVerification":
+        {
+            let handle = vc?.evidence?.permalink;
             let did = vc?.credentialSubject?.id;
             let address = did.split(":")[did.split(":").length - 1]
             return {
