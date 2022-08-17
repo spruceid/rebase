@@ -168,22 +168,38 @@ function handleOptions(request) {
 }
 
 // TODO: Make a secret to be consistent in witnessOpts
-const GITHUB_USER_AGENT = "Spruce Systems";
+// const DID_WEB = "did:web:rebasedemokey.pages.dev";
+// const GITHUB_USER_AGENT = "Spruce Systems";
 
-const witnessOpts = {
-  github: {
-    user_agent: GITHUB_USER_AGENT
-  },
-  soundcloud: {
-    client_id: SOUNDCLOUD_CLIENT_ID,
-    limit: 100,
-    // This will cause it to search the first 1k results.
-    max_offset: 900
-  },
-  twitter: {
-    api_key: TWITTER_BEARER_TOKEN
+function witnessOpts() {  
+  let o = {};
+  if (GITHUB_USER_AGENT) {
+    o.github = {
+      user_agent: GITHUB_USER_AGENT
+    }
   }
+
+  if (SOUNDCLOUD_CLIENT_ID) {
+    o.soundcloud = {
+      client_id: SOUNDCLOUD_CLIENT_ID,
+      limit: parseInt(SOUNDCLOUD_LIMIT),
+      max_offset: parseInt(SOUNDCLOUD_MAX_OFFSET),
+    }
+  }
+
+  if (TWITTER_BEARER_TOKEN) {
+    o.twitter = {
+      api_key: TWITTER_BEARER_TOKEN
+    }
+  }
+
+  return o
 };
+
+const opts = {
+  witness: witnessOpts(),
+  did: DID_WEB
+}
 
 const {statement, witness, instructions} = wasm_bindgen;
 const instance = wasm_bindgen(wasm);
@@ -219,7 +235,7 @@ async function wtns(request) {
     if (contentType.includes('application/json')) {
       let body = await request.json();
 
-      const credential = await witness(REBASE_SK, JSON.stringify(body), JSON.stringify(witnessOpts));
+      const credential = await witness(REBASE_SK, JSON.stringify(body), JSON.stringify(opts));
 
       return new Response(credential, {status: 200, headers: headers});
 
@@ -241,7 +257,7 @@ async function inst(request) {
     if (contentType.includes('application/json')) {
       let body = await request.json();
 
-      const res = await instructions(JSON.stringify(body), TWITTER_BEARER_TOKEN);
+      const res = await instructions(JSON.stringify(body));
 
       return new Response(res, {status: 200, headers: headers});
     } else {

@@ -63,7 +63,7 @@ pub fn test_witness_signature(witness: TestWitness, key: TestKey) -> Result<Stri
         (TestWitness::DNS, TestKey::Eth) => Ok("0xabf167138efc4705a25ec7751536d3d66a4898a80aac90a9be01b6432e4a1ba261175b7b917171ed722ae24c7875cbbc0bf0c9ec318772c0d6d4335029aac3141b".to_string()),
         (TestWitness::GitHub, TestKey::Eth) => Ok("0x5cca3dbe5202e6b5389658011fa441a2c7b7424e388c4dc869e6e6d5538bcf786626b75d793c38443cb7bd7bab72d6d3eb1017fa0614d7b4770ba7d1c4f22f0e1c".to_string()),
         (TestWitness::Reddit, TestKey::Eth) => Ok("0x112ecbb1a0e597441ab5941beaaba4a49f3167411f3f4a205d862bf993fb00af2e145bc260fb0170b3b5192be2827417d5f07721ea70168d50a36ff18a95720b1b".to_string()),
-        (TestWitness::SoundCloud, TestKey::Eth) => Ok("0xd71b40982871791953df2053eb1dd41186d7970d03983652a1f4f245a322e38741c775168d69aa6c050fe916227b7032103c2fa09aba6d6b1ab9742fc549163b1c".to_string()),
+        (TestWitness::SoundCloud, TestKey::Eth) => Ok("0xe40c9867351698ac82a047587e527e833e7cec4cdd2e1bfe9c27cecf0b63e97f0edc76f972fa9e056f3ee12d2b2821ddc9a028cf5911e21fe1fb3b20a06eb3c21b".to_string()),
         (TestWitness::Twitter, TestKey::Eth) => Ok("0xaa9158d2046ca298d2afdd0c14eaf6cacd61c5560822be802ef5baad94a21d44681e9b33879a027472b621e6b6db8e2a2082ebb5ab5d3d04755b836b05fc1ca61b".to_string()),
     }
 }
@@ -78,7 +78,7 @@ pub fn test_witness_statement(witness: TestWitness, key: TestKey) -> Result<Stri
         (TestWitness::DNS, TestKey::Eth) => Ok("example.com is linked to 0xdA3176d77c04632F2862B14E35bc6B4717FB5016".to_string()),
         (TestWitness::GitHub, TestKey::Eth) => Ok("I am attesting that this GitHub handle foo is linked to the Ethereum Address 0xdA3176d77c04632F2862B14E35bc6B4717FB5016".to_string()),
         (TestWitness::Reddit, TestKey::Eth) => Ok("I am attesting that this Reddit handle foo is linked to the Ethereum Address 0xdA3176d77c04632F2862B14E35bc6B4717FB5016".to_string()),
-        (TestWitness::SoundCloud, TestKey::Eth) => Ok("I am attesting that this SoundCloud handle foo is linked to the Ethereum Address 0xdA3176d77c04632F2862B14E35bc6B4717FB5016".to_string()),
+        (TestWitness::SoundCloud, TestKey::Eth) => Ok("I am attesting that this SoundCloud profile https://soundcloud.com/foo is linked to the Ethereum Address 0xdA3176d77c04632F2862B14E35bc6B4717FB5016".to_string()),
         (TestWitness::Twitter, TestKey::Eth) => Ok("I am attesting that this twitter handle @foo is linked to the Ethereum Address 0xdA3176d77c04632F2862B14E35bc6B4717FB5016".to_string()),
     }
 }

@@ -42,7 +42,7 @@ const ICONS = {
     soundcloud: SoundCloudIcon,
 };
 
-const capitalizeFirstLetter = (s) => {
+const titleCase = (s) => {
     if(s === 'github'){
         return 'GitHub';
     } else if (s == 'soundcloud'){
@@ -52,7 +52,71 @@ const capitalizeFirstLetter = (s) => {
     }
 }
 
+interface WitnessInfo {
+    statement: string,
+    statement_label: string,
+    statement_placeholder: string,
+    witness: string,
+    witness_label: string,
+    witness_placeholder: string,
+}
+
+function witness_info(t: CredentialType): WitnessInfo {
+    let statement = `Enter your ${titleCase(t)} account handle to verify and include it in a message signed via your wallet.`;
+    let statement_label = "Enter Account Handle";
+    let statement_placeholder =  `Enter your ${titleCase(t)} handle`;
+    switch (t) {
+        case "github":
+            return {
+                statement,
+                statement_label,
+                statement_placeholder,
+                witness: "Create a Gist with this message to create a link between your identifier and your GitHub handle.",
+                witness_label: "Create a Gist",
+                witness_placeholder: "Paste your gist URL"
+            }
+        case "twitter":
+            return {
+                statement,
+                statement_label,
+                statement_placeholder,
+                witness: "Tweet out your signed message to create a link between your identifier and your Twitter handle.", 
+                witness_label: "Tweet Message",
+                witness_placeholder: "Paste your tweet URL"
+            }
+        case "reddit":
+            return {
+                statement,
+                statement_label,
+                statement_placeholder,
+                witness: "Update your Reddit account's About section to only include this signature.",
+                witness_label: "Update your profile's About section",
+                witness_placeholder: "N/A"
+            }
+        case "soundcloud":
+            return {
+                statement: "Enter the link to your SoundCloud profile",
+                statement_label: "Enter your SoundCloud profile url",
+                statement_placeholder: "Enter your SoundCloud profile link",
+                witness: "Update your SoundCloud profile's Bio section only includes this signature.", 
+                witness_label: "Update your profile's Bio section",
+                witness_placeholder: "N/A"
+            }
+        case "discord":
+        default:
+            return {
+                statement,
+                statement_label,
+                statement_placeholder,
+                witness: "",
+                witness_label: "",
+                witness_placeholder: "N/A"
+            }
+    }
+}
+
 export const instructions = async (t: CredentialType): Promise<Instructions> => {
+    let {statement, statement_label, statement_placeholder, witness, witness_label, witness_placeholder} = witness_info(t);
     switch (t) {
         case "discord":
         case "github":
@@ -61,40 +125,19 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
         case "soundcloud":
             return {
                 icon: ICONS[t],
-                title: `${capitalizeFirstLetter(t)} Verification Workflow`,
-                subtitle: `This process is used to link your ${capitalizeFirstLetter(t)} account to your identifier by signing a 
-                        message using your private key, entering your ${capitalizeFirstLetter(t)} handle, and finally, generating
+                title: `${titleCase(t)} Verification Workflow`,
+                subtitle: `This process is used to link your ${titleCase(t)} account to your identifier by signing a 
+                        message using your private key, entering your ${titleCase(t)} handle, and finally, generating
                         a message to post.`,
-                statement: `Enter your ${capitalizeFirstLetter(t)} account handle to verify
-                        and include it in a message signed via your wallet.`,
-                statement_label: `Enter Account Handle`,
-                statement_placeholder: `Enter your ${capitalizeFirstLetter(t)} handle`,
-                signature: `Sign the message presented to you containing your ${capitalizeFirstLetter(t)} handle and additional 
+                statement,
+                statement_label,
+                statement_placeholder,
+                signature: `Sign the message presented to you containing your ${titleCase(t)} handle and additional 
                             information.`,
                 signature_label: `Signature Prompt`,
-                // TODO: Change these to use the remote instructions
-                witness: t === "twitter" ?
-                    "Tweet out your signed message to create a link between your identifier and your Twitter handle." :
-                    t === "github" ?
-                        "Create a Gist with this message to create a link between your identifier and your GitHub handle." :
-                        t === "reddit" ?
-                        "Update your Reddit account's About section to only include this signature" :
-                            t === "soundcloud" ? "Update your Soundcloud account's Bio section to only include this signature" :
-                            "",
-                witness_label: t === "twitter"
-                    ? "Tweet Message" :
-                    t === "github" ?
-                        "Create a Gist" :
-                        t === "reddit" ?
-                        "Update your profile's About section" :
-                            t === "soundcloud" ?
-                            "Update your profile's Bio section" :
-                            "",
-                witness_placeholder: t === "twitter"
-                    ? "Paste your tweet URL" :
-                    t === "github" ?
-                        "Paste your gist URL" :
-                        "N/A"
+                witness,
+                witness_label,
+                witness_placeholder            
             }
         case "dns":
             return {

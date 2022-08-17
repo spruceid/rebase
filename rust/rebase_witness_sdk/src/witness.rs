@@ -49,7 +49,7 @@ pub struct WitnessReq {
     pub proof: ProofTypes,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct WitnessJWTRes {
     pub jwt: String,
 }

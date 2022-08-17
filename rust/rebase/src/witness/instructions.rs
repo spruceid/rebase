@@ -58,14 +58,14 @@ impl InstructionTypes {
                 witness: "Send the signatures and signer information to the witness".to_string(),
             },
             &InstructionTypes::SoundCloud => Instructions {
-                statement: "Enter your SoundCloud handle to verify and include in a signed message using your wallet.".to_string(),
+                statement: "Enter your SoundCloud profile url to verify and include in a signed message using your wallet.".to_string(),
                 signature: "Sign the message presented to you containing your SoundCloud handle and additional information.".to_string(),
-                witness: "Update the SoundCloud profile of the handle provided earlier so that the Description section only includes statement and signature shown.".to_string(),
+                witness: "Update your SoundCloud profile's Bio section to include only the signature shown.".to_string(),
             },
             &InstructionTypes::Twitter =>  Instructions {
                 statement: "Enter your Twitter account handle to verify and include in a signed message using your wallet.".to_string(),
                 signature: "Sign the message presented to you containing your Twitter handle and additional information.".to_string(),
-                witness: "Update your SoundCloud profile so that the Bio section only includes the signature shown.".to_string(),
+                witness: "Tweet out the statement and signature to create a linke between your identifier and Twitter handle.".to_string(),
             }
         }
     }

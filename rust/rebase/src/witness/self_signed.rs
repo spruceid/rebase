@@ -208,7 +208,6 @@ mod tests {
         sig_2: &str,
     ) -> Result<Claim, WitnessError> {
         Claim::new(
-            // TODO: Make test util
             Opts {
                 key_1: key_1(),
                 key_2: key_2(),

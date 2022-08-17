@@ -21,8 +21,6 @@
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
 
-    // TODO: Use client instead of fetch for credential generation.
-
     const navigate = useNavigate();
     const ajv = new Ajv();
     let statement_schema = null,
@@ -93,7 +91,6 @@
         switch (type) {
             case "discord":
             case "github":
-            case "soundcloud":
             case "twitter":
                 return `${statement}${delimitor}${signature}`;
             case "dns":
@@ -152,13 +149,17 @@
             case "github":
             case "twitter":
             case "reddit":
-            case "soundcloud":
                 opts[type]["handle"] = handle;
+                opts[type]["key_type"] = getKeyType();
+                break;
+            case "soundcloud":
+                opts[type]["permalink"] = handle.split("/")[handle.split("/").length - 1];
                 opts[type]["key_type"] = getKeyType();
                 break;
             default:
                 throw new Error(`${type} flow is currently unsupported`);
         }
+
 
         if (!statement_schema) {
             throw new Error("No JSON Schema found for Statement Request");
@@ -192,10 +193,14 @@
                 opts["dns"]["key_type"] = getKeyType();
                 break;
             case "reddit": 
+                opts["reddit"] = {};
+                opts["reddit"]["handle"] = handle;
+                opts["reddit"]["key_type"] = getKeyType();
+                break;
             case "soundcloud":
-                opts[type] = {};
-                opts[type]["handle"] = handle;
-                opts[type]["key_type"] = getKeyType();
+                opts["soundcloud"] = {};
+                opts["soundcloud"]["permalink"] = handle.split("/")[handle.split("/").length - 1];
+                opts["soundcloud"]["key_type"] = getKeyType();
                 break;
             case "github":
                 opts["github"] = {};

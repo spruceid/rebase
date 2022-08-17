@@ -266,7 +266,6 @@ mod tests {
 
     fn mock_proof(key: fn() -> SignerDID) -> Claim {
         Claim {
-            // TODO: Make test util
             statement_opts: Opts {
                 key_type: key(),
                 handle: "foo".to_owned(),

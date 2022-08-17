@@ -80,7 +80,7 @@ Once a valid client has been constructed, it can be used like so (where `req` is
 ```JavaScript
 let res = await client.statement(req);
 ```
-This would produce a JSON stringified version of the StatementRes found [here](https://github.com/spruceid/rebase/blob/b5f5a6f6e5bb0031dd8310a7e9510026ee81dbe2/rust/rebase_witness_sdk/src/witness.rs#L32). Instructions requests work the same way and produce output found [here]().
+This would produce a JSON stringified version of the StatementRes found [here](https://github.com/spruceid/rebase/blob/b5f5a6f6e5bb0031dd8310a7e9510026ee81dbe2/rust/rebase_witness_sdk/src/witness.rs#L32). Instructions requests work the same way and produce output found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/instructions.rs#L14).
 ```JavaScript
 let jwtRes = await client.jwt(req);
 let ldRes = await client.ld(req);

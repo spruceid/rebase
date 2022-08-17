@@ -6,22 +6,11 @@ A Cloudflare Worker to act as a witness for Rebase claims.
 
 Requires [Wrangler](https://developers.cloudflare.com/workers/cli-wrangler/install-update#additional-installation-instructions).
 
-You need a Cloudflare account, and the Account ID needs to go in
-the `wrangler.toml`.
+You need a Cloudflare account, and the Account ID needs to go in the `wrangler.toml`.
 
-The worker needs two things: the private key to issue the VC after verifying the
-tweet, and an API token for the relevant social APIs. You can add these as secrets with:
+The worker needs several secrets set using `wrangler secret put`, the details of which are outlined in this repository's `secrets.md` [found here]().
 
-```bash
-wrangler secret put REBASE_SK
-wrangler secret put TWITTER_BEARER_TOKEN
-```
-
-> The private key is expected to be a JWK. You can generate one with
-> `didkit generate-ed25519-key`.
-
-> This key is also expected to have a corresponding `did:web` outlined
-
+To publish a new version of the worker to your CloudFlare account simply run:
 ```bash
 wrangler publish
 ```

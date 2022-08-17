@@ -197,7 +197,6 @@ mod tests {
 
     fn mock_proof(key: fn() -> SignerDID) -> Claim {
         Claim {
-            // TODO: Make test util
             key_type: key(),
             domain: "example.com".to_owned(),
             prefix: "not_needed".to_owned(),
