@@ -1,5 +1,6 @@
 export { default as GitHubIcon } from './GitHubIcon.svelte';
 export { default as GlobeIcon } from './GlobeIcon.svelte';
+export { default as KeyIcon } from './KeyIcon.svelte';
 export { default as SoundCloudIcon } from './SoundCloudIcon.svelte';
 export { default as TwitterIcon } from './TwitterIcon.svelte';
 export { default as EthereumIcon } from './EthereumIcon.svelte';

@@ -43,6 +43,7 @@ async fn main() {
     let url = env::args().skip(1).next().unwrap();
     let client = new_client(&url).unwrap();
 
+    println!("Starting Ethereum tests:");
     println!("Testing DNS...");
     let did = test_eth_did();
 
@@ -227,5 +228,111 @@ async fn main() {
     client.jwt(req).await.unwrap();
 
     println!("Self Signed Credential issued");
+    println!("All Ethereum Live Posts tested!");
+
+    println!("Starting Solana tests:");
+    println!("NOTE: Does not test DNS, Reddit, or Soundcloud flows");
+    println!("Tesing GitHub...");
+    let did = test_solana_did();
+    let opts = github::Opts {
+        handle: "krhoda".to_string(),
+        key_type: did,
+    };
+
+    let statement = opts.generate_statement().unwrap();
+
+    check_statement(
+        &client,
+        statement_type::StatementTypes::GitHub(opts.clone()),
+        &statement,
+    )
+    .await
+    .unwrap();
+
+    println!("GitHub statement valid...");
+
+    let proof = github::Claim {
+        gist_id: "b300fd41272159662bccf9702c0a66fd".to_string(),
+        statement_opts: opts,
+    };
+
+    let req = WitnessReq {
+        proof: proof_type::ProofTypes::GitHub(proof),
+    };
+
+    client.jwt(req).await.unwrap();
+
+    println!("GitHub credential issued");
+
+    println!("Testing Twitter...");
+
+    let did = test_solana_did();
+    let opts = twitter::Opts {
+        handle: "evalapplyquote".to_string(),
+        key_type: did,
+    };
+
+    let statement = opts.generate_statement().unwrap();
+
+    check_statement(
+        &client,
+        statement_type::StatementTypes::Twitter(opts.clone()),
+        &statement,
+    )
+    .await
+    .unwrap();
+
+    println!("Twitter statement valid...");
+
+    let proof = twitter::Claim {
+        tweet_url: "https://twitter.com/evalapplyquote/status/1561743461287505920".to_string(),
+        statement_opts: opts,
+    };
+
+    let req = WitnessReq {
+        proof: proof_type::ProofTypes::Twitter(proof),
+    };
+
+    client.jwt(req).await.unwrap();
+
+    println!("Twitter credential issued");
+    println!("Testing Self Signed...");
+
+    let did = test_solana_did();
+    let did2 = test_solana_did_2();
+
+    let opts = self_signed::Opts {
+        key_1: did,
+        key_2: did2,
+    };
+
+    let statement = opts.generate_statement().unwrap();
+
+    check_statement(
+        &client,
+        statement_type::StatementTypes::SelfSigned(opts.clone()),
+        &statement,
+    )
+    .await
+    .unwrap();
+
+    println!("Self Signed Statement valid...");
+
+    let proof = self_signed::Claim::new(
+        opts,
+        TEST_2KEY_SOLANA_SIG_1.to_owned(),
+        TEST_2KEY_SOLANA_SIG_2.to_owned(),
+    )
+    .await
+    .unwrap();
+
+    let req = WitnessReq {
+        proof: proof_type::ProofTypes::SelfSigned(proof),
+    };
+
+    client.jwt(req).await.unwrap();
+
+    println!("Self Signed Credential issued");
+
     println!("All Live Posts tested!");
 }

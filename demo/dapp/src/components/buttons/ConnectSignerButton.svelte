@@ -1,11 +1,11 @@
 <script lang="ts">
+  /*
   import { SpinnerIcon } from "components";
   import {
     _currentType,
-    _signerMap,
     currentType,
     connect,
-    signerMap,
+    signer,
     Signer,
     SignerType,
     alert,
@@ -25,16 +25,13 @@
   export let rounded: boolean = false;
   export let avatar: string | false = false;
   let loading: boolean = false;
+  let _signer: Signer | false = false;
+  signer.subscribe((x) => (_signer = x));
 
-
-  let signer: Signer | false = false;
-  currentType.subscribe((x) => (signer = _signerMap[x]));
-  signerMap.subscribe((x) => (signer = x[_currentType]));
 
   const connectNew = async (): Promise<void> => {
     try {
       loading = true;
-      currentType.set("ethereum" as SignerType);
       await connect();
     } catch (e) {
       alert.set({
@@ -44,10 +41,12 @@
     }
     loading = false;
   };
-
-
+*/
 </script>
 
+<div>TODO: Remove and Impl</div>
+
+<!--
 <div class="">
   <button
     {disabled}
@@ -91,3 +90,4 @@
     {/if}
   </button>
 </div>
+-->

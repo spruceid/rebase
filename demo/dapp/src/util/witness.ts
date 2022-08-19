@@ -8,16 +8,26 @@ const instructionsUrl = `${witnessUrl}/instructions`;
 const jwtUrl = `${witnessUrl}/witness`;
 
 export const client = new Client(instructionsUrl, statementUrl, jwtUrl);
+
+export type PKHType = EIP155 | Solana;
+export interface EIP155 {
+    eip155: {
+        address: string;
+        chain_id: string;
+    }
+}
+
+export interface Solana {
+    solana: {
+        address: string;
+    }
+}
+
 export interface KeyType {
-    pkh: {
-        eip155: {
-            address: string;
-            chain_id: string;
-        };
-    },
+    pkh: PKHType,
     web?: string;
 }
-export type Workflow = "statement" | "signature" | "witness" | "complete"
+export type Workflow = "signer" | "statement" | "signature" | "witness" | "complete"
 
 export type Instructions = {
     icon: any,
@@ -42,7 +52,7 @@ const ICONS = {
     soundcloud: SoundCloudIcon,
 };
 
-const titleCase = (s) => {
+export const titleCase = (s) => {
     if(s === 'github'){
         return 'GitHub';
     } else if (s == 'soundcloud'){

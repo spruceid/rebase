@@ -633,6 +633,7 @@ Current Witness flows:
 Current SignerTypes:
 * ethereum
 * ed25519
+* solana
 
 Current `Signer<SignerType>`s:
 * `Ed25519DidWebJWK<Ed25519>`

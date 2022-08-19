@@ -263,7 +263,8 @@ mod tests {
     use super::*;
     use crate::signer::ed25519::Ed25519;
     use crate::util::util::{
-        test_ed25519_did, test_eth_did, test_witness_signature, MockGenerator, TestKey, TestWitness,
+        test_ed25519_did, test_eth_did, test_solana_did, test_witness_signature, MockGenerator,
+        TestKey, TestWitness,
     };
     use crate::witness::witness::Generator;
 
@@ -312,6 +313,13 @@ mod tests {
         let sig = test_witness_signature(TestWitness::GitHub, TestKey::Ed25519).unwrap();
         let did = mock_proof(test_ed25519_did);
         let gen = MockGenerator::new(sig, || mock_proof(test_ed25519_did)).unwrap();
+        gen.unsigned_credential(&did, &Ed25519::new(&test_ed25519_did()).unwrap())
+            .await
+            .unwrap();
+
+        let sig = test_witness_signature(TestWitness::GitHub, TestKey::Solana).unwrap();
+        let did = mock_proof(test_solana_did);
+        let gen = MockGenerator::new(sig, || mock_proof(test_solana_did)).unwrap();
         gen.unsigned_credential(&did, &Ed25519::new(&test_ed25519_did()).unwrap())
             .await
             .unwrap();

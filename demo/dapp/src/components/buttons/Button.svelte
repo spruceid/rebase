@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SpinnerIcon } from "components";
+  import { SpinnerIcon } from "src/components";
   import "./button.scss";
 
   let clazz: string = "";
@@ -43,9 +43,15 @@
   {:else if avatar}
     <div class="flex flex-wrap items-center justify-center w-full">
       <div class="w-5 h-5 mr-1">
-        <img class="w-5 h-5 rounded-full object-cover" src={avatar} alt="ENS avatar" />
+        <img
+          class="w-5 h-5 rounded-full object-cover"
+          src={avatar}
+          alt="ENS avatar"
+        />
       </div>
-      <span class="w-9/12 sm:w-auto whitespace-nowrap sm:whitespace-normal overflow-hidden sm:overflow-visible text-ellipsis">
+      <span
+        class="w-9/12 sm:w-auto whitespace-nowrap sm:whitespace-normal overflow-hidden sm:overflow-visible text-ellipsis"
+      >
         {text}
       </span>
     </div>
