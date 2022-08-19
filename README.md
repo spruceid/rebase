@@ -89,7 +89,7 @@ The witnessing flow looks like:
 
 To make this possible, first, a struct must implement the `Statement` trait in `src/witness/witness`, then when a user supplies such a struct, they are given back a statement to sign and a delimiter (if applicable) to place between the statement and the signature.
 
-Once the user has the statement to sign, then they often have to post the combination of `format!("{}{}{}", statement, delimiter, signature)` (DNS is an exception to this rule, using a `prefix` and `format!("{}{}{}", prefix, delimiter, signature)`). Once they have posted the statement (if necessary), they then have to provide enough information to create a struct that implements `Proof`. `Proof` must implement `Statement` to allow the witness to make sure that the statement found is the same as expected. Often, the same struct implements `Proof` and `SchemaType`. 
+Once the user has the statement to sign, then they often have to post the combination of `format!("{}{}{}", statement, delimiter, signature)` (DNS is an exception to this rule, using a `prefix` and `format!("{}{}", prefix, signature)`). Once they have posted the statement (if necessary), they then have to provide enough information to create a struct that implements `Proof`. `Proof` must implement `Statement` to allow the witness to make sure that the statement found is the same as expected. Often, the same struct implements `Proof` and `SchemaType`. 
 
 The final abstraction is the witness, contained in the `Generator` trait. This trait requires the user to implement a pair of functions:
 ```rust
@@ -157,7 +157,7 @@ Statements work similarly with `StatementTypes` and `SignerTypes`. Thus, the cal
 
 The `demo` directory includes a Cloudflare Worker that acts as a server-side witness (`demo/witness`) and a front-end UI for interacting with the witness (`demo/dapp`). Installation and usage instructions are found in those respective directories, but the high-level overview is given here. 
 
-The Cloudflare Worker acts a proof-of-concept that Rebase can be packaged for WASM environments, including the browser. Otherwise, it essentially functions as a tiny HTTP server. It contains 2 routes, `/statement`, where the client is expected to post a struct that implements `Statement` and then receives the generated statement from the witness and `/witness` where a struct that implements `Proof` is posted, and the witness uses its generator to produce a VC (assuming all the details check out).
+The Cloudflare Worker acts a proof-of-concept that Rebase can be packaged for WASM environments, including the browser. Otherwise, it essentially functions as a tiny HTTP server. It contains 3 routes, `/instructions` where the client can retrieve user-facing instructions for a witness flow along with JSON schema representations of the expected user input, `/statement`, where the client is expected to post a struct that implements `Statement` and then receives the generated statement from the witness and `/witness` where a struct that implements `Proof` is posted, and the witness uses its generator to produce a VC (assuming all the details check out).
 
 The UI is a thin client that simply gathers the information required to generate the statement, interacts with browser extensions to get the user to sign the statement, informs the user where to post the statement (if necessary), then gathers the information on the location of the post (again, if necessary), returns it to the witness for a VC, then displays the VC and allows the user to download it.
 

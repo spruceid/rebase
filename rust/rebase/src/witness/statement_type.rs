@@ -2,6 +2,7 @@ use crate::{
     signer::signer::SignerError,
     witness::{
         dns::Claim as DnsStatement,
+        email::Opts as EmailStatement,
         github::Opts as GitHubStatement,
         reddit::Claim as RedditStatement,
         self_signed::Opts as SelfSignedStatement,
@@ -18,6 +19,8 @@ use serde::{Deserialize, Serialize};
 pub enum StatementTypes {
     #[serde(rename = "dns")]
     Dns(DnsStatement),
+    #[serde(rename = "email")]
+    Email(EmailStatement),
     #[serde(rename = "github")]
     GitHub(GitHubStatement),
     #[serde(rename = "reddit")]
@@ -34,6 +37,7 @@ impl Statement for StatementTypes {
     fn generate_statement(&self) -> Result<String, WitnessError> {
         match &self {
             StatementTypes::Dns(x) => x.generate_statement(),
+            StatementTypes::Email(x) => x.generate_statement(),
             StatementTypes::GitHub(x) => x.generate_statement(),
             StatementTypes::Reddit(x) => x.generate_statement(),
             StatementTypes::SelfSigned(x) => x.generate_statement(),
@@ -45,6 +49,7 @@ impl Statement for StatementTypes {
     fn delimitor(&self) -> String {
         match &self {
             StatementTypes::Dns(x) => x.delimitor(),
+            StatementTypes::Email(x) => x.delimitor(),
             StatementTypes::GitHub(x) => x.delimitor(),
             StatementTypes::Reddit(x) => x.delimitor(),
             // TODO / NOTE: Should this be an err? Permitted? A value?
@@ -57,6 +62,7 @@ impl Statement for StatementTypes {
     fn signer_type(&self) -> Result<SignerTypes, SignerError> {
         match &self {
             StatementTypes::Dns(x) => x.signer_type(),
+            StatementTypes::Email(x) => x.signer_type(),
             StatementTypes::GitHub(x) => x.signer_type(),
             StatementTypes::Reddit(x) => x.signer_type(),
             // TODO: Should this be seperated into a different trait?

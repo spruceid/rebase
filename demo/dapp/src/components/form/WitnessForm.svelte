@@ -104,6 +104,8 @@
             case "soundcloud":
             case "reddit":
                 return `${signature}`;
+            case "email":
+                return;
         }
     };
 
@@ -189,6 +191,10 @@
                     handle.split("/")[handle.split("/").length - 1];
                 opts[type]["key_type"] = getKeyType(current);
                 break;
+            case "email":
+                opts[type]["email"] = handle;
+                opts[type]["key_type"] = getKeyType(current);
+                break;
             default:
                 throw new Error(`${type} flow is currently unsupported`);
         }
@@ -255,6 +261,16 @@
                 opts["twitter"]["statement_opts"]["key_type"] =
                     getKeyType(current);
                 opts["twitter"]["tweet_url"] = proof.split("?")[0];
+                break;
+            case "email":
+                opts["email"] = {};
+                opts["email"]["statement_opts"] = {};
+                opts["email"]["statement_opts"]["email"] = handle;
+                opts["email"]["statement_opts"]["key_type"] =
+                    getKeyType(current);
+                opts["email"]["auth"] = proof.split(":::")[0].trim();
+                opts["email"]["timestamp"] = proof.split(":::")[1].trim();
+                opts["email"]["signature"] = signature;
                 break;
             default:
                 throw new Error(`${type} flow is currently unsupported`);

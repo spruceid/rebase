@@ -1,12 +1,11 @@
-use rebase::{
-    signer::signer::{Signer, SignerType},
-    witness::{
-        instructions::InstructionTypes,
-        generator::{Credential as VC, WitnessGenerator as Generator, Opts as WOpts},
-        proof_type::ProofTypes,
-        statement_type::StatementTypes,
-        witness::Statement,
-    },
+pub use rebase::signer::signer::{Signer, SignerType};
+pub use rebase::witness::email::EmailClient;
+use rebase::witness::{
+    generator::{Credential as VC, Opts as WOpts, WitnessGenerator as Generator},
+    instructions::InstructionTypes,
+    proof_type::ProofTypes,
+    statement_type::StatementTypes,
+    witness::Statement,
 };
 
 use thiserror::Error;
@@ -59,24 +58,43 @@ pub struct WitnessLDRes {
     pub credential: Credential,
 }
 
-pub fn instructions(
-    req: InstructionReq,
-) -> Result<serde_json::Value, WitnessError> {
+pub fn instructions(req: InstructionReq) -> Result<serde_json::Value, WitnessError> {
     req.instruction_type
         .ui_hints()
         .map_err(|e| WitnessError::Instruction(e.to_string()))
 }
 
-pub async fn statement(req: StatementReq) -> Result<StatementRes, WitnessError> {
-    let s = req
-        .opts
-        .generate_statement()
-        .map_err(|e| WitnessError::Statement(e.to_string()))?;
+pub async fn statement(
+    req: StatementReq,
+    generator: &WitnessGenerator,
+) -> Result<StatementRes, WitnessError> {
+    // Specical case email and other flows where the Witness makes the post.
     let d = req.opts.delimitor();
+    let s = match req.opts {
+        StatementTypes::Email(o) => match &generator.email {
+            None => {
+                return Err(WitnessError::Statement(
+                    "No Email Generator Configurated".to_string(),
+                ))
+            }
+            Some(email_gen) => email_gen.statement_and_send(&o).await.map_err(|e| {
+                WitnessError::Statement(format!(
+                    "Failed to send email after generating statement: {}",
+                    e.to_string()
+                ))
+            })?,
+        },
+        _ => req
+            .opts
+            .generate_statement()
+            .map_err(|e| WitnessError::Statement(e.to_string()))?,
+    };
+
     let res = StatementRes {
         statement: s,
         delimitor: d,
     };
+
     Ok(res)
 }
 

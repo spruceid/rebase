@@ -49,7 +49,9 @@ pub trait SchemaType {
         &self,
         signer: &dyn Signer<T>,
     ) -> Result<Credential, SchemaError> {
-        let mut vc = self.unsigned_credential(&signer.signer_type()).await?;
+        let mut vc = self
+            .unsigned_credential(&signer.signer_type().await?)
+            .await?;
 
         signer.sign_vc(&mut vc).await?;
 
@@ -58,7 +60,9 @@ pub trait SchemaType {
 
     // Return a JWT signed credential
     async fn jwt<T: SignerType>(&self, signer: &dyn Signer<T>) -> Result<String, SchemaError> {
-        let vc = self.unsigned_credential(&signer.signer_type()).await?;
+        let vc = self
+            .unsigned_credential(&signer.signer_type().await?)
+            .await?;
 
         Ok(signer.generate_jwt(&vc).await?)
     }

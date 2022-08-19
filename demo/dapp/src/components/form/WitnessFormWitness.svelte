@@ -18,64 +18,68 @@
 </script>
 
 <WitnessFormStepper
-            {step}
-            {totalSteps}
-            label={instructions.witness_label}
-            question={instructions.witness}
-            labelFor={`form-step-q-${step}-i-1`}
-        >
-            <div id={`form-step-q-${step}-i-1`}>
-                <CopyTextArea value={post()} />
-                {#if type === "twitter" || type === "github" || type === "discord"}
-                    <div class="w-full">
-                        <input
-                            class="form-text-input w-full"
-                            placeholder={instructions.witness_placeholder}
-                            bind:value={proof}
-                            on:input={e => onChangeValue('proof', proof)}
-                            name={"form-step-q-3-i-1"}
-                            type="text"
-                        />
-                    </div>
-                {/if}
-                <Button
-                    {loading}
-                    class="w-full"
-                    disabled={verified}
-                    onClick={async () => {
-                        try {
-                            loading = true;
-                            await getCredential();
-                            verified = true;
-                        } catch (e) {
-                            alert.set({
-                                variant: "error",
-                                message: e?.message ? e.message : e,
-                            });
-                        }
-                        loading = false;
-                    }}
-                    text="Verify"
-                    action
+    {step}
+    {totalSteps}
+    label={instructions.witness_label}
+    question={instructions.witness}
+    labelFor={`form-step-q-${step}-i-1`}
+>
+    <div id={`form-step-q-${step}-i-1`}>
+        {#if type !== "email"}
+            <CopyTextArea value={post()} />
+        {/if}
+        {#if type === "twitter" || type === "github" || type === "discord" || type === "email"}
+            <div class="w-full">
+                <input
+                    class="form-text-input w-full"
+                    placeholder={instructions.witness_placeholder}
+                    bind:value={proof}
+                    on:input={(e) => onChangeValue("proof", proof)}
+                    name={"form-step-q-3-i-1"}
+                    type="text"
                 />
             </div>
-        </WitnessFormStepper>
-        <div class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end">
-            <Button
-                class="w-2/5"
-                onClick={back}
-                text="Back"
-                primary
-                disabled={loading}
-            />
-            <Button
-                class="w-2/5"
-                disabled={!verified || loading}
-                onClick={advance}
-                text="Complete"
-                action
-            />
-        </div>
+        {/if}
+        <Button
+            {loading}
+            class="w-full"
+            disabled={verified}
+            onClick={async () => {
+                try {
+                    loading = true;
+                    await getCredential();
+                    verified = true;
+                } catch (e) {
+                    alert.set({
+                        variant: "error",
+                        message: e?.message ? e.message : e,
+                    });
+                }
+                loading = false;
+            }}
+            text="Verify"
+            action
+        />
+    </div>
+</WitnessFormStepper>
+<div
+    class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end"
+>
+    <Button
+        class="w-2/5"
+        onClick={back}
+        text="Back"
+        primary
+        disabled={loading}
+    />
+    <Button
+        class="w-2/5"
+        disabled={!verified || loading}
+        onClick={advance}
+        text="Complete"
+        action
+    />
+</div>
 
 <style>
     .form-text-input {

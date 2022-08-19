@@ -12,3 +12,4 @@ export { default as ClipboardIcon } from './ClipboardIcon.svelte';
 export { default as DeleteIcon } from './DeleteIcon.svelte';
 export { default as SpinnerIcon } from './SpinnerIcon.svelte';
 export { default as RedditIcon } from './RedditIcon.svelte';
+export { default as EmailIcon } from './EmailIcon.svelte';
