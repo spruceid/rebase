@@ -1,5 +1,5 @@
 import { writable, Writable } from "svelte/store";
-import { GlobeIcon, KeyIcon, TwitterIcon, GitHubIcon, RedditIcon, SoundCloudIcon } from 'src/components/icons';
+import { GlobeIcon, KeyIcon, TwitterIcon, EmailIcon, GitHubIcon, RedditIcon, SoundCloudIcon } from 'src/components/icons';
 import type { Claim } from "./claim";
 import { connectedCount, connectSigner, disconnectSigner, retrieveSignerEntry, getAllConnected, Signer,  SignerType, SignerMap, newSignerMap, SignerQuery, signWith, retrieveSigner, ProviderType, toQuery } from "./signer";
 import type { KeyType, Workflow } from "./witness";
@@ -69,6 +69,15 @@ function defaultClaims(): Claim[] {
             type: "public",
             available: true,
         },
+        {
+            credentials: [],
+            credential_type: "email",
+            icon: EmailIcon,
+            title: "Email",
+            type: "public",
+            available: true,
+        },
+
         {
             credentials: [],
             credential_type: "self_signed",

@@ -149,25 +149,26 @@ where
     async fn generate_jwt(&self, vc: &Credential) -> Result<String, SignerError>;
 
     // id returns the identifier for the given signer, such as a public key hash.
-    fn id(&self) -> String;
+    async fn id(&self) -> Result<String, SignerError>;
 
-    fn signer_type(&self) -> T;
+    async fn signer_type(&self) -> Result<T, SignerError>;
 
     // proof returns the linked data proof options for a given signer type
     async fn proof(&self, credential: &Credential)
         -> Result<Option<OneOrMany<Proof>>, SignerError>;
 
-    fn did_id(&self) -> Result<String, SignerError> {
-        self.signer_type().did_id()
+    async fn did_id(&self) -> Result<String, SignerError> {
+        self.signer_type().await?.did_id()
     }
 
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SignerError> {
         self.signer_type()
+            .await?
             .valid_signature(statement, signature)
             .await
     }
 
-    fn did(&self) -> DID {
-        self.signer_type().did()
+    async fn did(&self) -> Result<DID, SignerError> {
+        Ok(self.signer_type().await?.did())
     }
 }

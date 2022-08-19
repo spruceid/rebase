@@ -8,7 +8,7 @@ Requires [Wrangler](https://developers.cloudflare.com/workers/cli-wrangler/insta
 
 You need a Cloudflare account, and the Account ID needs to go in the `wrangler.toml`.
 
-The worker needs several secrets set using `wrangler secret put`, the details of which are outlined in this repository's `secrets.md` [found here]().
+The worker needs several secrets set using `wrangler secret put`, the details of which are outlined in this repository's `secrets.md` [found here](https://github.com/spruceid/rebase/blob/main/demo/witness/secrets.md).
 
 To publish a new version of the worker to your CloudFlare account simply run:
 ```bash

@@ -180,16 +180,47 @@ function witnessOpts() {
   }
 
   if (SOUNDCLOUD_CLIENT_ID) {
-    o.soundcloud = {
-      client_id: SOUNDCLOUD_CLIENT_ID,
-      limit: parseInt(SOUNDCLOUD_LIMIT),
-      max_offset: parseInt(SOUNDCLOUD_MAX_OFFSET),
+    let limit = parseInt(SOUNDCLOUD_LIMIT);
+    let offset = parseInt(SOUNDCLOUD_MAX_OFFSET);
+    if (!isNaN(limit) && !isNaN(offset)) {
+      o.soundcloud = {
+        client_id: SOUNDCLOUD_CLIENT_ID,
+        limit,
+        max_offset: offset,
+      }
     }
   }
 
   if (TWITTER_BEARER_TOKEN) {
     o.twitter = {
       api_key: TWITTER_BEARER_TOKEN
+    }
+  }
+
+  let useSendGrid = SENDGRID_BEARER_TOKEN 
+    && SENDGRID_FROM_ADDRESS 
+    && SENDGRID_FROM_NAME
+    && SENDGRID_SERVICE_NAME
+    && SENDGRID_MAX_ELAPSED_MINS
+    && !isNaN(parseInt(SENDGRID_MAX_ELAPSED_MINS));
+
+  if (useSendGrid) {
+    o.email = {
+      send_grid_basic: {
+        api_key: SENDGRID_BEARER_TOKEN,
+        from_addr: SENDGRID_FROM_ADDRESS,
+        from_name: SENDGRID_FROM_NAME,
+        max_elapsed_minutes: parseInt(SENDGRID_MAX_ELAPSED_MINS),
+        service_name: SENDGRID_SERVICE_NAME,
+        signer: {
+          ed25519_did_web_jwk: {
+            key: REBASE_SK,
+            did: DID_WEB,
+            // TODO: Make this a configurable?
+            name: "controller"
+          }
+        }
+      } 
     }
   }
 
@@ -205,15 +236,15 @@ const {statement, witness, instructions} = wasm_bindgen;
 const instance = wasm_bindgen(wasm);
 
 async function stmt(request) {
+  console.log("HERE");
   try {
     await instance;
     const h = request.headers;
     const contentType = h.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const body_str = JSON.stringify(await request.json());
-      const res = await statement(body_str);
+      const res = await statement(body_str, JSON.stringify(opts));
       return new Response(res, {status: 200, headers: headers});
-
     } else {
       return new Response(JSON.stringify(new Error(`Expected content-type application/json, got: ${contentType}`)), {
         status: 400,
@@ -221,6 +252,8 @@ async function stmt(request) {
       });
     }
   } catch (e) {
+    console.log("In Err")
+    console.log(e)
     return new Response(JSON.stringify(e), { status: 400, headers: headers});
   }
 }

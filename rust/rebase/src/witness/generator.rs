@@ -3,6 +3,7 @@ use crate::{
     signer::signer::{Signer, SignerType},
     witness::{
         dns::ClaimGenerator as DnsGen,
+        email::EmailClients as EmailGen,
         github::ClaimGenerator as GithubGen,
         proof_type::ProofTypes,
         reddit::ClaimGenerator as RedditGen,
@@ -12,7 +13,6 @@ use crate::{
         witness::{Generator, WitnessError},
     },
 };
-
 use serde::{Deserialize, Serialize};
 use ssi::vc::Credential as VC;
 
@@ -23,6 +23,8 @@ pub struct WitnessGenerator {
     // SelfSigned only is included for useage in flows.
     // TODO: Make consistent?
     pub dns: DnsGen,
+    // TODO: Change to send_grid_basic: Option<EmailClient<SendGridBasic<SendGridFormatter>>>>
+    pub email: Option<EmailGen>,
     pub github: Option<GithubGen>,
     pub reddit: RedditGen,
     pub soundcloud: Option<SoundCloudGen>,
@@ -31,6 +33,7 @@ pub struct WitnessGenerator {
 
 #[derive(Serialize, Deserialize)]
 pub struct Opts {
+    pub email: Option<EmailGen>,
     pub github: Option<GithubGen>,
     pub twitter: Option<TwitterGen>,
     pub soundcloud: Option<SoundCloudGen>,
@@ -40,6 +43,7 @@ impl WitnessGenerator {
     pub fn new(opts: Opts) -> Self {
         WitnessGenerator {
             dns: DnsGen {},
+            email: opts.email,
             github: opts.github,
             reddit: RedditGen {},
             soundcloud: opts.soundcloud,
@@ -54,6 +58,12 @@ impl WitnessGenerator {
     ) -> Result<Credential, WitnessError> {
         match proof {
             ProofTypes::Dns(x) => self.dns.credential(x, signer).await,
+            ProofTypes::Email(x) => match &self.email {
+                Some(gen) => gen.credential(x, signer).await,
+                _ => Err(WitnessError::NoWitnessConfig {
+                    claim_type: "github".to_owned(),
+                }),
+            },
             ProofTypes::SelfSigned(x) => {
                 // Validates inner signature by creating
                 let claim = SelfSignedClaim::new(
@@ -97,6 +107,12 @@ impl WitnessGenerator {
     ) -> Result<String, WitnessError> {
         match proof {
             ProofTypes::Dns(x) => self.dns.jwt(x, signer).await,
+            ProofTypes::Email(x) => match &self.email {
+                Some(gen) => gen.jwt(x, signer).await,
+                _ => Err(WitnessError::NoWitnessConfig {
+                    claim_type: "email".to_owned(),
+                }),
+            },
             ProofTypes::SelfSigned(x) => {
                 // Validates inner signature by creating
                 let claim = SelfSignedClaim::new(

@@ -1,5 +1,6 @@
 use crate::witness::{
     dns::Claim as DnsClaim,
+    email::{Claim as EmailClaim, Opts as EmailOpts},
     github::{Claim as GitHubClaim, Opts as GitHubOpts},
     reddit::Claim as RedditClaim,
     self_signed::{Claim as SelfSignedClaim, Opts as SelfSignedOpts},
@@ -22,6 +23,8 @@ pub struct Instructions {
 pub enum InstructionTypes {
     #[serde(rename = "dns")]
     Dns,
+    #[serde(rename = "email")]
+    Email,
     #[serde(rename = "github")]
     GitHub,
     #[serde(rename = "reddit")]
@@ -41,6 +44,11 @@ impl InstructionTypes {
                 statement: "Enter the Web Domain you wish to prove ownership of.".to_string(),
                 signature: "Sign the message presented to you containing your domain and additional information.".to_string(),
                 witness: "In your DNS settings, add a new TXT record for @ and copy and put the following message as the value. Keep in mind that DNS propagation can take some time. This process may take a few minutes for the verification to successfully complete.".to_string(),
+            },
+            &InstructionTypes::Email => Instructions {
+                statement: "Enter the email addres you wish to prove the ownership of.".to_string(),
+                signature: "Sign the message presented to you containing your email address and additional information.".to_string(),
+                witness: "Find the email sent from the witness and copy the code and challenge into the respective form fields.".to_string(),
             },
             &InstructionTypes::GitHub => Instructions {
                 statement: "Enter your GitHub account handle to verify and include in a signed message using your wallet.".to_string(),
@@ -73,12 +81,15 @@ impl InstructionTypes {
     fn schemas(&self) -> (RootSchema, RootSchema) {
         match &self {
             &InstructionTypes::Dns => (schema_for!(DnsClaim), schema_for!(DnsClaim)),
+            &InstructionTypes::Email => (schema_for!(EmailOpts), schema_for!(EmailClaim)),
             &InstructionTypes::GitHub => (schema_for!(GitHubOpts), schema_for!(GitHubClaim)),
             &InstructionTypes::Reddit => (schema_for!(RedditClaim), schema_for!(RedditClaim)),
             &InstructionTypes::SelfSigned => {
                 (schema_for!(SelfSignedOpts), schema_for!(SelfSignedClaim))
             }
-            &InstructionTypes::SoundCloud => (schema_for!(SoundCloudClaim), schema_for!(SoundCloudClaim)),
+            &InstructionTypes::SoundCloud => {
+                (schema_for!(SoundCloudClaim), schema_for!(SoundCloudClaim))
+            }
             &InstructionTypes::Twitter => (schema_for!(TwitterOpts), schema_for!(TwitterClaim)),
         }
     }

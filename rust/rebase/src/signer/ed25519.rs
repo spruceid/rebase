@@ -131,12 +131,12 @@ impl Signer<Ed25519> for Ed25519DidWebJwk {
         )))
     }
 
-    fn id(&self) -> String {
-        self.id.clone()
+    async fn id(&self) -> Result<String, SignerError> {
+        Ok(self.id.clone())
     }
 
-    fn signer_type(&self) -> Ed25519 {
-        self.signer_type.clone()
+    async fn signer_type(&self) -> Result<Ed25519, SignerError> {
+        Ok(self.signer_type.clone())
     }
 }
 

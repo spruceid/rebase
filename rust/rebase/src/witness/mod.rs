@@ -1,11 +1,13 @@
 pub mod dns;
+pub mod email;
 pub mod generator;
 pub mod github;
 pub mod instructions;
-pub mod reddit;
 pub mod proof_type;
+pub mod reddit;
 pub mod self_signed;
 pub mod signer_type;
+pub mod signers;
 pub mod soundcloud;
 pub mod statement_type;
 pub mod twitter;

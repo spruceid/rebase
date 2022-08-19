@@ -35,7 +35,7 @@ use wee_alloc;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[derive(serde::Deserialize)]
-struct Opts {
+pub struct Opts {
     witness: WitnessOpts,
     did: String
 }
@@ -54,10 +54,12 @@ pub fn instructions(req: String) -> Promise {
 }
 
 #[wasm_bindgen]
-pub async fn statement(req: String) -> Promise {
+pub async fn statement(req: String, opts: String) -> Promise {
     future_to_promise(async move {
+        let opts: Opts = jserr!(serde_json::from_str(&opts));
+        let generator = create_generator(opts.witness);
         let req: StatementReq = jserr!(serde_json::from_str(&req));
-        let res = jserr!(handle_statement(req).await);
+        let res = jserr!(handle_statement(req, &generator).await);
         Ok(jserr!(serde_json::to_string(&res)).into())
     })
 }
