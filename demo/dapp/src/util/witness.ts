@@ -89,7 +89,7 @@ function witness_info(t: CredentialType): WitnessInfo {
                 statement,
                 statement_label,
                 statement_placeholder,
-                witness: "Update your Reddit account's About section to only include this signature.",
+                witness: "Update your Reddit account's About section to only include this signature:",
                 witness_label: "Update your profile's About section",
                 witness_placeholder: "N/A"
             }
@@ -98,7 +98,7 @@ function witness_info(t: CredentialType): WitnessInfo {
                 statement: "Enter the link to your SoundCloud profile",
                 statement_label: "Enter your SoundCloud profile url",
                 statement_placeholder: "Enter your SoundCloud profile link",
-                witness: "Update your SoundCloud profile's Bio section only includes this signature.", 
+                witness: "Update your SoundCloud profile's Bio section to only include this signature:", 
                 witness_label: "Update your profile's Bio section",
                 witness_placeholder: "N/A"
             }
