@@ -32,7 +32,7 @@ rebase_witness_sdk = { path = "../../rust/rebase_witness_sdk" }
 serde = "1"
 serde_json = "1"
 
-ssi = { path = "../../../ssi", default-features = false, features = ["ed25519-dalek", "sha", "secp256k1", "secp256r1"] }
+ssi = { path = "../../../ssi", default-features = false, features = ["ed25519", "secp256k1", "secp256r1"] }
 
 log = "0.4"
 console_log = "0.2"
