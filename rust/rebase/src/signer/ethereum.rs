@@ -102,7 +102,7 @@ impl SignerType for Ethereum {
                     signer_type: self.name(),
                     reason: format!("could not recover key: {}", e),
                 })?
-                .recover_verify_key(&statement)
+                .recover_verifying_key(&statement)
                 .map_err(|e| SignerError::InvalidSignature {
                     signer_type: self.name(),
                     reason: format!("could not process statement to recover key: {}", e),
