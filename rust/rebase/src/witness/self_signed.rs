@@ -1,10 +1,7 @@
 use crate::{
     schema::schema_type::{SchemaError, SchemaType},
     signer::signer::{SignerType, DID as SignerDID},
-    witness::{
-        signer_type::SignerTypes,
-        witness::WitnessError,
-    },
+    witness::{signer_type::SignerTypes, witness::WitnessError},
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -196,9 +193,10 @@ mod tests {
     use super::*;
     use crate::signer::ed25519::Ed25519;
     use crate::util::util::{
-        test_ed25519_did, test_ed25519_did_2, test_eth_did, test_eth_did_2, test_witness_signature,
-        TestKey, TestWitness, TEST_2KEY_ED25519_SIG_1, TEST_2KEY_ED25519_SIG_2,
-        TEST_2KEY_ETH_SIG_1, TEST_2KEY_ETH_SIG_2,
+        test_ed25519_did, test_ed25519_did_2, test_eth_did, test_eth_did_2, test_solana_did,
+        test_solana_did_2, test_witness_signature, TestKey, TestWitness, TEST_2KEY_ED25519_SIG_1,
+        TEST_2KEY_ED25519_SIG_2, TEST_2KEY_ETH_SIG_1, TEST_2KEY_ETH_SIG_2, TEST_2KEY_SOLANA_SIG_1,
+        TEST_2KEY_SOLANA_SIG_2,
     };
 
     async fn mock_proof(
@@ -372,6 +370,87 @@ mod tests {
             test_ed25519_did_2,
             TEST_2KEY_ED25519_SIG_2,
             &test_witness_signature(TestWitness::Twitter, TestKey::Ed25519).unwrap(),
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Invalid signatures in both signatures were incorrectly validated!"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_solana_claim() {
+        // The valid case.
+        mock_proof(
+            test_solana_did,
+            test_solana_did_2,
+            TEST_2KEY_SOLANA_SIG_1,
+            TEST_2KEY_SOLANA_SIG_2,
+        )
+        .await
+        .unwrap()
+        .unsigned_credential(&Ed25519::new(&test_ed25519_did()).unwrap())
+        .await
+        .unwrap();
+
+        // Swapped signatures.
+        match mock_proof(
+            test_solana_did,
+            test_solana_did_2,
+            TEST_2KEY_SOLANA_SIG_2,
+            TEST_2KEY_SOLANA_SIG_1,
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Reversed signatures were incorrectly validated!"),
+        }
+
+        // Swapped keys.
+        match mock_proof(
+            test_solana_did_2,
+            test_solana_did,
+            TEST_2KEY_SOLANA_SIG_1,
+            TEST_2KEY_SOLANA_SIG_2,
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Reversed keys were incorrectly validated!"),
+        }
+
+        // Unrelated signatures one of three.
+        match mock_proof(
+            test_solana_did,
+            test_solana_did_2,
+            TEST_2KEY_SOLANA_SIG_1,
+            &test_witness_signature(TestWitness::DNS, TestKey::Solana).unwrap(),
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Invalid signature in signature_2 was incorrectly validated!"),
+        }
+
+        // two of three
+        match mock_proof(
+            test_solana_did,
+            test_solana_did_2,
+            &test_witness_signature(TestWitness::GitHub, TestKey::Solana).unwrap(),
+            TEST_2KEY_SOLANA_SIG_2,
+        )
+        .await
+        {
+            Err(_) => {}
+            Ok(_) => panic!("Invalid signature in signature_1 was incorrectly validated!"),
+        }
+
+        // three of three
+        match mock_proof(
+            test_solana_did,
+            test_solana_did_2,
+            TEST_2KEY_SOLANA_SIG_2,
+            &test_witness_signature(TestWitness::Twitter, TestKey::Solana).unwrap(),
         )
         .await
         {

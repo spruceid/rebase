@@ -2,6 +2,7 @@ use crate::signer::{
     ed25519::Ed25519,
     ethereum::{Ethereum, DID as EthDID, PKH as EthPKH},
     signer::{SignerError, SignerType, DID as SignerDID, PKH as SignerPKH},
+    solana::{Solana, DID as SolanaDID, PKH as SolanaPKH},
 };
 use crate::witness::witness::WitnessError;
 
@@ -10,6 +11,7 @@ use async_trait::async_trait;
 pub enum SignerTypes {
     Ed25519(Ed25519),
     Ethereum(Ethereum),
+    Solana(Solana),
 }
 
 #[async_trait(?Send)]
@@ -18,6 +20,7 @@ impl SignerType for SignerTypes {
         match self {
             SignerTypes::Ed25519(x) => x.name(),
             SignerTypes::Ethereum(x) => x.name(),
+            SignerTypes::Solana(x) => x.name(),
         }
     }
 
@@ -25,6 +28,7 @@ impl SignerType for SignerTypes {
         match self {
             SignerTypes::Ed25519(x) => x.did_id(),
             SignerTypes::Ethereum(x) => x.did_id(),
+            SignerTypes::Solana(x) => x.did_id(),
         }
     }
 
@@ -32,6 +36,7 @@ impl SignerType for SignerTypes {
         match self {
             SignerTypes::Ed25519(x) => x.valid_signature(statement, signature).await,
             SignerTypes::Ethereum(x) => x.valid_signature(statement, signature).await,
+            SignerTypes::Solana(x) => x.valid_signature(statement, signature).await,
         }
     }
 
@@ -44,6 +49,9 @@ impl SignerType for SignerTypes {
                 SignerPKH::EIP155(o) => Ok(SignerTypes::Ethereum(Ethereum::DID(EthDID::PKH(
                     EthPKH::EIP155(o.clone()),
                 )))),
+                SignerPKH::Solana(o) => Ok(SignerTypes::Solana(Solana::DID(SolanaDID::PKH(
+                    SolanaPKH::Solana(o.clone()),
+                )))),
             },
         }
     }
@@ -52,6 +60,7 @@ impl SignerType for SignerTypes {
         match self {
             SignerTypes::Ed25519(x) => x.did(),
             SignerTypes::Ethereum(x) => x.did(),
+            SignerTypes::Solana(x) => x.did(),
         }
     }
 }
@@ -68,6 +77,13 @@ impl SignerTypes {
                 })),
             },
             SignerTypes::Ethereum(x) => match x.did_id()?.split(":").last() {
+                Some(s) => Ok(s.to_owned()),
+                None => Err(WitnessError::SignerError(SignerError::InvalidId {
+                    signer_type: x.name(),
+                    reason: "failed to generate did id".to_owned(),
+                })),
+            },
+            SignerTypes::Solana(x) => match x.did_id()?.split(":").last() {
                 Some(s) => Ok(s.to_owned()),
                 None => Err(WitnessError::SignerError(SignerError::InvalidId {
                     signer_type: x.name(),

@@ -51,7 +51,7 @@
 		"webpack-dev-server": "^4.7.3"
 	},
 	"dependencies": {
-		"@rebase-xyz/rebase-client": "0.3.5",
+		"@rebase-xyz/rebase-client": "0.4.3",
 		"@walletconnect/web3-provider": "^1.7.8",
 		"ajv": "^8.11.0",
 		"buffer": "^6.0.3",

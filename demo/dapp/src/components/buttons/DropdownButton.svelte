@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-import SpinnerIcon from "../icons/SpinnerIcon.svelte";
+  import SpinnerIcon from "../icons/SpinnerIcon.svelte";
   import "./button.scss";
 
   let clazz: string = "";
@@ -20,23 +20,15 @@ import SpinnerIcon from "../icons/SpinnerIcon.svelte";
   export const closeDropdown = () => (showDropdown = false);
 
   onMount(() => {
-    const handleClickOut = (e) => {
-      if (showDropdown && !dropdownRef?.contains(e.target)) {
-        showDropdown = false;
-      }
-    };
-
     const handleESC = (e) => {
       if (showDropdown && e.key === "Escape") {
         showDropdown = false;
       }
     };
 
-    document.addEventListener("click", handleClickOut, false);
     document.addEventListener("keyup", handleESC, false);
 
     return () => {
-      document.removeEventListener("click", handleClickOut, false);
       document.removeEventListener("keyup", handleESC, false);
     };
   });
@@ -54,6 +46,7 @@ import SpinnerIcon from "../icons/SpinnerIcon.svelte";
     class:secondary-button-container={secondary}
     on:click|preventDefault={() => (showDropdown = !showDropdown)}
     aria-label={title}
+    style="min-width:75px;"
     {title}
   >
     {#if loading}
@@ -61,6 +54,8 @@ import SpinnerIcon from "../icons/SpinnerIcon.svelte";
         <SpinnerIcon class="w-6 h-6 mr-2 animate-spin" />
         {text}
       </div>
+    {:else if showDropdown}
+      Close
     {:else}
       {text}
     {/if}

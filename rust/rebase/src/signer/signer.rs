@@ -56,10 +56,24 @@ pub struct EIP155 {
 }
 
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[serde(rename = "solana")]
+pub struct Solana {
+    pub address: String,
+}
+
+// TODO: Understand where this came from.
+// Noted in the did:pkh w3 docs as the network for did:pkh:solana
+// but should note where / how that's discoverable to know if it's going to change
+// or if it's not going to change, then note it as a magic string.
+pub const SOLANA_NETWORK: &str = "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ";
+
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
 #[serde(rename = "pkh")]
 pub enum PKH {
     #[serde(rename = "eip155")]
     EIP155(Option<EIP155>),
+    #[serde(rename = "solana")]
+    Solana(Option<Solana>),
 }
 
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
@@ -76,14 +90,20 @@ pub enum DID {
 impl DID {
     pub fn context(&self) -> serde_json::Value {
         match &self {
-            DID::PKH(_) => serde_json::json!({
-                "PKH": {
+            DID::PKH(PKH::EIP155(_)) => serde_json::json!({
+                "pkh": {
                     "address": "https://example.com/address",
                     "chain_id": "https://example.com/chain_id"
                 },
             }),
+            DID::PKH(PKH::Solana(_)) => serde_json::json!({
+                "pkh": {
+                    "address": "https://example.com/address",
+                    "network": "https://example.com/network"
+                },
+            }),
             DID::Web(_) => serde_json::json!({
-                "Web": "https://example.com/did_web",
+                "web": "https://example.com/did_web",
             }),
         }
     }
@@ -103,6 +123,14 @@ impl std::fmt::Display for DID {
                     s.chain_id, s.address
                 ),
                 _ => write!(f, "ethereum did pkh: no id set"),
+            },
+            DID::PKH(PKH::Solana(o)) => match o {
+                Some(s) => write!(
+                    f,
+                    "solana did pkh network: {}, address: {}",
+                    SOLANA_NETWORK, s.address
+                ),
+                _ => write!(f, "solana did pkh: no id set"),
             },
         }
     }

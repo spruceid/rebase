@@ -2,10 +2,15 @@
     import type { CredentialType } from "../util";
     import { instructions } from "../util";
     import { onMount } from "svelte";
-    import { WitnessForm, BasePage, SelfSignedForm } from "components";
+    import {
+        WitnessForm,
+        BasePage,
+        TwoKeyForm,
+        // SelfSignedForm,
+    } from "src/components";
 
     export let type: CredentialType;
-    
+
     $: inst = null;
     $: errMsg = "";
     $: loading = true;
@@ -29,7 +34,8 @@
         {:else if errMsg}
             <p class="inner-center">Error encountered: ${errMsg}</p>
         {:else if type === "self_signed"}
-            <SelfSignedForm />
+            <!-- <SelfSignedForm /> -->
+            <TwoKeyForm />
         {:else}
             <WitnessForm {type} instructions={inst} />
         {/if}

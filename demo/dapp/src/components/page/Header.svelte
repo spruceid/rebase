@@ -1,47 +1,92 @@
 <script lang="ts">
     import {
-        _currentType,
-        _currentType2nd,
         _signerMap,
-        _signerMap2nd,
-        currentType,
+        alert,
         connect,
         disconnect,
+        disconnectAll,
+        displaySignerId,
+        displaySignerType,
+        displayProviderType,
+        lookUp,
         signerTypes,
-        signerMap,
-        Signer,
+        getAllConnected,
+        retrieveSigner,
         SignerType,
-        alert,
-    } from "utils";
-    import { Tooltip, Button, DropdownButton, RebaseLogo } from "components";
+    } from "src/util";
+
+    import {
+        Tooltip,
+        Button,
+        DropdownButton,
+        RebaseLogo,
+    } from "src/components";
+
     import { scale } from "svelte/transition";
     import { Link, useNavigate } from "svelte-navigator";
 
-    const navigate = useNavigate();
-    let moreDropdown;
-    let loading: boolean = false;
+    $: connectNext = false;
 
-    let signer: Signer | false = false;
-    currentType.subscribe((x) => (signer = _signerMap[x]));
-    signerMap.subscribe((x) => (signer = x[_currentType]));
+    let _lookUp = null;
+    let _signer = null;
 
-    const connectNew = async (nextType): Promise<void> => {
-        try {
-            loading = true;
-            currentType.set(nextType as SignerType);
-            await connect();
-        } catch (e) {
-            alert.set({
-                message: e?.message ? e.message : e,
-                variant: "error",
-            });
+    lookUp.subscribe((x) => {
+        _lookUp = x;
+        if (_lookUp && _signerMap) {
+            _signer = retrieveSigner(_signerMap, _lookUp);
         }
-        loading = false;
-    };
+    });
+
+    const navigate = useNavigate();
+
+    let loading: boolean = false;
 
     const capitalizeFirstLetter = (string) => {
         return string.charAt(0).toUpperCase() + string.slice(1);
     };
+
+    // This is dumbed down compared to the eventual support needed by
+    // multiple providers. Suggested the usage of the implementation in the
+    // comments below.
+    const conn = (signerType: SignerType) => {
+        switch (signerType) {
+            case "ethereum":
+                // NOTE: Only support web3 modal, so if the user
+                // selects a non-MetaMask wallet through
+                // web3 modal, it will get correctly set.
+                // Only WalletConnect and Metamask supported.
+                return connect(signerType, "metamask");
+            case "solana":
+                return connect(signerType, "phantom");
+            default:
+                alert.set({
+                    message: `Unknown signer type: ${signerType}`,
+                    variant: "error",
+                });
+        }
+    };
+
+    // TODO: Use this when supporting multiple providers
+    // Adds section to dropdown below
+    /* $: signerType = null;
+
+    const conn = async (providerType: ProviderType) => {
+        if (!providerType) {
+            alert.set({
+                message: "Provider Type must be set.",
+                variant: "error",
+            });
+        } else if (!signerType) {
+            alert.set({
+                message: "Signer Type must be set.",
+                variant: "error",
+            });
+        } else {
+            await connect(signerType, providerType);
+            signerType = null;
+        }
+    };
+    */
 </script>
 
 <div
@@ -51,10 +96,27 @@
         <RebaseLogo class="w-fit flex items-center" xl />
     </Link>
 
-    {#if !signer}
+    <div class="flex flex-wrap">
+        {#if _lookUp}
+            <Tooltip
+                tooltip="Using {displaySignerType(
+                    _lookUp.signerType
+                )} with {displayProviderType(_lookUp.providerType)}"
+                bottom
+            >
+                <Button
+                    class="max-w-42 sm:max-w-full my-[16px]"
+                    onClick={() => navigate("/account")}
+                    text={`${_signer?.ens?.name ?? displaySignerId(_signer)}`}
+                    primary
+                    avatar={_signer?.ens?.avatar ?? false}
+                />
+            </Tooltip>
+        {/if}
         <DropdownButton
-            class="menu w-full min-w-42 my-[16px] rounded-xl"
-            text="Connect Wallet"
+            class="menu w-full my-[16px] rounded-xl px-1000"
+            ml={!!_lookUp}
+            text={_lookUp ? "..." : "Connect Wallet"}
             primary
             {loading}
         >
@@ -63,60 +125,79 @@
                 out:scale={{ duration: 75, start: 0.95 }}
                 class="origin-top-right absolute right-4 w-48 py-0 mt-1 bg-dark-1 rounded-xl shadow-md"
             >
-                <div class="px-4 py-3 text-sm text-white text-center">
-                    <div>Select Signer Type To Connect</div>
-                </div>
-                <hr />
-                {#each signerTypes as t}
-                    <Button
-                        class="w-full bg-dark-1 text-white py-4"
-                        onClick={() => connectNew(t)}
-                        text={capitalizeFirstLetter(t)}
-                    />
-                {/each}
-            </div>
-        </DropdownButton>
-    {:else}
-        <div class="flex flex-wrap">
-            <Tooltip tooltip="Currently using {_currentType} signer" bottom>
-                <Button
-                    class="max-w-42 sm:max-w-full my-[16px]"
-                    onClick={() => navigate("/account")}
-                    text={signer.ens.name ?? signer.id()}
-                    primary
-                    avatar={signer.ens.avatar ?? false}
-                />
-            </Tooltip>
-            <DropdownButton
-                bind:this={moreDropdown}
-                class="w-[65px] my-[16px] rounded-xl"
-                ml
-                text="&#8226;&#8226;&#8226;"
-                primary
-            >
-                <div
-                    in:scale={{ duration: 100, start: 0.95 }}
-                    out:scale={{ duration: 75, start: 0.95 }}
-                    class="origin-top-right absolute right-4 w-48 py-0 mt-1 bg-dark-1 rounded-xl shadow-md"
-                >
+                {#if _lookUp && !connectNext}
                     <Button
                         class="w-full bg-dark-1 text-white py-4"
                         onClick={() => {
                             navigate("/");
-                            moreDropdown.closeDropdown();
                         }}
-                        text="About"
+                        text="About Rebase"
                     />
                     <Button
                         class="w-full bg-dark-1 text-white py-4"
                         onClick={() => {
-                            disconnect();
-                            moreDropdown.closeDropdown();
+                            disconnectAll();
+                            lookUp.set(null);
                         }}
                         text="Disconnect"
                     />
-                </div>
-            </DropdownButton>
-        </div>
-    {/if}
+                {:else}
+                    <div class="px-4 py-3 text-sm text-white text-center">
+                        <div>Select Signer Type To Connect</div>
+                    </div>
+                    {#if connectNext}
+                        <Button
+                            class="w-full bg-dark-1 text-white py-4"
+                            onClick={() => {
+                                connectNext = false;
+                            }}
+                            text="Cancel New Connection"
+                        />
+                    {/if}
+                    <hr />
+
+                    {#each signerTypes as t}
+                        <Button
+                            class="w-full bg-dark-1 text-white py-4"
+                            onClick={async () => {
+                                loading = true;
+                                await conn(t);
+                                loading = false;
+                                connectNext = false;
+                            }}
+                            text={capitalizeFirstLetter(t)}
+                        />
+                    {/each}
+
+                    <!-- TODO: Use this when supporting multiple providers
+                {:else if signerType === "solana"}
+                    <div class="px-4 py-3 text-sm text-white text-center">
+                        <div>
+                            Select Provider Type To Connect For {capitalizeFirstLetter(
+                                signerType
+                            )}
+                        </div>
+                    </div>
+                    <Button
+                        class="w-full bg-dark-1 text-white py-4"
+                        onClick={() => {
+                            signerType = null;
+                        }}
+                        text="Change Signer Type"
+                    />
+                    <hr />
+                    {#each providerTypes[signerType] as t}
+                        <Button
+                            class="w-full bg-dark-1 text-white py-4"
+                            onClick={() => {
+                                conn(t);
+                            }}
+                            text={capitalizeFirstLetter(t)}
+                        />
+                    {/each}
+                -->
+                {/if}
+            </div>
+        </DropdownButton>
+    </div>
 </div>

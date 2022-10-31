@@ -141,7 +141,8 @@ impl SignerType for Ethereum {
 mod test {
     use super::*;
     use crate::util::util::{
-        test_eth_did, test_witness_signature, test_witness_statement, TestKey, TestWitness,
+        test_eth_did, test_eth_did_2, test_witness_signature, test_witness_statement, TestKey,
+        TestWitness,
     };
 
     #[tokio::test]
@@ -158,6 +159,20 @@ mod test {
             .valid_signature(
                 &test_witness_statement(TestWitness::GitHub, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap(),
+            )
+            .await
+            .unwrap();
+        signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::Reddit, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::Reddit, TestKey::Eth).unwrap(),
+            )
+            .await
+            .unwrap();
+        signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::SoundCloud, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::SoundCloud, TestKey::Eth).unwrap(),
             )
             .await
             .unwrap();
@@ -231,6 +246,61 @@ mod test {
             .await
         {
             Ok(_) => panic!("Said invalid signature was valid"),
+            Err(_) => {}
+        };
+    }
+
+    #[tokio::test]
+    async fn test_eth_bad_key() {
+        let signer_type = Ethereum::new(&test_eth_did_2()).unwrap();
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::DNS, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::DNS, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Invalid signature permitted"),
+            Err(_) => {}
+        };
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::GitHub, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Invalid signature permitted"),
+            Err(_) => {}
+        };
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::Reddit, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::Reddit, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Invalid signature permitted"),
+            Err(_) => {}
+        };
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::SoundCloud, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::SoundCloud, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Invalid signature permitted"),
+            Err(_) => {}
+        };
+        match signer_type
+            .valid_signature(
+                &test_witness_statement(TestWitness::Twitter, TestKey::Eth).unwrap(),
+                &test_witness_signature(TestWitness::Twitter, TestKey::Eth).unwrap(),
+            )
+            .await
+        {
+            Ok(_) => panic!("Invalid signature permitted"),
             Err(_) => {}
         };
     }

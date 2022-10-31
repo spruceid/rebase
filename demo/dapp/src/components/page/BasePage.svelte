@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Alert, Header } from "components";
+    import { Alert, Header, NewSignerSelector } from "components";
     let clazz: string = "";
     export { clazz as class };
 </script>
