@@ -2,7 +2,7 @@ mod utils;
 
 use rebase_witness_sdk::{
     client::{Client as RebaseClient, Endpoints},
-    witness::{InstructionReq, StatementReq, WitnessReq},
+    types::{InstructionsReq, StatementReq, WitnessReq},
 };
 // use serde_json::from_str;
 use js_sys::Promise;
@@ -70,7 +70,7 @@ impl Client {
     pub fn instructions(&self, req: String) -> Promise {
         let client = self.client.clone();
         future_to_promise(async move {
-            let req: InstructionReq = jserr!(serde_json::from_str(&req));
+            let req: InstructionsReq = jserr!(serde_json::from_str(&req));
             let res = jserr!(client.instructions(req).await);
             Ok(jserr!(serde_json::to_string(&res)).into())
         })

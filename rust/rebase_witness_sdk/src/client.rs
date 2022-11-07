@@ -1,5 +1,5 @@
-use crate::witness::{
-    InstructionReq, StatementReq, StatementRes, WitnessJWTRes, WitnessLDRes, WitnessReq,
+use crate::types::{
+    InstructionsReq, StatementReq, StatementRes, WitnessJWTRes, WitnessLDRes, WitnessReq,
 };
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
@@ -43,7 +43,7 @@ impl Client {
 
     pub async fn instructions(
         &self,
-        req: InstructionReq,
+        req: InstructionsReq,
     ) -> Result<serde_json::Value, ClientError> {
         let client = HttpClient::new();
 

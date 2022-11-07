@@ -26,7 +26,7 @@ The `statement` response rendered as a typescript type is always:
 ```typescript
 interface StatementRes {
     "statement": string,
-    "delimitor": string
+    "delimitor"?: string
 }
 ```
 The `witness` response rendered as a typescript type is always:
@@ -60,35 +60,35 @@ interface DnsStmt {
     dns: {
         domain: string;
         prefix: string;
-        key_type: KeyTypes;
+        key_type: Subject;
     };
 }
 
 interface GitHubStmt {
     github: {
         handle: string;
-        key_type: KeyTypes;
+        key_type: Subject;
     };
 }
 
 interface TwitterStmt {
     twitter: {
         handle: string;
-        key_type: KeyTypes;
+        key_type: Subject;
     };
 }
 
 interface SelfSignedStmt {
     self_signed: {
-        key_1: KeyTypes;
-        key_2: KeyTypes;
+        key_1: Subject;
+        key_2: Subject;
     };
 }
 ```
-KeyTypes must conform to the JSON representation of the supported Rebase `DID` type found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/signer/signer.rs#L64).
-They typescript definition of KeyTypes and it's child types would look like:
+`Subject`s must conform to the JSON representation of the supported Rebase Subject type found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/types/enums/subject.rs).
+They typescript definition of Subjects and it's child types would look like:
 ```typescript
-type KeyTypes = Eth | Web;
+type Subjects = Eth | Web;
 
 interface Eth {
     pkh: {
@@ -272,7 +272,7 @@ interface InstructionsReq {
     type: InstructionsType
 }
 
-type InstructionsType = "dns" | "github" | "self_signed" | "twitter"
+type InstructionsType = "dns" | "github" | "self_signed" | "twitter" | ...
 ```
 
 The response is defined in Typescript as:

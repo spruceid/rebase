@@ -4,81 +4,43 @@ This software development kit enables creating server-side "Witness" ([Verifiabl
 
 ## Creating Witness Services
 
-A full working example of the witness services can be found [here](https://github.com/spruceid/rebase/tree/main/demo/witness) implemented as [Cloudflare Worker](https://workers.cloudflare.com/). The `witness` portion of the library contains the majority of the implementation details including the structures used by the `client` portion. The structures used are:
+A full working example of the witness services can be found [here](https://github.com/spruceid/rebase/tree/main/demo/witness) implemented as [Cloudflare Worker](https://workers.cloudflare.com/). The `types` file of the library contains the majority of the implementation details including the structures used by the `client` portion. The bulk of the code in the Witness SDK wraps up the various concrete implementations of the types specified in the [main rebase library](https://github.com/spruceid/rebase/tree/main/rust/rebase) into enums. 
 
+All `Content` structs (i.e. files matching `rebase/rust/rebase/src/content/*.rs`) are wrapped into `Contents`: 
 ```rust
 #[derive(Deserialize, Serialize)]
-pub struct InstructionReq {
-    #[serde(rename = "type")]
-    pub instruction_type: InstructionTypes,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct StatementReq {
-    pub opts: StatementTypes,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct StatementRes {
-    pub statement: String,
-    pub delimitor: String,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct WitnessReq {
-    pub proof: ProofTypes,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct WitnessJWTRes {
-    pub jwt: String,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct WitnessLDRes {
-    pub credential: Credential,
+pub enum Contents {
+    Dns(DnsCtnt),
+    Email(EmailCtnt),
+    GitHub(GitHubCtnt),
+    Reddit(RedditCtnt),
+    SoundCloud(SoundCloudCtnt),
+    Twitter(TwitterCtnt),
+    TwoKey(TwoKeyCtnt),
 }
 ```
 
-[InstructionTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/instructions.rs#L21), [StatementTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/statement_type.rs) and [ProofTypes](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/proof_type.rs) are enums representing all of the possible witness flows supported by the underlying [Rebase](https://github.com/spruceid/rebase/tree/main/rust/rebase) library. The advantage of this approach is that addition variants are added to underlying library, they are automatically supported by this SDK. The TypeScript/JSON format of these structures are described [here](https://github.com/spruceid/rebase/blob/main/demo/witness/endpoints.md).
-
-The response types (`StatementRes`, `WitnessJWTRes`, and `WitnessLDRes`, along with the result of the `Instructions` flow, found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase_witness_sdk/src/witness.rs)) are universal for all witness flows, making developing a consumer of the witness flows automatically backwards compatible to new flows. The [Credential](https://github.com/spruceid/ssi/blob/main/src/vc.rs#L44) type found in the body of the `WitnessLDRes` comes from the [SSI](https://github.com/spruceid/ssi) library.
-
-The exposed functions have the following signatures:
-
+Then the trait `Content` is `impl`'d for Contents. The same thing occurs for `Statement`(`s`) and `Proof`(`s`). The `Flow` structs are unified under a `WitnessFlow` struct that looks like:
 ```rust
-pub fn instructions(
-    req: InstructionReq,
-) -> Result<serde_json::Value, WitnessError> {
-    req.instruction_type
-        .ui_hints()
-        .map_err(|e| WitnessError::Instruction(e.to_string()))
+#[derive(Deserialize, Serialize)]
+pub struct WitnessFlow {
+    dns: DnsFlow,
+    email: Option<EmailFlow>,
+    github: Option<GitHubFlow>,
+    reddit: RedditFlow,
+    soundcloud: Option<SoundCloudFlow>,
+    twitter: Option<TwitterFlow>,
+    two_key: TwoKeyFlow,
 }
-
-pub async fn statement(req: StatementReq) -> Result<StatementRes, WitnessError> {
-    // ...
-}
-
-pub async fn witness_jwt<T: SignerType, S: Signer<T>>(
-    witness_request: WitnessReq,
-    generator: &WitnessGenerator,
-    signer: &S,
-) -> Result<WitnessJWTRes, WitnessError> {
-    // ...
-}
-
-pub async fn witness_ld<T: SignerType, S: Signer<T>>(
-    witness_request: WitnessReq,
-    generator: &WitnessGenerator,
-    signer: &S,
-) -> Result<WitnessLDRes, WitnessError> {
+```
+The flows that are not optional have no internal properties, thus are always available. Once all of these have been defined, it becomes possible to implement:
+```rust
+impl Flow<Contents, Statements, Proofs, StatementRes> for WitnessFlow {
     // ...
 }
 ```
 
-`Signer`, `SignerType`, and `WitnessGenerator` correspond to the underlying Rebase library, and are better described in it's [README](https://github.com/spruceid/rebase/blob/main/README.md). `WitnessGenerator` is just a re-exported type of Rebase's `Generator` type. A concrete implementation can be found in the `demo/witness` section of the [Rebase repository](https://github.com/spruceid/rebase/tree/main/demo/witness).
-
-The most common way to structure a witness service is to have a constant `Signer` and `WitnessGenerator` which are composed with incoming `StatementReq`/`WitnessReq` from clients, then returning the results.
+The result is that `WitnessFlow` automatically can handle all of the contained flows generically, based on user input. This greatly simplifies the amount of code required to stand up a general witness service, as seen in the [demo witness codebase](https://github.com/spruceid/rebase/tree/main/demo/witness).
 
 ## Creating Clients
 The client is the corresponding consumer of the witness' service. The `Client` implementation provided by this library looks like:
@@ -107,7 +69,7 @@ impl Client {
 }
 ```
 
-Once a client is created, it is able to exchange `StatementReq`s for `StatementRes`s, `InstructionReq`s for the structure described [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/instructions.rs#L14), and exchange `WitnessReq`s for `WitnessJWTRes` or `WitnessLDRes` depending on what is requested. This is done through interaction with a witness specified at time of `Client` creation. A client is created by providing an `Endpoints` struct which looks like:
+Once a client is created, it is able to exchange `StatementReq`s for `StatementRes`s, `InstructionReq`s for the structure described [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/types/types.rs#L111), and exchange `WitnessReq`s for `WitnessJWTRes` or `WitnessLDRes` depending on what is requested. This is done through interaction with a witness specified at time of `Client` creation. A client is created by providing an `Endpoints` struct which looks like:
 
 ```rust
 pub struct Endpoints {
@@ -118,4 +80,6 @@ pub struct Endpoints {
 }
 ```
 
-Each of the properties represents a URL of a witness from the previous section which allows for the exchange to occur. At least one of the optional properties must be provided, or `Client::new` will return an error. Once this is provided, the client is perfectly re-usable, though in the examples where WASM is involved, the client is created on a per-request basis. This pattern is elaborated on in their READMEs.
+Each of the properties represents a URL of a witness from the previous section which allows for the exchange to occur. At least one of the optional properties must be provided, or `Client::new` will return an error. Once this is provided, the client is perfectly re-usable.
+
+An example of usage of a WASM client is found in the [demo dapp codebase](https://github.com/spruceid/rebase/tree/main/demo/dapp), which can be seen deployed [here, at the Rebase credential faucet](https://rebase.pages.dev/).

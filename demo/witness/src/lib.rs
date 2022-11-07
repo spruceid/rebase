@@ -1,18 +1,13 @@
 extern crate wasm_bindgen;
-
 extern crate log;
 use js_sys::Promise;
 
-use rebase::signer::ed25519::Ed25519DidWebJwk;
-use rebase_witness_sdk::witness::{
-    statement as handle_statement, 
-    instructions as handle_instructions, 
-    witness_jwt as handle_jwt, 
-    InstructionReq, 
+use rebase_witness_sdk::types::{
+    issuer::ed25519::DidWebJwk,
+    InstructionsReq, 
     StatementReq,
-    WitnessGenerator, 
-    WitnessOpts,
     WitnessReq,
+    WitnessFlow,
 };
 
 use serde_json;
@@ -36,30 +31,27 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[derive(serde::Deserialize)]
 pub struct Opts {
-    witness: WitnessOpts,
+    witness: WitnessFlow,
     did: String
 }
 
-pub fn create_generator(opts: WitnessOpts) -> WitnessGenerator {
-    WitnessGenerator::new(opts)
-}
-
 #[wasm_bindgen]
-pub fn instructions(req: String) -> Promise {
+pub async fn instructions(req: String, opts: String) -> Promise {
     future_to_promise(async move {
-        let req: InstructionReq = jserr!(serde_json::from_str(&req));
-        let res = jserr!(handle_instructions(req));
+        let req: InstructionsReq = jserr!(serde_json::from_str(&req));
+        let opts: Opts = jserr!(serde_json::from_str(&opts));
+        let res = jserr!(opts.witness.handle_instructions(&req).await);
         Ok(jserr!(serde_json::to_string(&res)).into())
     })
 }
 
 #[wasm_bindgen]
-pub async fn statement(req: String, opts: String) -> Promise {
+pub async fn statement(secret: String, req: String, opts: String) -> Promise {
     future_to_promise(async move {
         let opts: Opts = jserr!(serde_json::from_str(&opts));
-        let generator = create_generator(opts.witness);
+        let issuer = jserr!(DidWebJwk::new(&opts.did, &secret, "controller"));
         let req: StatementReq = jserr!(serde_json::from_str(&req));
-        let res = jserr!(handle_statement(req, &generator).await);
+        let res = jserr!(opts.witness.handle_statement(&req, &issuer).await);
         Ok(jserr!(serde_json::to_string(&res)).into())
     })
 }
@@ -68,10 +60,9 @@ pub async fn statement(req: String, opts: String) -> Promise {
 pub async fn witness(secret: String, witness_request: String, opts: String) -> Promise {
     future_to_promise(async move {
         let opts: Opts = jserr!(serde_json::from_str(&opts));
-        let signer = jserr!(Ed25519DidWebJwk::new(&opts.did, &secret, "controller").await);
+        let issuer = jserr!(DidWebJwk::new(&opts.did, &secret, "controller"));
         let witness_request: WitnessReq = jserr!(serde_json::from_str(&witness_request));
-        let generator = create_generator(opts.witness);
-        let res = jserr!(handle_jwt(witness_request, &generator, &signer).await);
+        let res = jserr!(opts.witness.handle_jwt(&witness_request, &issuer).await);
 
         Ok(jserr!(serde_json::to_string(&res)).into())
     })
