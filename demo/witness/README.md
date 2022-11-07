@@ -27,13 +27,13 @@ pub struct InstructionReq {
 
 #[derive(Deserialize, Serialize)]
 pub struct StatementReq {
-    pub opts: StatementTypes,
+    pub opts: Statements,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct WitnessReq {
-    pub proof: ProofTypes,
+    pub proof: Proofs,
 }
 ```
 
-Details on `InstructionTypes`, `StatementTypes` and `ProofTypes` can be found in the top-level README and their implementations can be found in `rebase/rust/src`.
+Details on `InstructionTypes`, `Statements` and `Proofs` can be found in the README for the [main rebase library](https://github.com/spruceid/rebase/) and their implementations can be found in `rebase/rust/src`.

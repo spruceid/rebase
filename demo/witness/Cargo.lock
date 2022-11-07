@@ -2401,7 +2401,6 @@ dependencies = [
  "console_log",
  "js-sys",
  "log",
- "rebase",
  "rebase_witness_sdk",
  "serde",
  "serde_json",
@@ -2417,10 +2416,12 @@ dependencies = [
 name = "rebase_witness_sdk"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "rebase",
  "reqwest",
  "serde",
  "serde_json",
+ "ssi",
  "thiserror",
  "url",
 ]

@@ -1,11 +1,12 @@
-use rebase::{util::util::*, witness::witness::Statement, witness::*};
+use rebase::{proof, statement, test_util::util::*, types::types::Statement};
+
 use rebase_witness_sdk::{
-    witness::{StatementReq, WitnessReq},
-    client::{Client, Endpoints}
+    client::{Client, Endpoints},
+    types::{Proofs, StatementReq, Statements, WitnessReq},
 };
 use std::env;
-use url::Url;
 use tokio;
+use url::Url;
 
 fn new_client(base_url: &str) -> Result<Client, String> {
     // TODO: Update to use a worker that supports LD routes.
@@ -19,11 +20,7 @@ fn new_client(base_url: &str) -> Result<Client, String> {
     Client::new(endpoints).map_err(|e| e.to_string())
 }
 
-async fn check_statement(
-    client: &Client,
-    opts: statement_type::StatementTypes,
-    statement: &str,
-) -> Result<(), String> {
+async fn check_statement(client: &Client, opts: Statements, statement: &str) -> Result<(), String> {
     let req = StatementReq { opts };
 
     let res = client.statement(req).await.unwrap();
@@ -47,26 +44,22 @@ async fn main() {
     println!("Testing DNS...");
     let did = test_eth_did();
 
-    let opts = dns::Claim {
+    let inner = statement::dns::Dns {
         domain: "tzprofiles.dev".to_owned(),
         prefix: "rebase_sig=".to_owned(),
-        key_type: did,
+        subject: did,
     };
+
+    let opts = Statements::Dns(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
-    check_statement(
-        &client,
-        statement_type::StatementTypes::Dns(opts.clone()),
-        &statement,
-    )
-    .await
-    .unwrap();
+    check_statement(&client, opts, &statement).await.unwrap();
 
     println!("DNS statement valid...");
 
     let req = WitnessReq {
-        proof: proof_type::ProofTypes::Dns(opts),
+        proof: Proofs::Dns(inner.clone()),
     };
 
     client.jwt(req).await.unwrap();
@@ -75,84 +68,72 @@ async fn main() {
 
     println!("Tesing GitHub...");
     let did = test_eth_did();
-    let opts = github::Opts {
+    let inner = statement::github::GitHub {
         handle: "krhoda".to_string(),
-        key_type: did,
+        subject: did,
     };
+
+    let opts = Statements::GitHub(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
-    check_statement(
-        &client,
-        statement_type::StatementTypes::GitHub(opts.clone()),
-        &statement,
-    )
-    .await
-    .unwrap();
+    check_statement(&client, opts, &statement).await.unwrap();
 
     println!("GitHub statement valid...");
 
-    let proof = github::Claim {
+    let proof = proof::github::GitHub {
         gist_id: "28fb83438a26e70350ef3195d999882d".to_string(),
-        statement_opts: opts,
+        statement: inner,
     };
 
     let req = WitnessReq {
-        proof: proof_type::ProofTypes::GitHub(proof),
+        proof: Proofs::GitHub(proof),
     };
 
     client.jwt(req).await.unwrap();
 
     println!("GitHub credential issued");
 
-    println!("Tesing Reddit...");
+    println!("Testing Reddit...");
     let did = test_eth_did();
-    let opts = reddit::Claim {
+    let inner = statement::reddit::Reddit {
         handle: "eval-apply-quote".to_string(),
-        key_type: did,
+        subject: did,
     };
+
+    let opts = Statements::Reddit(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
-    check_statement(
-        &client,
-        statement_type::StatementTypes::Reddit(opts.clone()),
-        &statement,
-    )
-    .await
-    .unwrap();
+    check_statement(&client, opts, &statement).await.unwrap();
 
     println!("Reddit statement valid...");
 
     let req = WitnessReq {
-        proof: proof_type::ProofTypes::Reddit(opts),
+        proof: Proofs::Reddit(inner),
     };
 
     client.jwt(req).await.unwrap();
 
     println!("Reddit credential issued");
 
-    println!("Tesing SoundCloud...");
+    println!("Testing SoundCloud...");
     let did = test_eth_did();
-    let opts = soundcloud::Claim {
+    let inner = statement::soundcloud::SoundCloud {
         permalink: "spruce-systems-dev".to_string(),
-        key_type: did,
+        subject: did,
     };
+
+    let opts = Statements::SoundCloud(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
-    check_statement(
-        &client,
-        statement_type::StatementTypes::SoundCloud(opts.clone()),
-        &statement,
-    )
-    .await
-    .unwrap();
+    check_statement(&client, opts, &statement).await.unwrap();
 
     println!("SoundCloud statement valid...");
 
     let req = WitnessReq {
-        proof: proof_type::ProofTypes::SoundCloud(opts),
+        proof: Proofs::SoundCloud(inner),
     };
 
     client.jwt(req).await.unwrap();
@@ -162,67 +143,58 @@ async fn main() {
     println!("Testing Twitter...");
 
     let did = test_eth_did();
-    let opts = twitter::Opts {
+    let inner = statement::twitter::Twitter {
         handle: "evalapplyquote".to_string(),
-        key_type: did,
+        subject: did,
     };
+
+    let opts = Statements::Twitter(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
-    check_statement(
-        &client,
-        statement_type::StatementTypes::Twitter(opts.clone()),
-        &statement,
-    )
-    .await
-    .unwrap();
+    check_statement(&client, opts, &statement).await.unwrap();
 
     println!("Twitter statement valid...");
 
-    let proof = twitter::Claim {
+    let proof = proof::twitter::Twitter {
         tweet_url: "https://twitter.com/evalapplyquote/status/1542901885815820288".to_string(),
-        statement_opts: opts,
+        statement: inner,
     };
 
     let req = WitnessReq {
-        proof: proof_type::ProofTypes::Twitter(proof),
+        proof: Proofs::Twitter(proof),
     };
 
     client.jwt(req).await.unwrap();
 
     println!("Twitter credential issued");
+
     println!("Testing Self Signed...");
 
     let did = test_eth_did();
     let did2 = test_eth_did_2();
 
-    let opts = self_signed::Opts {
-        key_1: did,
-        key_2: did2,
+    let inner = statement::two_key::TwoKey {
+        subject1: did,
+        subject2: did2,
     };
+
+    let opts = Statements::TwoKey(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
-    check_statement(
-        &client,
-        statement_type::StatementTypes::SelfSigned(opts.clone()),
-        &statement,
-    )
-    .await
-    .unwrap();
+    check_statement(&client, opts, &statement).await.unwrap();
 
     println!("Self Signed Statement valid...");
 
-    let proof = self_signed::Claim::new(
-        opts,
-        TEST_2KEY_ETH_SIG_1.to_owned(),
-        TEST_2KEY_ETH_SIG_2.to_owned(),
-    )
-    .await
-    .unwrap();
+    let proof = proof::two_key::TwoKey {
+        statement: inner,
+        signature_1: TEST_2KEY_ETH_SIG_1.to_owned(),
+        signature_2: TEST_2KEY_ETH_SIG_2.to_owned(),
+    };
 
     let req = WitnessReq {
-        proof: proof_type::ProofTypes::SelfSigned(proof),
+        proof: Proofs::TwoKey(proof),
     };
 
     client.jwt(req).await.unwrap();
@@ -232,102 +204,87 @@ async fn main() {
 
     println!("Starting Solana tests:");
     println!("NOTE: Does not test DNS, Reddit, or Soundcloud flows");
-    println!("Tesing GitHub...");
+    println!("Testing GitHub...");
     let did = test_solana_did();
-    let opts = github::Opts {
+    let inner = statement::github::GitHub {
         handle: "krhoda".to_string(),
-        key_type: did,
+        subject: did,
     };
+
+    let opts = Statements::GitHub(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
-    check_statement(
-        &client,
-        statement_type::StatementTypes::GitHub(opts.clone()),
-        &statement,
-    )
-    .await
-    .unwrap();
+    check_statement(&client, opts, &statement).await.unwrap();
 
     println!("GitHub statement valid...");
 
-    let proof = github::Claim {
+    let proof = proof::github::GitHub {
         gist_id: "b300fd41272159662bccf9702c0a66fd".to_string(),
-        statement_opts: opts,
+        statement: inner,
     };
 
     let req = WitnessReq {
-        proof: proof_type::ProofTypes::GitHub(proof),
+        proof: Proofs::GitHub(proof),
     };
 
     client.jwt(req).await.unwrap();
 
     println!("GitHub credential issued");
-
     println!("Testing Twitter...");
 
     let did = test_solana_did();
-    let opts = twitter::Opts {
+    let inner = statement::twitter::Twitter {
         handle: "evalapplyquote".to_string(),
-        key_type: did,
+        subject: did,
     };
+
+    let opts = Statements::Twitter(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
-    check_statement(
-        &client,
-        statement_type::StatementTypes::Twitter(opts.clone()),
-        &statement,
-    )
-    .await
-    .unwrap();
+    check_statement(&client, opts, &statement).await.unwrap();
 
     println!("Twitter statement valid...");
 
-    let proof = twitter::Claim {
+    let proof = proof::twitter::Twitter {
         tweet_url: "https://twitter.com/evalapplyquote/status/1561743461287505920".to_string(),
-        statement_opts: opts,
+        statement: inner,
     };
 
     let req = WitnessReq {
-        proof: proof_type::ProofTypes::Twitter(proof),
+        proof: Proofs::Twitter(proof),
     };
 
     client.jwt(req).await.unwrap();
 
     println!("Twitter credential issued");
+
     println!("Testing Self Signed...");
 
     let did = test_solana_did();
     let did2 = test_solana_did_2();
-
-    let opts = self_signed::Opts {
-        key_1: did,
-        key_2: did2,
+    let inner = statement::two_key::TwoKey {
+        subject1: did,
+        subject2: did2,
     };
+
+    let opts = Statements::TwoKey(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
-    check_statement(
-        &client,
-        statement_type::StatementTypes::SelfSigned(opts.clone()),
-        &statement,
-    )
-    .await
-    .unwrap();
+    check_statement(&client, opts, &statement).await.unwrap();
 
     println!("Self Signed Statement valid...");
 
-    let proof = self_signed::Claim::new(
-        opts,
-        TEST_2KEY_SOLANA_SIG_1.to_owned(),
-        TEST_2KEY_SOLANA_SIG_2.to_owned(),
-    )
-    .await
-    .unwrap();
+    let proof = proof::two_key::TwoKey {
+        statement: inner,
+        signature_1: TEST_2KEY_SOLANA_SIG_1.to_owned(),
+        signature_2: TEST_2KEY_SOLANA_SIG_2.to_owned(),
+    };
 
     let req = WitnessReq {
-        proof: proof_type::ProofTypes::SelfSigned(proof),
+        proof: Proofs::TwoKey(proof),
     };
 
     client.jwt(req).await.unwrap();

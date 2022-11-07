@@ -167,15 +167,16 @@ function handleOptions(request) {
   }
 }
 
-// TODO: Make a secret to be consistent in witnessOpts
-// const DID_WEB = "did:web:rebasedemokey.pages.dev";
-// const GITHUB_USER_AGENT = "Spruce Systems";
-
 function witnessOpts() {  
   let o = {};
+  o.dns = {};
+  o.reddit = {};
+  o.two_key = {};
+
   if (GITHUB_USER_AGENT) {
     o.github = {
-      user_agent: GITHUB_USER_AGENT
+      user_agent: GITHUB_USER_AGENT,
+      delimitor: "\n\n"
     }
   }
 
@@ -193,7 +194,8 @@ function witnessOpts() {
 
   if (TWITTER_BEARER_TOKEN) {
     o.twitter = {
-      api_key: TWITTER_BEARER_TOKEN
+      api_key: TWITTER_BEARER_TOKEN,
+      delimitor: "\n\n"
     }
   }
 
@@ -206,21 +208,12 @@ function witnessOpts() {
 
   if (useSendGrid) {
     o.email = {
-      send_grid_basic: {
-        api_key: SENDGRID_BEARER_TOKEN,
-        from_addr: SENDGRID_FROM_ADDRESS,
-        from_name: SENDGRID_FROM_NAME,
-        max_elapsed_minutes: parseInt(SENDGRID_MAX_ELAPSED_MINS),
-        service_name: SENDGRID_SERVICE_NAME,
-        signer: {
-          ed25519_did_web_jwk: {
-            key: REBASE_SK,
-            did: DID_WEB,
-            // TODO: Make this a configurable?
-            name: "controller"
-          }
-        }
-      } 
+      api_key: SENDGRID_BEARER_TOKEN,
+      from_addr: SENDGRID_FROM_ADDRESS,
+      from_name: SENDGRID_FROM_NAME,
+      max_elapsed_minutes: parseInt(SENDGRID_MAX_ELAPSED_MINS),
+      // TODO: CHANGE NAME OF SECRET.
+      subject_name: SENDGRID_SERVICE_NAME,
     }
   }
 
@@ -236,14 +229,13 @@ const {statement, witness, instructions} = wasm_bindgen;
 const instance = wasm_bindgen(wasm);
 
 async function stmt(request) {
-  console.log("HERE");
   try {
     await instance;
     const h = request.headers;
     const contentType = h.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const body_str = JSON.stringify(await request.json());
-      const res = await statement(body_str, JSON.stringify(opts));
+      const res = await statement(REBASE_SK, body_str, JSON.stringify(opts));
       return new Response(res, {status: 200, headers: headers});
     } else {
       return new Response(JSON.stringify(new Error(`Expected content-type application/json, got: ${contentType}`)), {
@@ -252,8 +244,6 @@ async function stmt(request) {
       });
     }
   } catch (e) {
-    console.log("In Err")
-    console.log(e)
     return new Response(JSON.stringify(e), { status: 400, headers: headers});
   }
 }
@@ -289,8 +279,7 @@ async function inst(request) {
 
     if (contentType.includes('application/json')) {
       let body = await request.json();
-
-      const res = await instructions(JSON.stringify(body));
+      const res = await instructions(JSON.stringify(body), JSON.stringify(opts));
 
       return new Response(res, {status: 200, headers: headers});
     } else {
