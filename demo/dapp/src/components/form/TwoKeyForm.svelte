@@ -133,15 +133,25 @@
             throw new Error("Validation of Statement Request failed");
         }
 
-        let b = JSON.stringify(o);
-        let res = await client.statement(b);
-        let body = JSON.parse(res);
+        const noStatementErr = "Did not find statement in response";
+        try {
+            let b = JSON.stringify(o);
+            let res = await client.statement(b);
+            let body = JSON.parse(res);
+            if (!body.statement) {
+                throw new Error(noStatementErr);
+            }
 
-        if (!body.statement) {
-            throw new Error("Did not find statement in response.");
+            statement = body.statement;
+        } catch (e) {
+            if (e.message === noStatementErr) {
+                throw new Error(e.message);
+            } else {
+                throw new Error(
+                    "Failed to generate statement, please retry the flow from the start"
+                );
+            }
         }
-
-        statement = body.statement;
     }
 
     const setNew = (credential: string) => {
@@ -183,12 +193,18 @@
             throw new Error("Validation of Witness Request failed");
         }
 
-        let b = JSON.stringify({ proof });
-        let res = await client.jwt(b);
+        try {
+            let b = JSON.stringify({ proof });
+            let res = await client.jwt(b);
 
-        let { jwt } = JSON.parse(res);
+            let { jwt } = JSON.parse(res);
 
-        setNew(jwt);
+            setNew(jwt);
+        } catch (e) {
+            throw new Error(
+                "Failed to generate credential, please retry the flow from the start"
+            );
+        }
     };
 
     function main_handler(signer: Signer) {

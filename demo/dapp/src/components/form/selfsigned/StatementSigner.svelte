@@ -39,11 +39,13 @@
             await sign();
         } catch (e) {
             alert.set({
+                message: "Failed to get signature",
                 variant: "error",
-                message: e?.message ? e.message : e,
             });
         }
     }}
-    text={`Sign with ${displaySignerId(entry.signer)}`}
+    text={`Sign with ${
+        entry ? displaySignerId(entry.signer) : "Current Signer"
+    }`}
     action
 />

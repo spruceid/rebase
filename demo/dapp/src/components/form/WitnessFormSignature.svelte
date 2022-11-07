@@ -35,7 +35,7 @@
                 } catch (e) {
                     alert.set({
                         variant: "error",
-                        message: e?.message ? e.message : e,
+                        message: "Failed to get signature",
                     });
                 }
                 loading = false;
@@ -45,7 +45,9 @@
         />
     </div>
 </WitnessFormStepper>
-<div class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end">
+<div
+    class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end"
+>
     <Button
         class="w-2/5"
         onClick={back}
