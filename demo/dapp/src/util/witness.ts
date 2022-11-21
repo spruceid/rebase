@@ -1,4 +1,4 @@
-import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, EmailIcon, RedditIcon, SoundCloudIcon } from "components/icons";
+import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, EmailIcon, RedditIcon, SoundCloudIcon } from "src/components/icons";
 import type { CredentialType } from "./claim";
 import { Client } from "@rebase-xyz/rebase-client";
 
@@ -8,6 +8,16 @@ const instructionsUrl = `${witnessUrl}/instructions`;
 const jwtUrl = `${witnessUrl}/witness`;
 
 export const client = new Client(instructionsUrl, statementUrl, jwtUrl);
+
+export function needsDelimitor(c: CredentialType): boolean {
+    switch (c) {
+        case "github": 
+        case "twitter":
+            return true;
+        default:
+            return false;
+    }
+}
 
 export type PKHType = EIP155 | Solana;
 export interface EIP155 {
@@ -23,8 +33,8 @@ export interface Solana {
     }
 }
 
-export interface KeyType {
-    pkh: PKHType,
+export interface Subject {
+    pkh?: PKHType,
     web?: string;
 }
 export type Workflow = "signer" | "statement" | "signature" | "witness" | "complete"

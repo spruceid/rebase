@@ -12,7 +12,7 @@
         retrieveSignerEntry,
         signerMap,
         SignerMap,
-        getKeyType,
+        getSubject,
         disconnect,
         toQuery,
         signerMapAppend,
@@ -59,9 +59,7 @@
             lookUp1 = _lookUp;
         }
 
-        let res = await client.instructions(
-            JSON.stringify({ type: "self_signed" })
-        );
+        let res = await client.instructions(JSON.stringify({ type: "same" }));
         let instruction_res = JSON.parse(res);
         statement_schema = instruction_res?.statement_schema;
         witness_schema = instruction_res?.witness_schema;
@@ -113,14 +111,14 @@
             );
         }
 
-        key1 = getKeyType(s1.signer);
-        key2 = getKeyType(s2.signer);
+        key1 = getSubject(s1.signer);
+        key2 = getSubject(s2.signer);
 
         let o = {
             opts: {
-                self_signed: {
-                    key_1: key1,
-                    key_2: key2,
+                same: {
+                    id1: key1,
+                    id2: key2,
                 },
             },
         };
@@ -129,7 +127,7 @@
             throw new Error("No JSON Schema found for Statement Request");
         }
 
-        if (!ajv.validate(statement_schema, o.opts.self_signed)) {
+        if (!ajv.validate(statement_schema, o.opts.same)) {
             throw new Error("Validation of Statement Request failed");
         }
 
@@ -158,7 +156,7 @@
         let next: Array<Claim> = [];
         for (let i = 0, n = _claims.length; i < n; i++) {
             let claim = _claims[i];
-            if (claim.credential_type === "self_signed") {
+            if (claim.credential_type === "same") {
                 claim.credentials.push(credential);
             }
             next.push(claim);
@@ -175,13 +173,13 @@
         }
 
         const proof = {
-            self_signed: {
-                statement_opts: {
-                    key_1: key1,
-                    key_2: key2,
+            same: {
+                statement: {
+                    id1: key1,
+                    id2: key2,
                 },
-                signature_1: sig1,
-                signature_2: sig2,
+                signature1: sig1,
+                signature2: sig2,
             },
         };
 
@@ -189,7 +187,7 @@
             throw new Error("No JSON Schema found for Witness Request");
         }
 
-        if (!ajv.validate(witness_schema, proof.self_signed)) {
+        if (!ajv.validate(witness_schema, proof.same)) {
             throw new Error("Validation of Witness Request failed");
         }
 

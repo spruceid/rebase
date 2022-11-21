@@ -1,10 +1,9 @@
 use crate::{
     content::soundcloud::SoundCloud as Ctnt,
-    flow::response::PostResponse,
     statement::soundcloud::SoundCloud as Stmt,
     types::{
         error::FlowError,
-        types::{Flow, Instructions, Issuer, Proof, Statement, Subject},
+        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -65,7 +64,7 @@ struct SoundCloudEntry {
 }
 
 #[async_trait(?Send)]
-impl Flow<Ctnt, Stmt, Stmt, PostResponse> for SoundCloudFlow {
+impl Flow<Ctnt, Stmt, Stmt> for SoundCloudFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
             statement: "Enter your SoundCloud profile url to verify and include in a signed message using your wallet.".to_string(),
@@ -80,11 +79,10 @@ impl Flow<Ctnt, Stmt, Stmt, PostResponse> for SoundCloudFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<PostResponse, FlowError> {
-        Ok(PostResponse {
+    ) -> Result<FlowResponse, FlowError> {
+        Ok(FlowResponse {
             statement: statement.generate_statement()?,
-            // TODO: REMOVE WHEN DOING BREAKING CHANGES
-            delimitor: "\n\n".to_owned(),
+            delimitor: None,
         })
     }
 
@@ -170,7 +168,7 @@ mod tests {
     }
 
     #[async_trait(?Send)]
-    impl Flow<Ctnt, Stmt, Stmt, PostResponse> for MockFlow {
+    impl Flow<Ctnt, Stmt, Stmt> for MockFlow {
         fn instructions(&self) -> Result<Instructions, FlowError> {
             Ok(Instructions {
                 statement: "Unimplemented".to_string(),
@@ -185,11 +183,10 @@ mod tests {
             &self,
             statement: &Stmt,
             _issuer: &I,
-        ) -> Result<PostResponse, FlowError> {
-            Ok(PostResponse {
+        ) -> Result<FlowResponse, FlowError> {
+            Ok(FlowResponse {
                 statement: statement.generate_statement()?,
-                // TODO: REMOVE WHEN DOING BREAKING CHANGES
-                delimitor: "\n\n".to_owned(),
+                delimitor: None,
             })
         }
 

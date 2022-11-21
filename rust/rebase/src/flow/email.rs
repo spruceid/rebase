@@ -1,11 +1,10 @@
 use crate::{
     content::email::Email as Ctnt,
-    flow::response::PostResponse,
     proof::email::Email as Prf,
     statement::email::Email as Stmt,
     types::{
         error::FlowError,
-        types::{Flow, Instructions, Issuer, Proof, Statement, Subject},
+        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -50,7 +49,7 @@ impl SendGridBasic {
 }
 
 #[async_trait(?Send)]
-impl Flow<Ctnt, Stmt, Prf, PostResponse> for SendGridBasic {
+impl Flow<Ctnt, Stmt, Prf> for SendGridBasic {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
             statement: "Enter the email addres you wish to prove the ownership of.".to_string(),
@@ -65,7 +64,7 @@ impl Flow<Ctnt, Stmt, Prf, PostResponse> for SendGridBasic {
         &self,
         stmt: &Stmt,
         issuer: &I,
-    ) -> Result<PostResponse, FlowError> {
+    ) -> Result<FlowResponse, FlowError> {
         let statement = stmt.generate_statement()?;
         let b = self.body(stmt, issuer).await?;
         let s = self.subject(stmt).await?;
@@ -73,8 +72,8 @@ impl Flow<Ctnt, Stmt, Prf, PostResponse> for SendGridBasic {
             "personalizations": [{
                     "to": [
                         {
-                            "email": stmt.email,
                             // TODO: Add name?
+                            "email": stmt.email,
                         }
                     ],
                     "subject": s
@@ -120,10 +119,9 @@ impl Flow<Ctnt, Stmt, Prf, PostResponse> for SendGridBasic {
                 FlowError::BadLookup(format!("Could not send email: {}", e.to_string()))
             })?;
 
-        Ok(PostResponse {
+        Ok(FlowResponse {
             statement,
-            // TODO: REMOVE WHEN DOING BREAKING CHANGES
-            delimitor: "\n\n".to_owned(),
+            delimitor: None,
         })
     }
 

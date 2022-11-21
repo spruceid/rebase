@@ -1,6 +1,5 @@
-use crate::types::{
-    InstructionsReq, StatementReq, StatementRes, WitnessJWTRes, WitnessLDRes, WitnessReq,
-};
+use crate::types::{InstructionsReq, StatementReq, WitnessJWTRes, WitnessLDRes, WitnessReq};
+use rebase::types::types::FlowResponse;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -60,10 +59,10 @@ impl Client {
         Ok(res)
     }
 
-    pub async fn statement(&self, req: StatementReq) -> Result<StatementRes, ClientError> {
+    pub async fn statement(&self, req: StatementReq) -> Result<FlowResponse, ClientError> {
         let client = HttpClient::new();
 
-        let res: StatementRes = client
+        Ok(client
             .post(self.endpoints.statement.clone())
             .json(&req)
             .send()
@@ -71,9 +70,7 @@ impl Client {
             .map_err(|e| ClientError::Statement(e.to_string()))?
             .json()
             .await
-            .map_err(|e| ClientError::Statement(e.to_string()))?;
-
-        Ok(res)
+            .map_err(|e| ClientError::Statement(e.to_string()))?)
     }
 
     pub async fn jwt(&self, req: WitnessReq) -> Result<WitnessJWTRes, ClientError> {

@@ -1,10 +1,9 @@
 use crate::{
     content::dns::Dns as Ctnt,
-    flow::response::PostResponse,
     statement::dns::Dns as Stmt,
     types::{
         error::FlowError,
-        types::{Flow, Instructions, Issuer, Proof, Statement, Subject},
+        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -30,7 +29,7 @@ pub struct AnswerResponse {
 }
 
 #[async_trait(?Send)]
-impl Flow<Ctnt, Stmt, Stmt, PostResponse> for DnsFlow {
+impl Flow<Ctnt, Stmt, Stmt> for DnsFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
             statement: "Enter the Web Domain you wish to prove ownership of.".to_string(),
@@ -45,11 +44,10 @@ impl Flow<Ctnt, Stmt, Stmt, PostResponse> for DnsFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<PostResponse, FlowError> {
-        Ok(PostResponse {
+    ) -> Result<FlowResponse, FlowError> {
+        Ok(FlowResponse {
             statement: statement.generate_statement()?,
-            // TODO: REMOVE WHEN DOING BREAKING CHANGES
-            delimitor: "\n\n".to_owned(),
+            delimitor: None,
         })
     }
 
@@ -117,7 +115,7 @@ mod tests {
     }
 
     #[async_trait(?Send)]
-    impl Flow<Ctnt, Stmt, Stmt, PostResponse> for MockFlow {
+    impl Flow<Ctnt, Stmt, Stmt> for MockFlow {
         fn instructions(&self) -> Result<Instructions, FlowError> {
             Ok(Instructions {
                 statement: "Unimplemented".to_string(),
@@ -132,11 +130,10 @@ mod tests {
             &self,
             statement: &Stmt,
             _issuer: &I,
-        ) -> Result<PostResponse, FlowError> {
-            Ok(PostResponse {
+        ) -> Result<FlowResponse, FlowError> {
+            Ok(FlowResponse {
                 statement: statement.generate_statement()?,
-                // TODO: REMOVE WHEN DOING BREAKING CHANGES
-                delimitor: "\n\n".to_owned(),
+                delimitor: None,
             })
         }
 
@@ -180,8 +177,6 @@ mod tests {
             .await
             .unwrap();
 
-        /* TODO: Figure out why this one breaks, maybe re-impl?
-         */
         let did = mock_proof(test_ed25519_did);
         let signature = test_witness_signature(TestWitness::DNS, TestKey::Ed25519).unwrap();
         let statement = test_witness_statement(TestWitness::DNS, TestKey::Ed25519).unwrap();

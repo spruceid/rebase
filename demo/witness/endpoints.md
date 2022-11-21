@@ -272,7 +272,7 @@ interface InstructionsReq {
     type: InstructionsType
 }
 
-type InstructionsType = "dns" | "github" | "self_signed" | "twitter" | ...
+type InstructionsType = "dns" | "github" | "same" | "twitter" | ...
 ```
 
 The response is defined in Typescript as:

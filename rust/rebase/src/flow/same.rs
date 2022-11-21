@@ -1,11 +1,10 @@
 use crate::{
-    content::two_key::TwoKey as Ctnt,
-    flow::response::PostResponse,
-    proof::two_key::TwoKey as Prf,
-    statement::two_key::TwoKey as Stmt,
+    content::same::Same as Ctnt,
+    proof::same::Same as Prf,
+    statement::same::Same as Stmt,
     types::{
         error::FlowError,
-        types::{Flow, Instructions, Issuer, Proof, Statement, Subject},
+        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -14,10 +13,10 @@ use schemars::schema_for;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
-pub struct TwoKeyFlow {}
+pub struct SameFlow {}
 
 #[async_trait(?Send)]
-impl Flow<Ctnt, Stmt, Prf, PostResponse> for TwoKeyFlow {
+impl Flow<Ctnt, Stmt, Prf> for SameFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
             statement: "Please enter both of the signers you wish to link along with what type of signer they are".to_string(),
@@ -32,10 +31,10 @@ impl Flow<Ctnt, Stmt, Prf, PostResponse> for TwoKeyFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<PostResponse, FlowError> {
-        Ok(PostResponse {
+    ) -> Result<FlowResponse, FlowError> {
+        Ok(FlowResponse {
             statement: statement.generate_statement()?,
-            delimitor: "".to_owned(),
+            delimitor: None,
         })
     }
 
@@ -43,18 +42,18 @@ impl Flow<Ctnt, Stmt, Prf, PostResponse> for TwoKeyFlow {
         let s = proof.statement.generate_statement()?;
         proof
             .statement
-            .subject1
-            .valid_signature(&s, &proof.signature_1)
+            .id1
+            .valid_signature(&s, &proof.signature1)
             .await?;
 
         proof
             .statement
-            .subject2
-            .valid_signature(&s, &proof.signature_2)
+            .id2
+            .valid_signature(&s, &proof.signature2)
             .await?;
 
         // NOTE: The passed signature is discarded internally, using both found in proof.
-        Ok(proof.to_content(&s, &proof.signature_1)?)
+        Ok(proof.to_content(&s, &proof.signature1)?)
     }
 }
 #[cfg(test)]
@@ -79,11 +78,11 @@ mod tests {
     ) -> Result<Prf, FlowError> {
         Ok(Prf {
             statement: Stmt {
-                subject1: key_1(),
-                subject2: key_2(),
+                id1: key_1(),
+                id2: key_2(),
             },
-            signature_1: sig_1.to_owned(),
-            signature_2: sig_2.to_owned(),
+            signature1: sig_1.to_owned(),
+            signature2: sig_2.to_owned(),
         })
     }
 
@@ -100,7 +99,7 @@ mod tests {
         .await
         .unwrap();
 
-        let flow = TwoKeyFlow {};
+        let flow = SameFlow {};
 
         flow.unsigned_credential(&p, &test_eth_did(), &issuer)
             .await
@@ -184,7 +183,7 @@ mod tests {
     #[tokio::test]
     async fn test_ed25519_claim() {
         let issuer = MockIssuer {};
-        let flow = TwoKeyFlow {};
+        let flow = SameFlow {};
 
         // The valid case.
         let p = mock_proof(
@@ -293,7 +292,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_solana_claim() {
-        let flow = TwoKeyFlow {};
+        let flow = SameFlow {};
         let issuer = MockIssuer {};
 
         // The valid case.

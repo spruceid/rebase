@@ -171,7 +171,7 @@ function witnessOpts() {
   let o = {};
   o.dns = {};
   o.reddit = {};
-  o.two_key = {};
+  o.same = {};
 
   if (GITHUB_USER_AGENT) {
     o.github = {

@@ -1,11 +1,10 @@
 use crate::{
     content::github::GitHub as Ctnt,
-    flow::response::PostResponse,
     proof::github::GitHub as Prf,
     statement::github::GitHub as Stmt,
     types::{
         error::FlowError,
-        types::{Flow, Issuer, Proof, Statement, Subject, Instructions},
+        types::{Flow, FlowResponse, Issuer, Proof, Statement, Subject, Instructions},
     },
 };
 
@@ -47,7 +46,7 @@ pub struct History {
 }
 
 #[async_trait(?Send)]
-impl Flow<Ctnt, Stmt, Prf, PostResponse> for GitHubFlow {
+impl Flow<Ctnt, Stmt, Prf> for GitHubFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions { 
             statement: "Enter your GitHub account handle to verify and include in a signed message using your wallet.".to_string(),
@@ -62,10 +61,10 @@ impl Flow<Ctnt, Stmt, Prf, PostResponse> for GitHubFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<PostResponse, FlowError> {
-        Ok(PostResponse {
-            delimitor: self.delimitor.to_owned(),
+    ) -> Result<FlowResponse, FlowError> {
+        Ok(FlowResponse {
             statement: statement.generate_statement()?,
+            delimitor: Some(self.delimitor.to_owned())
         })
     }
 
@@ -169,7 +168,7 @@ mod tests {
     }
 
     #[async_trait(?Send)]
-    impl Flow<Ctnt, Stmt, Prf, PostResponse> for MockFlow {
+    impl Flow<Ctnt, Stmt, Prf> for MockFlow {
         fn instructions(&self) -> Result<Instructions, FlowError> {
             Ok(Instructions {
                 statement: "Unimplemented".to_string(),
@@ -184,11 +183,10 @@ mod tests {
             &self,
             statement: &Stmt,
             _issuer: &I,
-        ) -> Result<PostResponse, FlowError> {
-            Ok(PostResponse {
+        ) -> Result<FlowResponse, FlowError> {
+            Ok(FlowResponse {
                 statement: statement.generate_statement()?,
-                // TODO: REMOVE WHEN DOING BREAKING CHANGES
-                delimitor: "\n\n".to_owned(),
+                delimitor: Some("\n\n".to_string())
             })
         }
 
