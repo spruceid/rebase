@@ -1,11 +1,10 @@
 use crate::{
     content::twitter::Twitter as Ctnt,
-    flow::response::PostResponse,
     proof::twitter::Twitter as Prf,
     statement::twitter::Twitter as Stmt,
     types::{
         error::FlowError,
-        types::{Flow, Instructions, Issuer, Proof, Statement, Subject},
+        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -47,7 +46,7 @@ pub struct TwitterResponse {
 }
 
 #[async_trait(?Send)]
-impl Flow<Ctnt, Stmt, Prf, PostResponse> for TwitterFlow {
+impl Flow<Ctnt, Stmt, Prf> for TwitterFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
             statement: "Enter your Twitter account handle to verify and include in a signed message using your wallet.".to_string(),
@@ -62,9 +61,9 @@ impl Flow<Ctnt, Stmt, Prf, PostResponse> for TwitterFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<PostResponse, FlowError> {
-        Ok(PostResponse {
-            delimitor: self.delimitor.to_owned(),
+    ) -> Result<FlowResponse, FlowError> {
+        Ok(FlowResponse {
+            delimitor: Some(self.delimitor.to_owned()),
             statement: statement.generate_statement()?,
         })
     }
@@ -157,7 +156,7 @@ mod tests {
     }
 
     #[async_trait(?Send)]
-    impl Flow<Ctnt, Stmt, Prf, PostResponse> for MockFlow {
+    impl Flow<Ctnt, Stmt, Prf> for MockFlow {
         fn instructions(&self) -> Result<Instructions, FlowError> {
             Ok(Instructions {
                 statement: "Unimplemented".to_string(),
@@ -172,11 +171,10 @@ mod tests {
             &self,
             statement: &Stmt,
             _issuer: &I,
-        ) -> Result<PostResponse, FlowError> {
-            Ok(PostResponse {
+        ) -> Result<FlowResponse, FlowError> {
+            Ok(FlowResponse {
                 statement: statement.generate_statement()?,
-                // TODO: REMOVE WHEN DOING BREAKING CHANGES
-                delimitor: "\n\n".to_owned(),
+                delimitor: Some("\n\n".to_owned()),
             })
         }
 

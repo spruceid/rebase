@@ -1,4 +1,4 @@
-import type { DiscordIcon, EmailIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon, RedditIcon, SoundCloudIcon } from 'components/icons';
+import type { DiscordIcon, EmailIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon, RedditIcon, SoundCloudIcon } from 'src/components/icons';
 import { parseJWT } from './jwt';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
@@ -8,8 +8,9 @@ export type CredentialType = "discord"
     | "twitter" 
     | "github" 
     | "reddit" 
-    | "self_signed" 
+    | "same" 
     | "soundcloud";
+
 export type ClaimIcon = typeof TwitterIcon 
     | typeof EthereumIcon 
     | typeof EmailIcon
@@ -96,9 +97,9 @@ export const credentialToDisplay = (jwt: string): CredentialDisplay => {
                 address
             }
         }
-        case "SelfSignedControl": {
-            let key1 = vc?.credentialSubject?.id;
-            let key2 = vc?.credentialSubject?.sameAs;
+        case "SameControllerAssertion": {
+            let key1 = vc?.credentialSubject?.id1;
+            let key2 = vc?.credentialSubject?.id2;
             let handle = key1.split(":")[key1.split(":").length - 1]
             let address = key2.split(":")[key2.split(":").length - 1]
 

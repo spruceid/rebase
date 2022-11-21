@@ -16,7 +16,7 @@ pub enum Contents {
     Reddit(RedditCtnt),
     SoundCloud(SoundCloudCtnt),
     Twitter(TwitterCtnt),
-    TwoKey(TwoKeyCtnt),
+    Same(SameCtnt),
 }
 ```
 
@@ -30,7 +30,7 @@ pub struct WitnessFlow {
     reddit: RedditFlow,
     soundcloud: Option<SoundCloudFlow>,
     twitter: Option<TwitterFlow>,
-    two_key: TwoKeyFlow,
+    same: SameFlow,
 }
 ```
 The flows that are not optional have no internal properties, thus are always available. Once all of these have been defined, it becomes possible to implement:

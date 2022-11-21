@@ -11,8 +11,6 @@ use serde::{Deserialize, Serialize};
 pub struct Dns {
     pub domain: String,
     pub prefix: String,
-    // TODO: CHANGE WHEN READY FOR BREAKING CHANGES:
-    #[serde(rename = "key_type")]
     pub subject: Subjects,
 }
 

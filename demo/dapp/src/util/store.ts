@@ -2,7 +2,7 @@ import { writable, Writable } from "svelte/store";
 import { GlobeIcon, KeyIcon, TwitterIcon, EmailIcon, GitHubIcon, RedditIcon, SoundCloudIcon } from 'src/components/icons';
 import type { Claim } from "./claim";
 import { connectedCount, connectSigner, disconnectSigner, retrieveSignerEntry, getAllConnected, Signer,  SignerType, SignerMap, newSignerMap, SignerQuery, signWith, retrieveSigner, ProviderType, toQuery } from "./signer";
-import type { KeyType, Workflow } from "./witness";
+import type { Subject, Workflow } from "./witness";
 
 // TODO: Break into UI file?
 export type AccountState = "available" | "obtained";
@@ -77,12 +77,11 @@ function defaultClaims(): Claim[] {
             type: "public",
             available: true,
         },
-
         {
             credentials: [],
-            credential_type: "self_signed",
+            credential_type: "same",
             icon: KeyIcon,
-            title: "Two Key Self Signed",
+            title: "Same Controller",
             type: "public",
             available: true,
         },
@@ -115,7 +114,7 @@ function defaultClaims(): Claim[] {
 
 export let claims: Writable<Array<Claim>> = writable(defaultClaims());
 
-export const getKeyType = (signer: Signer): KeyType => {
+export const getSubject = (signer: Signer): Subject => {
     if (!signer) {
         throw new Error("Please connect your wallet");
     }

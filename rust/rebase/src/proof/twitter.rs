@@ -12,8 +12,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
 #[serde(rename = "proof")]
 pub struct Twitter {
-    // TODO: Remove when we're ready for breaking changes
-    #[serde(rename = "statement_opts")]
     pub statement: Stmt,
     pub tweet_url: String,
 }

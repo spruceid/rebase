@@ -174,12 +174,12 @@ async fn main() {
     let did = test_eth_did();
     let did2 = test_eth_did_2();
 
-    let inner = statement::two_key::TwoKey {
-        subject1: did,
-        subject2: did2,
+    let inner = statement::same::Same {
+        id1: did,
+        id2: did2,
     };
 
-    let opts = Statements::TwoKey(inner.clone());
+    let opts = Statements::Same(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -187,14 +187,14 @@ async fn main() {
 
     println!("Self Signed Statement valid...");
 
-    let proof = proof::two_key::TwoKey {
+    let proof = proof::same::Same {
         statement: inner,
-        signature_1: TEST_2KEY_ETH_SIG_1.to_owned(),
-        signature_2: TEST_2KEY_ETH_SIG_2.to_owned(),
+        signature1: TEST_2KEY_ETH_SIG_1.to_owned(),
+        signature2: TEST_2KEY_ETH_SIG_2.to_owned(),
     };
 
     let req = WitnessReq {
-        proof: Proofs::TwoKey(proof),
+        proof: Proofs::Same(proof),
     };
 
     client.jwt(req).await.unwrap();
@@ -264,12 +264,12 @@ async fn main() {
 
     let did = test_solana_did();
     let did2 = test_solana_did_2();
-    let inner = statement::two_key::TwoKey {
-        subject1: did,
-        subject2: did2,
+    let inner = statement::same::Same {
+        id1: did,
+        id2: did2,
     };
 
-    let opts = Statements::TwoKey(inner.clone());
+    let opts = Statements::Same(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -277,14 +277,14 @@ async fn main() {
 
     println!("Self Signed Statement valid...");
 
-    let proof = proof::two_key::TwoKey {
+    let proof = proof::same::Same {
         statement: inner,
-        signature_1: TEST_2KEY_SOLANA_SIG_1.to_owned(),
-        signature_2: TEST_2KEY_SOLANA_SIG_2.to_owned(),
+        signature1: TEST_2KEY_SOLANA_SIG_1.to_owned(),
+        signature2: TEST_2KEY_SOLANA_SIG_2.to_owned(),
     };
 
     let req = WitnessReq {
-        proof: Proofs::TwoKey(proof),
+        proof: Proofs::Same(proof),
     };
 
     client.jwt(req).await.unwrap();

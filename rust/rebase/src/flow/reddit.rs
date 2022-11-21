@@ -1,10 +1,9 @@
 use crate::{
     content::reddit::Reddit as Ctnt,
-    flow::response::PostResponse,
     statement::reddit::Reddit as Stmt,
     types::{
         error::FlowError,
-        types::{Flow, Instructions, Issuer, Proof, Statement, Subject},
+        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 use async_trait::async_trait;
@@ -32,7 +31,7 @@ pub struct AboutSubreddit {
 pub struct RedditFlow {}
 
 #[async_trait(?Send)]
-impl Flow<Ctnt, Stmt, Stmt, PostResponse> for RedditFlow {
+impl Flow<Ctnt, Stmt, Stmt> for RedditFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
             statement: "Enter your Reddit account handle to verify and include in a signed message using your wallet.".to_string(),
@@ -47,11 +46,10 @@ impl Flow<Ctnt, Stmt, Stmt, PostResponse> for RedditFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<PostResponse, FlowError> {
-        Ok(PostResponse {
+    ) -> Result<FlowResponse, FlowError> {
+        Ok(FlowResponse {
             statement: statement.generate_statement()?,
-            // TODO: REMOVE WHEN DOING BREAKING CHANGES
-            delimitor: "\n\n".to_owned(),
+            delimitor: None,
         })
     }
 
@@ -94,7 +92,7 @@ mod tests {
         },
         types::{
             enums::subject::Subjects,
-            types::{Issuer, Statement, Subject},
+            types::{FlowResponse, Issuer, Statement, Subject},
         },
     };
 
@@ -106,7 +104,7 @@ mod tests {
     }
 
     #[async_trait(?Send)]
-    impl Flow<Ctnt, Stmt, Stmt, PostResponse> for MockFlow {
+    impl Flow<Ctnt, Stmt, Stmt> for MockFlow {
         fn instructions(&self) -> Result<Instructions, FlowError> {
             Ok(Instructions {
                 statement: "Unimplemented".to_string(),
@@ -121,11 +119,10 @@ mod tests {
             &self,
             statement: &Stmt,
             _issuer: &I,
-        ) -> Result<PostResponse, FlowError> {
-            Ok(PostResponse {
+        ) -> Result<FlowResponse, FlowError> {
+            Ok(FlowResponse {
                 statement: statement.generate_statement()?,
-                // TODO: REMOVE WHEN DOING BREAKING CHANGES
-                delimitor: "\n\n".to_owned(),
+                delimitor: None,
             })
         }
 

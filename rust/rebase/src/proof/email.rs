@@ -14,8 +14,6 @@ use serde::{Deserialize, Serialize};
 pub struct Email {
     pub auth: String,
     pub signature: String,
-    // TODO: Remove when we're ready for breaking changes
-    #[serde(rename = "statement_opts")]
     pub statement: Stmt,
     pub timestamp: String,
 }

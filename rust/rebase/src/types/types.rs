@@ -117,13 +117,18 @@ pub struct Instructions {
     pub witness_schema: RootSchema,
 }
 
+#[derive(Deserialize, Serialize)]
+pub struct FlowResponse {
+    pub statement: String,
+    pub delimitor: Option<String>,
+}
+
 #[async_trait(?Send)]
-pub trait Flow<C, S, P, R>
+pub trait Flow<C, S, P>
 where
     C: Content,
     S: Statement,
     P: Proof<C>,
-    R: Serialize,
 {
     async fn credential<I: Issuer>(&self, proof: &P, issuer: &I) -> Result<Credential, FlowError> {
         let content = self.validate_proof(proof, issuer).await?;
@@ -137,7 +142,11 @@ where
         Ok(content.jwt(issuer).await?)
     }
 
-    async fn statement<I: Issuer>(&self, statement: &S, issuer: &I) -> Result<R, FlowError>;
+    async fn statement<I: Issuer>(
+        &self,
+        statement: &S,
+        issuer: &I,
+    ) -> Result<FlowResponse, FlowError>;
 
     async fn unsigned_credential<Subj: Subject, I: Issuer>(
         &self,

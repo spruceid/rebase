@@ -10,8 +10,6 @@ use serde::{Deserialize, Serialize};
 #[serde(rename = "statement")]
 pub struct GitHub {
     pub handle: String,
-    // TODO: CHANGE WHEN READY FOR BREAKING CHANGES:
-    #[serde(rename = "key_type")]
     pub subject: Subjects,
 }
 

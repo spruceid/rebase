@@ -13,8 +13,6 @@ use serde::{Deserialize, Serialize};
 #[serde(rename = "proof")]
 pub struct GitHub {
     pub gist_id: String,
-    // TODO: Remove when we're ready for breaking changes
-    #[serde(rename = "statement_opts")]
     pub statement: Stmt,
 }
 

@@ -7,13 +7,14 @@
         retrieveSigner,
         signerMap,
         claims,
-        getKeyType,
+        getSubject,
         witnessState,
         sign,
         client,
         Signer,
         lookUp,
         alert,
+        needsDelimitor,
         signerMapAppend,
         toQuery,
     } from "src/util";
@@ -178,22 +179,22 @@
             case "dns":
                 opts[type]["domain"] = handle;
                 opts[type]["prefix"] = dnsPrefix;
-                opts[type]["key_type"] = getKeyType(current);
+                opts[type]["subject"] = getSubject(current);
                 break;
             case "github":
             case "twitter":
             case "reddit":
                 opts[type]["handle"] = handle;
-                opts[type]["key_type"] = getKeyType(current);
+                opts[type]["subject"] = getSubject(current);
                 break;
             case "soundcloud":
                 opts[type]["permalink"] =
                     handle.split("/")[handle.split("/").length - 1];
-                opts[type]["key_type"] = getKeyType(current);
+                opts[type]["subject"] = getSubject(current);
                 break;
             case "email":
                 opts[type]["email"] = handle;
-                opts[type]["key_type"] = getKeyType(current);
+                opts[type]["subject"] = getSubject(current);
                 break;
             default:
                 throw new Error(`${type} flow is currently unsupported`);
@@ -212,8 +213,12 @@
             let res = await client.statement(JSON.stringify({ opts }));
 
             let body = JSON.parse(res);
-            if (!body.statement || !body.delimitor) {
-                throw new Error(badRespErr);
+            if (!body.statement) {
+                throw new Error(badRespErr + " missing statement");
+            }
+
+            if (needsDelimitor(type) && !body.delimitor) {
+                throw new Error(badRespErr + " missing delimitor");
             }
 
             statement = body.statement;
@@ -240,41 +245,38 @@
                 opts["dns"] = {};
                 opts["dns"]["domain"] = handle;
                 opts["dns"]["prefix"] = dnsPrefix;
-                opts["dns"]["key_type"] = getKeyType(current);
+                opts["dns"]["subject"] = getSubject(current);
                 break;
             case "reddit":
                 opts["reddit"] = {};
                 opts["reddit"]["handle"] = handle;
-                opts["reddit"]["key_type"] = getKeyType(current);
+                opts["reddit"]["subject"] = getSubject(current);
                 break;
             case "soundcloud":
                 opts["soundcloud"] = {};
                 opts["soundcloud"]["permalink"] =
                     handle.split("/")[handle.split("/").length - 1];
-                opts["soundcloud"]["key_type"] = getKeyType(current);
+                opts["soundcloud"]["subject"] = getSubject(current);
                 break;
             case "github":
                 opts["github"] = {};
-                opts["github"]["statement_opts"] = {};
-                opts["github"]["statement_opts"]["handle"] = handle;
-                opts["github"]["statement_opts"]["key_type"] =
-                    getKeyType(current);
+                opts["github"]["statement"] = {};
+                opts["github"]["statement"]["handle"] = handle;
+                opts["github"]["statement"]["subject"] = getSubject(current);
                 opts["github"]["gist_id"] = proof.split("/").pop();
                 break;
             case "twitter":
                 opts["twitter"] = {};
-                opts["twitter"]["statement_opts"] = {};
-                opts["twitter"]["statement_opts"]["handle"] = handle;
-                opts["twitter"]["statement_opts"]["key_type"] =
-                    getKeyType(current);
+                opts["twitter"]["statement"] = {};
+                opts["twitter"]["statement"]["handle"] = handle;
+                opts["twitter"]["statement"]["subject"] = getSubject(current);
                 opts["twitter"]["tweet_url"] = proof.split("?")[0];
                 break;
             case "email":
                 opts["email"] = {};
-                opts["email"]["statement_opts"] = {};
-                opts["email"]["statement_opts"]["email"] = handle;
-                opts["email"]["statement_opts"]["key_type"] =
-                    getKeyType(current);
+                opts["email"]["statement"] = {};
+                opts["email"]["statement"]["email"] = handle;
+                opts["email"]["statement"]["subject"] = getSubject(current);
                 opts["email"]["auth"] = proof.split(":::")[0].trim();
                 opts["email"]["timestamp"] = proof.split(":::")[1].trim();
                 opts["email"]["signature"] = signature;

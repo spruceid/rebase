@@ -2,12 +2,7 @@
     import type { CredentialType } from "../util";
     import { instructions } from "../util";
     import { onMount } from "svelte";
-    import {
-        WitnessForm,
-        BasePage,
-        TwoKeyForm,
-        // SelfSignedForm,
-    } from "src/components";
+    import { WitnessForm, BasePage, SameForm } from "src/components";
 
     export let type: CredentialType;
 
@@ -17,7 +12,7 @@
 
     onMount(async () => {
         try {
-            if (type !== "self_signed") {
+            if (type !== "same") {
                 inst = await instructions(type);
             }
             loading = false;
@@ -33,9 +28,9 @@
             <p class="inner-center">Building workflow...</p>
         {:else if errMsg}
             <p class="inner-center">Error encountered: ${errMsg}</p>
-        {:else if type === "self_signed"}
+        {:else if type === "same"}
             <!-- <SelfSignedForm /> -->
-            <TwoKeyForm />
+            <SameForm />
         {:else}
             <WitnessForm {type} instructions={inst} />
         {/if}

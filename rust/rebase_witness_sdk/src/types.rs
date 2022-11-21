@@ -2,26 +2,25 @@ pub use rebase::issuer;
 use rebase::{
     content::{
         dns::Dns as DnsCtnt, email::Email as EmailCtnt, github::GitHub as GitHubCtnt,
-        reddit::Reddit as RedditCtnt, soundcloud::SoundCloud as SoundCloudCtnt,
-        twitter::Twitter as TwitterCtnt, two_key::TwoKey as TwoKeyCtnt,
+        reddit::Reddit as RedditCtnt, same::Same as SameCtnt,
+        soundcloud::SoundCloud as SoundCloudCtnt, twitter::Twitter as TwitterCtnt,
     },
     flow::{
         dns::DnsFlow, email::SendGridBasic as EmailFlow, github::GitHubFlow, reddit::RedditFlow,
-        response::PostResponse, soundcloud::SoundCloudFlow, twitter::TwitterFlow,
-        two_key::TwoKeyFlow,
+        same::SameFlow, soundcloud::SoundCloudFlow, twitter::TwitterFlow,
     },
     proof::{
-        email::Email as EmailProof, github::GitHub as GitHubProof,
-        twitter::Twitter as TwitterProof, two_key::TwoKey as TwoKeyProof,
+        email::Email as EmailProof, github::GitHub as GitHubProof, same::Same as SameProof,
+        twitter::Twitter as TwitterProof,
     },
     statement::{
         dns::Dns as DnsStmt, email::Email as EmailStmt, github::GitHub as GitHubStmt,
-        reddit::Reddit as RedditStmt, soundcloud::SoundCloud as SoundCloudStmt,
-        twitter::Twitter as TwitterStmt, two_key::TwoKey as TwoKeyStmt,
+        reddit::Reddit as RedditStmt, same::Same as SameStmt,
+        soundcloud::SoundCloud as SoundCloudStmt, twitter::Twitter as TwitterStmt,
     },
     types::{
         error::{ContentError, FlowError, ProofError, StatementError},
-        types::{Content, Flow, Instructions, Issuer, Proof, Statement},
+        types::{Content, Flow, FlowResponse, Instructions, Issuer, Proof, Statement},
     },
 };
 
@@ -32,26 +31,6 @@ use ssi::{
     one_or_many::OneOrMany,
     vc::{Credential, Evidence},
 };
-
-// TODO: Change to use this once we're ready for breaking changes
-pub type StatementRes = PostResponse;
-/*
-#[derive(Deserialize, Serialize)]
-#[serde(untagged)]
-pub enum StatementRes {
-    Basic(BasicResponse),
-    Post(PostResponse),
-}
-
-impl StatementRes {
-    pub fn statement(&self) -> String {
-        match self {
-            StatementRes::Basic(x) => x.statement.clone(),
-            StatementRes::Post(x) => x.statement.clone(),
-        }
-    }
-}
-*/
 
 #[derive(Clone, Deserialize, Serialize)]
 pub enum InstructionsType {
@@ -67,9 +46,8 @@ pub enum InstructionsType {
     SoundCloud,
     #[serde(rename = "twitter")]
     Twitter,
-    // TODO: RENAME ONCE ISSUE IS RESOLVED
-    #[serde(rename = "self_signed")]
-    TwoKey,
+    #[serde(rename = "same")]
+    Same,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -80,7 +58,7 @@ pub enum Contents {
     Reddit(RedditCtnt),
     SoundCloud(SoundCloudCtnt),
     Twitter(TwitterCtnt),
-    TwoKey(TwoKeyCtnt),
+    Same(SameCtnt),
 }
 
 #[async_trait(?Send)]
@@ -93,7 +71,7 @@ impl Content for Contents {
             Contents::Reddit(x) => x.context(),
             Contents::SoundCloud(x) => x.context(),
             Contents::Twitter(x) => x.context(),
-            Contents::TwoKey(x) => x.context(),
+            Contents::Same(x) => x.context(),
         }
     }
 
@@ -105,7 +83,7 @@ impl Content for Contents {
             Contents::Reddit(x) => x.evidence(),
             Contents::SoundCloud(x) => x.evidence(),
             Contents::Twitter(x) => x.evidence(),
-            Contents::TwoKey(x) => x.evidence(),
+            Contents::Same(x) => x.evidence(),
         }
     }
 
@@ -117,7 +95,7 @@ impl Content for Contents {
             Contents::Reddit(x) => x.subject(),
             Contents::SoundCloud(x) => x.subject(),
             Contents::Twitter(x) => x.subject(),
-            Contents::TwoKey(x) => x.subject(),
+            Contents::Same(x) => x.subject(),
         }
     }
 
@@ -129,7 +107,7 @@ impl Content for Contents {
             Contents::Reddit(x) => x.types(),
             Contents::SoundCloud(x) => x.types(),
             Contents::Twitter(x) => x.types(),
-            Contents::TwoKey(x) => x.types(),
+            Contents::Same(x) => x.types(),
         }
     }
 }
@@ -149,9 +127,8 @@ pub enum Statements {
     SoundCloud(SoundCloudStmt),
     #[serde(rename = "twitter")]
     Twitter(TwitterStmt),
-    // TODO: CHANGE NAME TO RESULT OF ISSUE
-    #[serde(rename = "self_signed")]
-    TwoKey(TwoKeyStmt),
+    #[serde(rename = "same")]
+    Same(SameStmt),
 }
 
 impl Statement for Statements {
@@ -163,7 +140,7 @@ impl Statement for Statements {
             Statements::Reddit(x) => x.generate_statement(),
             Statements::SoundCloud(x) => x.generate_statement(),
             Statements::Twitter(x) => x.generate_statement(),
-            Statements::TwoKey(x) => x.generate_statement(),
+            Statements::Same(x) => x.generate_statement(),
         }
     }
 }
@@ -183,9 +160,8 @@ pub enum Proofs {
     SoundCloud(SoundCloudStmt),
     #[serde(rename = "twitter")]
     Twitter(TwitterProof),
-    // TODO: CHANGE NAME TO RESULT OF ISSUE
-    #[serde(rename = "self_signed")]
-    TwoKey(TwoKeyProof),
+    #[serde(rename = "same")]
+    Same(SameProof),
 }
 
 impl Statement for Proofs {
@@ -197,7 +173,7 @@ impl Statement for Proofs {
             Proofs::Reddit(x) => x.generate_statement(),
             Proofs::SoundCloud(x) => x.generate_statement(),
             Proofs::Twitter(x) => x.generate_statement(),
-            Proofs::TwoKey(x) => x.generate_statement(),
+            Proofs::Same(x) => x.generate_statement(),
         }
     }
 }
@@ -211,7 +187,7 @@ impl Proof<Contents> for Proofs {
             Proofs::Reddit(x) => Ok(Contents::Reddit(x.to_content(statement, signature)?)),
             Proofs::SoundCloud(x) => Ok(Contents::SoundCloud(x.to_content(statement, signature)?)),
             Proofs::Twitter(x) => Ok(Contents::Twitter(x.to_content(statement, signature)?)),
-            Proofs::TwoKey(x) => Ok(Contents::TwoKey(x.to_content(statement, signature)?)),
+            Proofs::Same(x) => Ok(Contents::Same(x.to_content(statement, signature)?)),
         }
     }
 }
@@ -224,11 +200,11 @@ pub struct WitnessFlow {
     reddit: RedditFlow,
     soundcloud: Option<SoundCloudFlow>,
     twitter: Option<TwitterFlow>,
-    two_key: TwoKeyFlow,
+    same: SameFlow,
 }
 
 #[async_trait(?Send)]
-impl Flow<Contents, Statements, Proofs, StatementRes> for WitnessFlow {
+impl Flow<Contents, Statements, Proofs> for WitnessFlow {
     // NOTE: This is unused, currently
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Err(FlowError::Validation("Cannot use generalized Instructions function for generalized witness, use get_instructions".to_owned()))
@@ -238,7 +214,7 @@ impl Flow<Contents, Statements, Proofs, StatementRes> for WitnessFlow {
         &self,
         stmt: &Statements,
         issuer: &I,
-    ) -> Result<StatementRes, FlowError> {
+    ) -> Result<FlowResponse, FlowError> {
         match stmt {
             Statements::Dns(s) => Ok(self.dns.statement(&s, issuer).await?),
             Statements::Email(s) => match &self.email {
@@ -264,7 +240,7 @@ impl Flow<Contents, Statements, Proofs, StatementRes> for WitnessFlow {
                     "no twitter flow configured".to_owned(),
                 )),
             },
-            Statements::TwoKey(s) => Ok(self.two_key.statement(&s, issuer).await?),
+            Statements::Same(s) => Ok(self.same.statement(&s, issuer).await?),
         }
     }
 
@@ -300,9 +276,7 @@ impl Flow<Contents, Statements, Proofs, StatementRes> for WitnessFlow {
                     "no twitter flow configured".to_owned(),
                 )),
             },
-            Proofs::TwoKey(p) => Ok(Contents::TwoKey(
-                self.two_key.validate_proof(&p, issuer).await?,
-            )),
+            Proofs::Same(p) => Ok(Contents::Same(self.same.validate_proof(&p, issuer).await?)),
         }
     }
 }
@@ -357,10 +331,10 @@ impl WitnessFlow {
             InstructionsType::Twitter => match &self.twitter {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
-                    "no soundcloud flow configured".to_owned(),
+                    "no twitter flow configured".to_owned(),
                 )),
             },
-            InstructionsType::TwoKey => self.two_key.instructions(),
+            InstructionsType::Same => self.same.instructions(),
         }
     }
 

@@ -9,30 +9,30 @@ use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
 
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "two_key")]
-pub struct TwoKey {
-    pub key_1: Subjects,
-    pub key_2: Subjects,
+#[serde(rename = "same")]
+pub struct Same {
+    pub id1: Subjects,
+    pub id2: Subjects,
     pub statement: String,
-    pub signature_1: String,
-    pub signature_2: String,
+    pub signature1: String,
+    pub signature2: String,
 }
 
-impl Content for TwoKey {
+impl Content for Same {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
             {
-                "id": "https://example.com/id",
-                "sameAs": "http://schema.org/sameAs",
-                "SelfSignedControl": "https://example.com/SelfSignedControl",
-                "SelfSignedControlVerification": {
-                    "@id": "https://example.com/SelfSignedControlVerification",
+                "id1": "https://example.com/id",
+                "id2": "https://example.com/id",
+                "SameControllerAssertion": "https://example.com/SameControllerAssertion",
+                "SameControllerEvidence": {
+                    "@id": "https://example.com/SameControllerEdvidence",
                     "@context": {
                         "@version": 1.1,
                         "@protected": true,
-                        "signature_1": "https://example.com/signature_1",
-                        "signature_2": "https://example.com/signature_2",
+                        "signature1": "https://example.com/signature_1",
+                        "signature2": "https://example.com/signature_2",
                         "statement": "https://example.com/statement",
                     }
                 },
@@ -43,13 +43,13 @@ impl Content for TwoKey {
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, ContentError> {
         let mut evidence_map = std::collections::HashMap::new();
         evidence_map.insert(
-            "signature_1".to_string(),
-            serde_json::Value::String(self.signature_1.clone()),
+            "signature1".to_string(),
+            serde_json::Value::String(self.signature1.clone()),
         );
 
         evidence_map.insert(
-            "signature_2".to_string(),
-            serde_json::Value::String(self.signature_2.clone()),
+            "signature2".to_string(),
+            serde_json::Value::String(self.signature2.clone()),
         );
 
         evidence_map.insert(
@@ -59,7 +59,7 @@ impl Content for TwoKey {
 
         let evidence = Evidence {
             id: None,
-            type_: vec!["SelfSignedControlVerification".to_string()],
+            type_: vec!["SameControllerEvidence".to_string()],
             property_set: Some(evidence_map),
         };
 
@@ -68,15 +68,15 @@ impl Content for TwoKey {
 
     fn subject(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!({
-            "id": self.key_1.did()?,
-            "sameAs": self.key_2.did()?,
+            "id1": self.id1.did()?,
+            "id2": self.id2.did()?,
         }))
     }
 
     fn types(&self) -> Result<Vec<String>, ContentError> {
         Ok(serde_json::from_value(json!([
             "VerifiableCredential",
-            "SelfSignedControl",
+            "SameControllerAssertion",
         ]))?)
     }
 }
