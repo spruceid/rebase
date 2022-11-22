@@ -56,7 +56,7 @@ async fn main() {
     let body = get_line().unwrap();
 
     println!("Getting subj ID");
-    let subject_id = signer.did_id().unwrap();
+    let subject_id = signer.did_id().await.unwrap();
 
     println!("About to get schema");
     let schema = rebase::schema::basic_post::BasicPost {

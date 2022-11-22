@@ -125,7 +125,7 @@
             witness_schema = instruction_res?.witness_schema;
         } catch (err) {
             alert.set({
-                message: err?.message ? err.message : JSON.stringify(err),
+                message: "Failed to retrieve instructions from witness service",
                 variant: "error",
             });
         }
@@ -207,17 +207,24 @@
             throw new Error("Validation of Statement Request failed");
         }
 
-        let res = await client.statement(JSON.stringify({ opts }));
+        const badRespErr = "Badly formatted witness service response";
+        try {
+            let res = await client.statement(JSON.stringify({ opts }));
 
-        let body = JSON.parse(res);
-        if (!body.statement || !body.delimitor) {
-            throw new Error(
-                "Did not find statement and delimitor in response."
-            );
+            let body = JSON.parse(res);
+            if (!body.statement || !body.delimitor) {
+                throw new Error(badRespErr);
+            }
+
+            statement = body.statement;
+            delimitor = body.delimitor;
+        } catch (e) {
+            if (e.message === badRespErr) {
+                throw e;
+            } else {
+                throw new Error("Failed in request for statement to witness");
+            }
         }
-
-        statement = body.statement;
-        delimitor = body.delimitor;
     };
 
     const getCredential = async (): Promise<void> => {
@@ -284,11 +291,17 @@
             throw new Error("Validation of Witness Request failed");
         }
 
-        let b = JSON.stringify({ proof: opts });
-        let res = await client.jwt(b);
+        try {
+            let b = JSON.stringify({ proof: opts });
+            let res = await client.jwt(b);
 
-        let { jwt } = JSON.parse(res);
-        setNew(jwt);
+            let { jwt } = JSON.parse(res);
+            setNew(jwt);
+        } catch (e) {
+            throw new Error(
+                "Failed to issue credential, please retry the flow"
+            );
+        }
     };
 </script>
 
