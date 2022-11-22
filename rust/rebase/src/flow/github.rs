@@ -128,6 +128,9 @@ impl Flow<Ctnt, Stmt, Prf> for GitHubFlow {
 
             match (txt, txt_sig) {
                 (Some(stmt), Some(sig)) => {
+                    if stmt != proof.statement.generate_statement()? {
+                        continue;
+                    }
                     proof.statement.subject.valid_signature(stmt, sig).await?;
                     return Ok(proof.to_content(stmt, sig)?)
                 }

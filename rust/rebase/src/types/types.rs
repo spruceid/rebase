@@ -6,10 +6,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{
     ldp::Proof as LDProof,
-    one_or_many::OneOrMany,
-    vc::{Credential, Evidence},
+    one_or_many::OneOrMany as SSIOneOrMany,
+    vc::{Credential as SSICred, Evidence as SSIEvidence},
 };
 use uuid::Uuid;
+
+pub type Credential = SSICred;
+pub type OneOrMany<T> = SSIOneOrMany<T>;
+pub type Evidence = SSIEvidence;
 
 #[async_trait(?Send)]
 pub trait Subject

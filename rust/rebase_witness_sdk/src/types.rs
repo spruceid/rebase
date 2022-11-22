@@ -20,17 +20,16 @@ use rebase::{
     },
     types::{
         error::{ContentError, FlowError, ProofError, StatementError},
-        types::{Content, Flow, FlowResponse, Instructions, Issuer, Proof, Statement},
+        types::{
+            Content, Credential, Evidence, Flow, FlowResponse, Instructions, Issuer, OneOrMany,
+            Proof, Statement,
+        },
     },
 };
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use ssi::{
-    one_or_many::OneOrMany,
-    vc::{Credential, Evidence},
-};
 
 #[derive(Clone, Deserialize, Serialize)]
 pub enum InstructionsType {
@@ -42,12 +41,12 @@ pub enum InstructionsType {
     GitHub,
     #[serde(rename = "reddit")]
     Reddit,
+    #[serde(rename = "same")]
+    Same,
     #[serde(rename = "soundcloud")]
     SoundCloud,
     #[serde(rename = "twitter")]
     Twitter,
-    #[serde(rename = "same")]
-    Same,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -56,9 +55,9 @@ pub enum Contents {
     Email(EmailCtnt),
     GitHub(GitHubCtnt),
     Reddit(RedditCtnt),
+    Same(SameCtnt),
     SoundCloud(SoundCloudCtnt),
     Twitter(TwitterCtnt),
-    Same(SameCtnt),
 }
 
 #[async_trait(?Send)]
@@ -69,9 +68,9 @@ impl Content for Contents {
             Contents::Email(x) => x.context(),
             Contents::GitHub(x) => x.context(),
             Contents::Reddit(x) => x.context(),
+            Contents::Same(x) => x.context(),
             Contents::SoundCloud(x) => x.context(),
             Contents::Twitter(x) => x.context(),
-            Contents::Same(x) => x.context(),
         }
     }
 
@@ -81,9 +80,9 @@ impl Content for Contents {
             Contents::Email(x) => x.evidence(),
             Contents::GitHub(x) => x.evidence(),
             Contents::Reddit(x) => x.evidence(),
+            Contents::Same(x) => x.evidence(),
             Contents::SoundCloud(x) => x.evidence(),
             Contents::Twitter(x) => x.evidence(),
-            Contents::Same(x) => x.evidence(),
         }
     }
 
@@ -93,9 +92,9 @@ impl Content for Contents {
             Contents::Email(x) => x.subject(),
             Contents::GitHub(x) => x.subject(),
             Contents::Reddit(x) => x.subject(),
+            Contents::Same(x) => x.subject(),
             Contents::SoundCloud(x) => x.subject(),
             Contents::Twitter(x) => x.subject(),
-            Contents::Same(x) => x.subject(),
         }
     }
 
@@ -105,9 +104,9 @@ impl Content for Contents {
             Contents::Email(x) => x.types(),
             Contents::GitHub(x) => x.types(),
             Contents::Reddit(x) => x.types(),
+            Contents::Same(x) => x.types(),
             Contents::SoundCloud(x) => x.types(),
             Contents::Twitter(x) => x.types(),
-            Contents::Same(x) => x.types(),
         }
     }
 }
@@ -123,12 +122,12 @@ pub enum Statements {
     GitHub(GitHubStmt),
     #[serde(rename = "reddit")]
     Reddit(RedditStmt),
+    #[serde(rename = "same")]
+    Same(SameStmt),
     #[serde(rename = "soundcloud")]
     SoundCloud(SoundCloudStmt),
     #[serde(rename = "twitter")]
     Twitter(TwitterStmt),
-    #[serde(rename = "same")]
-    Same(SameStmt),
 }
 
 impl Statement for Statements {
@@ -138,9 +137,9 @@ impl Statement for Statements {
             Statements::Email(x) => x.generate_statement(),
             Statements::GitHub(x) => x.generate_statement(),
             Statements::Reddit(x) => x.generate_statement(),
+            Statements::Same(x) => x.generate_statement(),
             Statements::SoundCloud(x) => x.generate_statement(),
             Statements::Twitter(x) => x.generate_statement(),
-            Statements::Same(x) => x.generate_statement(),
         }
     }
 }
@@ -156,12 +155,12 @@ pub enum Proofs {
     GitHub(GitHubProof),
     #[serde(rename = "reddit")]
     Reddit(RedditStmt),
+    #[serde(rename = "same")]
+    Same(SameProof),
     #[serde(rename = "soundcloud")]
     SoundCloud(SoundCloudStmt),
     #[serde(rename = "twitter")]
     Twitter(TwitterProof),
-    #[serde(rename = "same")]
-    Same(SameProof),
 }
 
 impl Statement for Proofs {
@@ -171,9 +170,9 @@ impl Statement for Proofs {
             Proofs::Email(x) => x.generate_statement(),
             Proofs::GitHub(x) => x.generate_statement(),
             Proofs::Reddit(x) => x.generate_statement(),
+            Proofs::Same(x) => x.generate_statement(),
             Proofs::SoundCloud(x) => x.generate_statement(),
             Proofs::Twitter(x) => x.generate_statement(),
-            Proofs::Same(x) => x.generate_statement(),
         }
     }
 }
@@ -185,22 +184,22 @@ impl Proof<Contents> for Proofs {
             Proofs::Email(x) => Ok(Contents::Email(x.to_content(statement, signature)?)),
             Proofs::GitHub(x) => Ok(Contents::GitHub(x.to_content(statement, signature)?)),
             Proofs::Reddit(x) => Ok(Contents::Reddit(x.to_content(statement, signature)?)),
+            Proofs::Same(x) => Ok(Contents::Same(x.to_content(statement, signature)?)),
             Proofs::SoundCloud(x) => Ok(Contents::SoundCloud(x.to_content(statement, signature)?)),
             Proofs::Twitter(x) => Ok(Contents::Twitter(x.to_content(statement, signature)?)),
-            Proofs::Same(x) => Ok(Contents::Same(x.to_content(statement, signature)?)),
         }
     }
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct WitnessFlow {
-    dns: DnsFlow,
+    dns: Option<DnsFlow>,
     email: Option<EmailFlow>,
     github: Option<GitHubFlow>,
-    reddit: RedditFlow,
+    reddit: Option<RedditFlow>,
+    same: Option<SameFlow>,
     soundcloud: Option<SoundCloudFlow>,
     twitter: Option<TwitterFlow>,
-    same: SameFlow,
 }
 
 #[async_trait(?Send)]
@@ -216,7 +215,10 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
         issuer: &I,
     ) -> Result<FlowResponse, FlowError> {
         match stmt {
-            Statements::Dns(s) => Ok(self.dns.statement(&s, issuer).await?),
+            Statements::Dns(s) => match &self.dns {
+                Some(x) => Ok(x.statement(&s, issuer).await?),
+                None => Err(FlowError::Validation("no dns flow configured".to_owned())),
+            },
             Statements::Email(s) => match &self.email {
                 Some(x) => Ok(x.statement(&s, issuer).await?),
                 None => Err(FlowError::Validation("no email flow configured".to_owned())),
@@ -227,7 +229,16 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                     "no github flow configured".to_owned(),
                 )),
             },
-            Statements::Reddit(s) => Ok(self.reddit.statement(&s, issuer).await?),
+            Statements::Reddit(s) => match &self.reddit {
+                Some(x) => Ok(x.statement(&s, issuer).await?),
+                None => Err(FlowError::Validation(
+                    "no reddit flow configured".to_owned(),
+                )),
+            },
+            Statements::Same(s) => match &self.same {
+                Some(x) => Ok(x.statement(&s, issuer).await?),
+                None => Err(FlowError::Validation("no same flow configured".to_owned())),
+            },
             Statements::SoundCloud(s) => match &self.soundcloud {
                 Some(x) => Ok(x.statement(&s, issuer).await?),
                 None => Err(FlowError::Validation(
@@ -240,7 +251,6 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                     "no twitter flow configured".to_owned(),
                 )),
             },
-            Statements::Same(s) => Ok(self.same.statement(&s, issuer).await?),
         }
     }
 
@@ -250,7 +260,10 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
         issuer: &I,
     ) -> Result<Contents, FlowError> {
         match proof {
-            Proofs::Dns(p) => Ok(Contents::Dns(self.dns.validate_proof(&p, issuer).await?)),
+            Proofs::Dns(p) => match &self.dns {
+                Some(x) => Ok(Contents::Dns(x.validate_proof(&p, issuer).await?)),
+                None => Err(FlowError::Validation("no dns flow configured".to_owned())),
+            },
             Proofs::Email(p) => match &self.email {
                 Some(x) => Ok(Contents::Email(x.validate_proof(&p, issuer).await?)),
                 None => Err(FlowError::Validation("no email flow configured".to_owned())),
@@ -261,9 +274,16 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                     "no github flow configured".to_owned(),
                 )),
             },
-            Proofs::Reddit(p) => Ok(Contents::Reddit(
-                self.reddit.validate_proof(&p, issuer).await?,
-            )),
+            Proofs::Reddit(p) => match &self.reddit {
+                Some(x) => Ok(Contents::Reddit(x.validate_proof(&p, issuer).await?)),
+                None => Err(FlowError::Validation(
+                    "no reddit flow configured".to_owned(),
+                )),
+            },
+            Proofs::Same(p) => match &self.same {
+                Some(x) => Ok(Contents::Same(x.validate_proof(&p, issuer).await?)),
+                None => Err(FlowError::Validation("no same flow configured".to_owned())),
+            },
             Proofs::SoundCloud(p) => match &self.soundcloud {
                 Some(x) => Ok(Contents::SoundCloud(x.validate_proof(&p, issuer).await?)),
                 None => Err(FlowError::Validation(
@@ -276,7 +296,6 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                     "no twitter flow configured".to_owned(),
                 )),
             },
-            Proofs::Same(p) => Ok(Contents::Same(self.same.validate_proof(&p, issuer).await?)),
         }
     }
 }
@@ -310,7 +329,10 @@ pub struct WitnessLDRes {
 impl WitnessFlow {
     pub fn get_instructions(&self, t: InstructionsType) -> Result<Instructions, FlowError> {
         match t {
-            InstructionsType::Dns => self.dns.instructions(),
+            InstructionsType::Dns => match &self.dns {
+                Some(x) => x.instructions(),
+                _ => Err(FlowError::Validation("no dns flow configured".to_owned())),
+            },
             InstructionsType::Email => match &self.email {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation("no email flow configured".to_owned())),
@@ -321,7 +343,16 @@ impl WitnessFlow {
                     "no github flow configured".to_owned(),
                 )),
             },
-            InstructionsType::Reddit => self.reddit.instructions(),
+            InstructionsType::Reddit => match &self.reddit {
+                Some(x) => x.instructions(),
+                _ => Err(FlowError::Validation(
+                    "no reddit flow configured".to_owned(),
+                )),
+            },
+            InstructionsType::Same => match &self.same {
+                Some(x) => x.instructions(),
+                _ => Err(FlowError::Validation("no same flow configured".to_owned())),
+            },
             InstructionsType::SoundCloud => match &self.soundcloud {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
@@ -334,7 +365,6 @@ impl WitnessFlow {
                     "no twitter flow configured".to_owned(),
                 )),
             },
-            InstructionsType::Same => self.same.instructions(),
         }
     }
 

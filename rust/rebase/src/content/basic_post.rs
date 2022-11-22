@@ -12,19 +12,9 @@ pub struct BasicPost {
 
 impl Content for BasicPost {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
-        // TODO: MAKE THESE URLS MORE ACCURATE.
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
-            {
-                "BasicPostCredential": "https://example.com/BasicPostCredential",
-                "BasicPost": {
-                    "@id": "https://schema.org/BasicPost",
-                    "@context": {
-                        "title": "https://schema.org/name",
-                        "body": "https://schema.org/articleBody",
-                    }
-                }
-            },
+            "https://spec.rebase.xyz/contexts/v1",
         ]))
     }
 

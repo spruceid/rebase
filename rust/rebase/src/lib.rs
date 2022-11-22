@@ -1,3 +1,4 @@
+//! For more information please see the documentation at https://spurceid.dev/rebase
 pub mod content;
 pub mod flow;
 pub mod issuer;

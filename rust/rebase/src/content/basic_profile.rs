@@ -17,17 +17,7 @@ impl Content for BasicProfile {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
-            {
-              "BasicProfile": {
-                    "@id": "https://example.com/BasicProfile",
-                    "@context": {
-                        "alias": "https://schema.org/name",
-                        "description": "https://schema.org/description",
-                        "website": "https://schema.org/url",
-                        "logo": "https://schema.org/logo",
-                    }
-                }
-            },
+            "https://spec.rebase.xyz/contexts/v1",
         ]))
     }
 
