@@ -26,20 +26,21 @@ Current Schemas Defined:
 * basic_post (self-issued)
 * basic_profile (self-issued)
 * dns
+* email
 * github
 * reddit
+* same (links two keys)
 * soundcloud
 * twitter
-* two-key linking
 
 Current Witness flows:
 * dns
 * email
 * github
 * reddit
+* same (links two keys)
 * soundcloud
 * twitter
-* two-key linking
 
 Current Subjects:
 * ethereum

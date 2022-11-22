@@ -1,20 +1,32 @@
 # Rebase Witness API
 
-The witness API provides the generation of statements for cryptographically verifiable claims and the witnessing of these claims to produce [Verifiable Credentials](https://www.w3.org/TR/vc-data-model/). A concrete implementation of this API exists in the Cloudflare Worker found [here](https://github.com/spruceid/rebase/tree/main/demo/witness). It could also be implemented as a more traditional web server, or as a serverless function. Regardless, the witness exposes two routes, `/statement` and `/witness`. These routes are described in detail in the following sections. 
+The witness API provides the generation of statements for cryptographically verifiable claims and the witnessing of these claims to produce [Verifiable Credentials](https://www.w3.org/TR/vc-data-model/). 
 
-They exist in the expected context of a UI delivering information (including a cryptographic public key) from a user to the witness via `/statement` to create a statement, then the user signing the statement with public key described in the statement. After the statement is signed, and in some cases published, the user then gives the witness enough information to validate that the signature and statement match the statement's attestation through the `/witness` route. Assuming everything is valid, the witness issues a Verifiable Credential in the form of a [JWT](https://jwt.io/introduction).
+A concrete implementation of this API exists in the Cloudflare Worker found [here](https://github.com/spruceid/rebase/tree/main/demo/witness). It could also be implemented as a more traditional web server, or as a serverless function.
+
+The witness exposes three routes, `/instructions`, `/statement` and `/witness`, which are described in detail in the following sections. They exist in the expected context of a UI describing the steps of the flow after retrieving them from the `/instructions` route, delivering user information (including a cryptographic public key) from a user to the witness via `/statement` to create a statement, then the user signing the statement with public key described in the statement. After the statement is signed, and in some cases published, the user then gives the witness enough information to validate that the signature and statement match the statement's attestation through the `/witness` route. 
+
+Assuming everything is valid, the witness issues a Verifiable Credential in the form of a [JWT](https://jwt.io/introduction).
 
 ## Issuance Flow
 
-1) The user supplies information relevant to create a statement. It will always include at least one public key and either an identifier to link to that key, or a second public key to link with the first.
+0) The UI retrieves the instructions and schemas for expected request bodies from the `/instructions` route.
 
-2) The information from step 1 is passed to the worker in the body of a `POST` request to the route `/statement`
+1) The user supplies information relevant to create a statement. It will always include at least one public key and either an identifier to link to that key, or a second key to link with the first.
 
-3) The information is parsed, and if it matches the form specified below, is used to generate a plain text statement and a delimitor (sometimes unused) which are returned in the response body as `statement` and `delimitor` respectively.
+2) The information from step 1 is passed to the worker in the body of a `POST` request to the route `/statement`, the UI tests that the `POST` request body conforms to the schema recieved in step 0.
 
-4) The user signs the statement at least once. For linking two public keys, the statement is signed twice and signatures returned to the witness in the format as described below. In the case of other identity linking flows, a post is created in the format of: `${statement}${delimitor}${signature}`, then posted somewhere only the identity in the statement could access. Once posted, the location of this post, along with the options used to generate the statement initially are supplied to `/witness`.
+3) The information is parsed, and if it matches the form specified below, is used to generate a plain text statement and optionally a delimitor (sometimes ommitted) which are returned in the response body as `statement` and `delimitor` respectively.
 
-5) The witness parses the `POST` request and assuming it conforms to the format described below either validates both signatures, or retrieves the post, compares the owner of the post to the owner described in the statement and verifies that public key described in the statement was the one that signed the statement. 
+4) The user signs the statement at least once. For linking two public keys, the statement is signed twice and signatures returned to the witness in the format as described below. 
+
+    In the case of other identity linking flows that involve delimitors, a post is created in the format of: `${statement}${delimitor}${signature}`, then posted somewhere only the identity in the statement could access. 
+
+    In other flows, the user is only expected to post the `signature`. Alternatively, in some flows, like email, the witness generates a challenge, sends it to the targeted account, and the user has to present the challenge along side the signature to prove ownership.
+
+    Once sufficent proof is gathered it is `POST`ed, along with the options used to generate the statement initially are supplied to `/witness`. The UI makes sure this `POST` body conforms to the schema given in step 0.
+
+5) The witness parses the `POST` request and assuming it conforms to the format described below either validates the proof, compares the owner of the proof to the owner described in the statement and verifies that public key described in the statement was the one that signed the statement. 
 
 6) Presuming all of that is valid the witness returns a Verifiable Credential to the end user.
 
@@ -22,23 +34,38 @@ They exist in the expected context of a UI delivering information (including a c
 
 All responses that are not errors are consistent in their format as JSON objects. 
 
-The `statement` response rendered as a typescript type is always:
+The `instructions` response rendered as a TypeScript type is:
+```typescript
+// type JSONSchema = <a_valid_JSON_schema_object>;
+interface InstructionsRes {
+    "statement": string,
+    "signature": string,
+    "witness": string,
+    "statement_schema": JSONSchema,
+    "witness_schema": JSONSchema
+}
+```
+
+The `statement` response rendered as a TypeScript type is always:
 ```typescript
 interface StatementRes {
     "statement": string,
     "delimitor"?: string
 }
 ```
-The `witness` response rendered as a typescript type is always:
+
+The `witness` response rendered as a TypeScript type is always:
 ```typescript
 interface WitnessRes {
     "jwt": string,
 }
 ```
 
-The `POST` body of `/statement` must conform to a JSON representation of the supported Rebase `statement_type`, the source of which in Rust can be found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/statement_type.rs).
+(NOTE: The Rebase Witness SDK also supports LD-proof format, even though this demo ommits it).
 
-The typescript definition of a Statement body would look like:
+The `POST` body of `/statement` (and all routes supported by the Witness) are described in the [Rebase Witness SDK](https://github.com/spruceid/rebase/tree/main/rust/rebase_witness_sdk), in the `src/types.rs` file, defined as `StatementReq`.
+
+The TypeScript definition of a Statement body would look like:
 ```typescript
 interface Statement {
     opts: Statements;
@@ -49,9 +76,12 @@ With `Statements` being a sum type:
 ```typescript
 type Statements =
     | DnsStmt
+    | EmailStmt
     | GitHubStmt
-    | TwitterStmt
-    | SelfSignedStmt;
+    | RedditStmt
+    | SameStmt
+    | SoundCloudStmt
+    | TwitterStmt;
 ```
 
 And the individual statements being:
@@ -60,35 +90,57 @@ interface DnsStmt {
     dns: {
         domain: string;
         prefix: string;
-        key_type: Subject;
+        subject: Subject;
     };
+}
+
+interface EmailStmt {
+    email: {
+        email: string;
+        subject: Subject;
+    }
 }
 
 interface GitHubStmt {
     github: {
         handle: string;
-        key_type: Subject;
+        subject: Subject;
+    };
+}
+
+interface RedditStmt {
+    reddit: {
+        handle: string;
+        subject: Subject;
+    };
+}
+
+interface SameStmt {
+    same: {
+        id1: Subject;
+        id2: Subject;
+    };
+}
+
+interface SoundCloud {
+    soundcloud: {
+        permalink: string;
+        subject: Subject;
     };
 }
 
 interface TwitterStmt {
     twitter: {
         handle: string;
-        key_type: Subject;
-    };
-}
-
-interface SelfSignedStmt {
-    self_signed: {
-        key_1: Subject;
-        key_2: Subject;
+        subject: Subject;
     };
 }
 ```
+
 `Subject`s must conform to the JSON representation of the supported Rebase Subject type found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/types/enums/subject.rs).
-They typescript definition of Subjects and it's child types would look like:
+They TypeScript definition of Subjects and it's child types would look like:
 ```typescript
-type Subjects = Eth | Web;
+type Subjects = Eth | Solana | Web;
 
 interface Eth {
     pkh: {
@@ -99,8 +151,16 @@ interface Eth {
     };
 }
 
+interface Solana {
+    pkh: {
+        solana: {
+            address: string;
+        };
+    };
+}
+
 interface Web {
-    web: string
+    web: string;
 }
 ```
 
@@ -110,7 +170,7 @@ A sample GitHub request would look like:
     "opts": {
         "github": {
             "handle": "foo",
-            "key_type": {
+            "subject": {
                 "pkh": {
                     "eip155": {
                         "address": "0x1111111111111111111111111111111111111111",
@@ -131,11 +191,11 @@ The response would look like:
 }
 ```
 
-## Witness flow
+## Witness Flow
 
-The `POST` body of `/witness` must conform to a JSON representation of the supported Rebase `proof_type`, the source of which in Rust can be found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/proof_type.rs).
+The `POST` body of `/witness` must conform to a JSON representation of the supported Rebase `proof_type`, the source of which in Rust can be found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase_witness_sdk/src/types.rs), which also includes type definitions for the requests and responses outlined in this document.
 
-The typescript definition of a Witness body would look like:
+The TypeScript definition of a Witness body would look like:
 ```typescript
 interface Proof {
     proof: ProofTypes;
@@ -145,46 +205,57 @@ With `ProofTypes` being a sum type:
 ```typescript
 type ProofTypes =
         | DnsStmt
+        | EmailProof
         | GitHubProof
-        | TwitterProof
-        | SelfSignedProof;
+        | RedditStmt
+        | SameProof
+        | SoundCloudStmt
+        | TwitterProof;
 ```
-(NOTE: DnsStmt is both used for the statement route and the witness route)
+(NOTE: `DnsStmt`, `RedditStmt`, and `SoundCloudStmt` are used for both the statement route and the witness route)
 
-The other proofs look like:
+The proofs that contain new information look like:
 ```typescript
+interface EmailProof {
+    email: {
+        auth: string;
+        signature: string;
+        statement: GitHubStmt;
+        timestamp: string;
+    };
+}
+
 interface GitHubProof {
     github: {
         gist_id: string;
-        statement_opts: GitHubStmt;
+        statement: GitHubStmt;
+    };
+}
+
+interface SameProof {
+    same: {
+        signature1: string;
+        signature2: string;
+        statement: SameStmt;
     };
 }
 
 interface TwitterProof {
     twitter: {
-        statement_opts: TwitterStmt;
+        statement: TwitterStmt;
         tweet_url: string;
     };
-}
-
-interface SelfSignedProof {
-    self_signed: {
-        signature_1: string;
-        signature_2: string;
-        statement_opts: SelfSignedStmt;
-    }
 }
 ```
 
 An example (VALID) request for a GitHub proof would look like:
-
 ```json
 {
     "proof": {
         "github":{
             "statement_opts":{
                 "handle":"krhoda",
-                "key_type": {
+                "subject": {
                     "pkh": {
                         "eip155": {
                             "address":"0xdA3176d77c04632F2862B14E35bc6B4717FB5016","chain_id":"1"
@@ -222,23 +293,7 @@ The body:
   "vc": {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      {
-        "GitHubVerification": "https://example.com/GitHubVerification",
-        "GitHubVerificationMessage": {
-          "@context": {
-            "@protected": true,
-            "@version": 1.1,
-            "gistId": "https://example.com/gistId",
-            "handle": "https://example.com/handle",
-            "timestamp": {
-              "@id": "https://example.com/timestamp",
-              "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
-            }
-          },
-          "@id": "https://example.com/GitHubVerificationMessage"
-        },
-        "sameAs": "http://schema.org/sameAs"
-      }
+      "https://spec.rebase.xyz/contexts/v1"
     ],
     "id": "urn:uuid:55c4bc79-faa0-4086-a5fa-2aaef1b06d64",
     "type": [
@@ -262,34 +317,3 @@ The body:
   }
 }
 ```
-
-### Instructions Flow
-
-An optional instructions flow is made avaiable through a `POST` route using `/instructions`. The body of this request would be defined in Typescript like so:
-
-```typescript
-interface InstructionsReq {
-    type: InstructionsType
-}
-
-type InstructionsType = "dns" | "github" | "same" | "twitter" | ...
-```
-
-The response is defined in Typescript as:
-(Where JSONSchema is a valid JSONSchema)
-
-```typescript
-interface InstructionsRes {
-    instructions: Instructions,
-    statement_schema: JSONSchema,
-    witness_schema: JSONSchema
-}
-
-interface Instructions {
-    statement: string,
-    signature: string,
-    witness: string
-}
-```
-
-This response provides several useful features, first a set of text instructions that could be used to automatically generate UI flows corresponding to the requested flow type. Secondly, a pair of JSONSchemas, which allow for at minimum checking the outgoing `POST` bodies for formatting errors, or in the extereme, generating forms that correspond to the witness flow. If used to their maximum, one could simply generate the entire UI flows dynamically.

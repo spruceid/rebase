@@ -7,6 +7,49 @@ This Rust-to-WASM compiled library is a thin wrapper around the client portion o
 $ npm i @rebase-xyz/rebase-client
 ```
 
+## Common Usage:
+```javascript
+import { Client } from "@rebase-xyz/rebase-client";
+
+// const witnessUrl = ...
+
+const statementUrl = `${witnessUrl}/statement`;
+const instructionsUrl = `${witnessUrl}/instructions`;
+const jwtUrl = `${witnessUrl}/witness_jwt`;
+const ldUrl = `${witnessUrl}/witness_ld`;
+
+export const client = new Client(instructionsUrl, statementUrl, jwtUrl, ldUrl);
+
+const instructionsReq = {
+    type: "github" // or "email" or "twitter" or "reddit" or more!
+};
+
+let instructionsRes = await client.instructions(instructionsReq)
+instructionRes = JSON.parse(instructionsRes);
+
+// const statementReq = ...
+
+let statementRes = await client.statement(statementReq);
+statementRes = JSON.parse(statementRes);
+
+// const proofReq = makeProofFromStatement(statmentRes);
+
+// Get a JWT credential.
+let proofRes = await client.jwt(proofReq);
+proofRes = JSON.parse(proofRes);
+let credential;
+if (proofRes.jwt) {
+    credential = proofRes.jwt;
+}
+
+// Get a LD credential
+let proofRes = await client.ld(proofReq);
+proofRes = JSON.parse(proofRes);
+if (proofRes.credential) {
+    credential = proofRes.credential;
+}
+```
+
 ## Rust implementation
 The `Client` struct exposed by the library (and made available to JavaScript consumers) has an implementation that looks like:
 
@@ -20,7 +63,6 @@ impl Client {
         jwt: Option<String>,
         ld: Option<String>,
     ) -> Result<Client, String> {
-
         // ...
     }
 
@@ -42,12 +84,14 @@ impl Client {
 }
 ```
 
-Once the client is instanciated, the user simply has to pass in `req`s that conform to JSON stringified requests described in detail [here](https://github.com/spruceid/rebase/blob/main/demo/witness/endpoints.md), where the resulting `Promise` contains a JSON stringified responses described in the linked doc.
+Once the client is instanciated, the user simply has to pass in `req`s that conform to JSON stringified requests described in detail [here](https://github.com/spruceid/rebase/blob/main/demo/witness/endpoints.md), where the resulting `Promise` contains a JSON stringified response described in the linked doc.
 
 ## JavaScript Usage
-Concrete usage of this library in JS is found [here](https://github.com/spruceid/rebase/blob/main/demo/dapp/src/util/witness.ts). The client's constructor accepts up to three urls assumed to be pointed at a witness service created using the library found [here](https://github.com/spruceid/rebase/tree/main/rust/rebase_witness_sdk). The first URL expected is for statement generation, the second is for JWT credential generation, and the third for LD credential generation.
+Concrete usage of this library in JS is found [here](https://github.com/spruceid/rebase/blob/main/demo/dapp/src/util/witness.ts). The client's constructor accepts up to four URLs assumed to be pointed at a witness service created using the library found [here](https://github.com/spruceid/rebase/tree/main/rust/rebase_witness_sdk). 
 
-The statement URL is required and at least one of the two optional URLs must be provided. All of the following would be valid:
+The first URL expected is for instructions retreival, the second is for statement generation, the third is for JWT credential generation, and the fourth for LD credential generation.
+
+The instructions and statement URLs are required and at least one of the two optional URLs must be provided. All of the following would be valid:
 
 ```JavaScript
 import { Client } from "@rebase-xyz/rebase-client";
@@ -63,7 +107,7 @@ client = new Client(instructionsUrl, statementUrl, null, ldUrl);
 client = new Client(instructionsUrl, statementUrl, jwtUrl, ldUrl);
 ```
 
-All of the following (and more!) would be invalid.
+All of the following (and more) would be invalid.
 ```JavaScript
 client = new Client();
 client = new Client(null, null);
@@ -80,9 +124,14 @@ Once a valid client has been constructed, it can be used like so (where `req` is
 ```JavaScript
 let res = await client.statement(req);
 ```
-This would produce a JSON stringified version of the StatementRes found [here](https://github.com/spruceid/rebase/blob/b5f5a6f6e5bb0031dd8310a7e9510026ee81dbe2/rust/rebase_witness_sdk/src/witness.rs#L32). Instructions requests work the same way and produce output found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/witness/instructions.rs#L14).
-```JavaScript
+
+This would produce a JSON stringified version of the `StatementRes`. Instructions requests work the same way using `client.instructions`. The exact structure of the responses are detailed in the [endpoints document](https://github.com/spruceid/rebase/blob/main/demo/witness/endpoints.md).
+
+```JavaScriptThis Rust-to-WASM compiled library
 let jwtRes = await client.jwt(req);
 let ldRes = await client.ld(req);
 ```
-A corresponding `jwtUrl` or `ldUrl` must be provided at config time to use `jwt` and `ld` methods. These would both produce a JSON stringified version of the WitnessJWTRes/WitnessLDRes found [here](https://github.com/spruceid/rebase/blob/b5f5a6f6e5bb0031dd8310a7e9510026ee81dbe2/rust/rebase_witness_sdk/src/witness.rs#L42)
+
+A corresponding `jwtUrl` or `ldUrl` must be provided at config time to use `jwt` and `ld` methods. These would both produce a JSON stringified version of the WitnessJWTRes/WitnessLDRes described in the [endpoints document](https://github.com/spruceid/rebase/blob/main/demo/witness/endpoints.md).
+
+Once the credential is available to the frontend, developers can then store the credential externally or present it to another service that is seeking the information attested to by the credential.

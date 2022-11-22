@@ -202,7 +202,7 @@ function witnessOpts() {
   let useSendGrid = SENDGRID_BEARER_TOKEN 
     && SENDGRID_FROM_ADDRESS 
     && SENDGRID_FROM_NAME
-    && SENDGRID_SERVICE_NAME
+    && SENDGRID_SUBJECT_NAME
     && SENDGRID_MAX_ELAPSED_MINS
     && !isNaN(parseInt(SENDGRID_MAX_ELAPSED_MINS));
 
@@ -212,8 +212,7 @@ function witnessOpts() {
       from_addr: SENDGRID_FROM_ADDRESS,
       from_name: SENDGRID_FROM_NAME,
       max_elapsed_minutes: parseInt(SENDGRID_MAX_ELAPSED_MINS),
-      // TODO: CHANGE NAME OF SECRET.
-      subject_name: SENDGRID_SERVICE_NAME,
+      subject_name: SENDGRID_SUBJECT_NAME,
     }
   }
 
