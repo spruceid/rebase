@@ -19,25 +19,9 @@ pub struct Email {
 
 impl Content for Email {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
-        // TODO: MAKE THESE URLS POINT ELSEWHERE.
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
-            {
-                "sameAs": "http://schema.org/sameAs",
-                "EmailVerification": "https://example.com/EmailVerification",
-                "EmailVerificationMessage": {
-                    "@id": "https://example.com/EmailVerificationMessage",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": true,
-                        "timestamp": {
-                            "@id": "https://example.com/timestamp",
-                            "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
-                        },
-                        "email": "https://schema.org/email",
-                    }
-                }
-            }
+            "https://spec.rebase.xyz/contexts/v1"
         ]))
     }
 

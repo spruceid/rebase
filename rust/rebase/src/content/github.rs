@@ -20,27 +20,9 @@ pub struct GitHub {
 
 impl Content for GitHub {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
-        // TODO: MAKE THESE URLS POINT ELSEWHERE.
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
-            {
-                "sameAs": "http://schema.org/sameAs",
-                "GitHubVerification": "https://example.com/GitHubVerification",
-                "GitHubVerificationMessage": {
-                    "@id": "https://example.com/GitHubVerificationMessage",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": true,
-                        "timestamp": {
-                            "@id": "https://example.com/timestamp",
-                            "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
-                        },
-                        "gistId": "https://example.com/gistId",
-                        // "gistVersion":  "https://example.com/gistVersion",
-                        "handle": "https://example.com/handle"
-                    }
-                }
-            }
+            "https://spec.rebase.xyz/contexts/v1"
         ]))
     }
 

@@ -22,21 +22,7 @@ impl Content for Same {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
-            {
-                "id1": "https://example.com/id",
-                "id2": "https://example.com/id",
-                "SameControllerAssertion": "https://example.com/SameControllerAssertion",
-                "SameControllerEvidence": {
-                    "@id": "https://example.com/SameControllerEdvidence",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": true,
-                        "signature1": "https://example.com/signature_1",
-                        "signature2": "https://example.com/signature_2",
-                        "statement": "https://example.com/statement",
-                    }
-                },
-            }
+            "https://spec.rebase.xyz/contexts/v1"
         ]))
     }
 
