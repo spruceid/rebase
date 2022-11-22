@@ -19,25 +19,9 @@ pub struct Reddit {
 
 impl Content for Reddit {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
-        // TODO: MAKE THESE URLS POINT ELSEWHERE.
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
-            {
-                "sameAs": "http://schema.org/sameAs",
-                "RedditVerification": "https://example.com/RedditVerification",
-                "RedditVerificationMessage": {
-                    "@id": "https://example.com/RedditVerificationMessage",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": true,
-                        "timestamp": {
-                            "@id": "https://example.com/timestamp",
-                            "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
-                        },
-                        "handle": "https://example.com/handle",
-                    }
-                }
-            }
+            "https://spec.rebase.xyz/contexts/v1"
         ]))
     }
 

@@ -20,26 +20,9 @@ pub struct Twitter {
 
 impl Content for Twitter {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
-        // TODO: Change where these are pointed
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
-            {
-                "sameAs": "http://schema.org/sameAs",
-                "TwitterVerification": "https://example.com/TwitterVerification",
-                "TwitterVerificationPublicTweet": {
-                    "@id": "https://example.com/TwitterVerificationPublicTweet",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": true,
-                        "handle": "https://example.com/handle",
-                        "timestamp": {
-                            "@id": "https://example.com/timestamp",
-                            "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
-                        },
-                        "tweetId": "https://example.com/tweetId"
-                    }
-                }
-            }
+            "https://spec.rebase.xyz/contexts/v1"
         ]))
     }
 

@@ -19,25 +19,9 @@ pub struct Dns {
 
 impl Content for Dns {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
-        // TODO: Change where these are pointed
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
-            {
-                "sameAs": "http://schema.org/sameAs",
-                "DnsVerification": "https://example.com/DnsVerification",
-                "DnsVerificationMessage": {
-                    "@id": "https://example.com/DnsVerificationMessage",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": true,
-                        "timestamp": {
-                            "@id": "https://example.com/timestamp",
-                            "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
-                        },
-                        "dnsServer": "https://example.com/dnsServer",
-                    }
-                }
-            }
+            "https://spec.rebase.xyz/contexts/v1"
         ]))
     }
 
