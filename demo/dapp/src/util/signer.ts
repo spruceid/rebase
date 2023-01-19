@@ -184,7 +184,7 @@ export type ENSType = {
 
 declare global {
     interface Window {
-        phantom:any;
+        phantom: {solana: any, ethereum: any};
     }
 }
 
