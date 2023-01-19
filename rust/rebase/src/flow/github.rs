@@ -51,8 +51,8 @@ impl Flow<Ctnt, Stmt, Prf> for GitHubFlow {
         Ok(Instructions { 
             statement: "Enter your GitHub account handle to verify and include in a signed message using your wallet.".to_string(),
             statement_schema: schema_for!(Stmt),
-            signature: "Sign the message presented to you containing your email address and additional information.".to_string(),
-            witness: "Find the email sent from the witness and copy the code and challenge into the respective form fields.".to_string(),
+            signature: "Sign the message presented to you containing your GitHub handle and addtional information.".to_string(),
+            witness: "Create a Gist with this message to create a link between your identifier and your GitHub handle.".to_string(),
             witness_schema: schema_for!(Prf) 
         })
     }
