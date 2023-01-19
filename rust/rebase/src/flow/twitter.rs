@@ -52,7 +52,7 @@ impl Flow<Ctnt, Stmt, Prf> for TwitterFlow {
             statement: "Enter your Twitter account handle to verify and include in a signed message using your wallet.".to_string(),
             statement_schema: schema_for!(Stmt),
             signature: "Sign the message presented to you containing your Twitter handle and additional information.".to_string(),
-            witness: "Tweet out the statement and signature to create a linke between your identifier and Twitter handle.".to_string(),
+            witness: "Tweet out the statement and signature to create a link between your identifier and Twitter handle.".to_string(),
             witness_schema: schema_for!(Prf),
         })
     }
