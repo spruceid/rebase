@@ -40,6 +40,8 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
 ```
 
 The `Contents`, `Statements`, and `Proofs` enums are each wrappers around all structs implementing the associated trait (`Content`, `Statement`, and `Proof`) exposed in the underlying Rebase lib. As an example, `Statements` looks like:
+(NOTE: This does not include the NftOwnership flow which is currently implemented but NOT production ready).
+
 ```rust
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(rename = "opts")]

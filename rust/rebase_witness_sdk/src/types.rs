@@ -2,21 +2,25 @@ pub use rebase::issuer;
 use rebase::{
     content::{
         dns::Dns as DnsCtnt, email::Email as EmailCtnt, github::GitHub as GitHubCtnt,
-        reddit::Reddit as RedditCtnt, same::Same as SameCtnt,
-        soundcloud::SoundCloud as SoundCloudCtnt, twitter::Twitter as TwitterCtnt,
+        nft_ownership::NftOwnership as NftOwnershipCtnt, reddit::Reddit as RedditCtnt,
+        same::Same as SameCtnt, soundcloud::SoundCloud as SoundCloudCtnt,
+        twitter::Twitter as TwitterCtnt,
     },
     flow::{
-        dns::DnsFlow, email::SendGridBasic as EmailFlow, github::GitHubFlow, reddit::RedditFlow,
-        same::SameFlow, soundcloud::SoundCloudFlow, twitter::TwitterFlow,
+        dns::DnsFlow, email::SendGridBasic as EmailFlow, github::GitHubFlow,
+        nft_ownership::NftOwnership as NftOwnershipFlow, reddit::RedditFlow, same::SameFlow,
+        soundcloud::SoundCloudFlow, twitter::TwitterFlow,
     },
     proof::{
-        email::Email as EmailProof, github::GitHub as GitHubProof, same::Same as SameProof,
+        email::Email as EmailProof, github::GitHub as GitHubProof,
+        nft_ownership::NftOwnership as NftOwnershipProof, same::Same as SameProof,
         twitter::Twitter as TwitterProof,
     },
     statement::{
         dns::Dns as DnsStmt, email::Email as EmailStmt, github::GitHub as GitHubStmt,
-        reddit::Reddit as RedditStmt, same::Same as SameStmt,
-        soundcloud::SoundCloud as SoundCloudStmt, twitter::Twitter as TwitterStmt,
+        nft_ownership::NftOwnership as NftOwnershipStmt, reddit::Reddit as RedditStmt,
+        same::Same as SameStmt, soundcloud::SoundCloud as SoundCloudStmt,
+        twitter::Twitter as TwitterStmt,
     },
     types::{
         error::{ContentError, FlowError, ProofError, StatementError},
@@ -39,6 +43,8 @@ pub enum InstructionsType {
     Email,
     #[serde(rename = "github")]
     GitHub,
+    #[serde(rename = "nft_ownership")]
+    NftOwnership,
     #[serde(rename = "reddit")]
     Reddit,
     #[serde(rename = "same")]
@@ -54,6 +60,7 @@ pub enum Contents {
     Dns(DnsCtnt),
     Email(EmailCtnt),
     GitHub(GitHubCtnt),
+    NftOwnership(NftOwnershipCtnt),
     Reddit(RedditCtnt),
     Same(SameCtnt),
     SoundCloud(SoundCloudCtnt),
@@ -67,6 +74,7 @@ impl Content for Contents {
             Contents::Dns(x) => x.context(),
             Contents::Email(x) => x.context(),
             Contents::GitHub(x) => x.context(),
+            Contents::NftOwnership(x) => x.context(),
             Contents::Reddit(x) => x.context(),
             Contents::Same(x) => x.context(),
             Contents::SoundCloud(x) => x.context(),
@@ -79,6 +87,7 @@ impl Content for Contents {
             Contents::Dns(x) => x.evidence(),
             Contents::Email(x) => x.evidence(),
             Contents::GitHub(x) => x.evidence(),
+            Contents::NftOwnership(x) => x.evidence(),
             Contents::Reddit(x) => x.evidence(),
             Contents::Same(x) => x.evidence(),
             Contents::SoundCloud(x) => x.evidence(),
@@ -91,6 +100,7 @@ impl Content for Contents {
             Contents::Dns(x) => x.subject(),
             Contents::Email(x) => x.subject(),
             Contents::GitHub(x) => x.subject(),
+            Contents::NftOwnership(x) => x.subject(),
             Contents::Reddit(x) => x.subject(),
             Contents::Same(x) => x.subject(),
             Contents::SoundCloud(x) => x.subject(),
@@ -103,6 +113,7 @@ impl Content for Contents {
             Contents::Dns(x) => x.types(),
             Contents::Email(x) => x.types(),
             Contents::GitHub(x) => x.types(),
+            Contents::NftOwnership(x) => x.types(),
             Contents::Reddit(x) => x.types(),
             Contents::Same(x) => x.types(),
             Contents::SoundCloud(x) => x.types(),
@@ -120,6 +131,8 @@ pub enum Statements {
     Email(EmailStmt),
     #[serde(rename = "github")]
     GitHub(GitHubStmt),
+    #[serde(rename = "nft_ownership")]
+    NftOwnership(NftOwnershipStmt),
     #[serde(rename = "reddit")]
     Reddit(RedditStmt),
     #[serde(rename = "same")]
@@ -136,6 +149,7 @@ impl Statement for Statements {
             Statements::Dns(x) => x.generate_statement(),
             Statements::Email(x) => x.generate_statement(),
             Statements::GitHub(x) => x.generate_statement(),
+            Statements::NftOwnership(x) => x.generate_statement(),
             Statements::Reddit(x) => x.generate_statement(),
             Statements::Same(x) => x.generate_statement(),
             Statements::SoundCloud(x) => x.generate_statement(),
@@ -153,6 +167,8 @@ pub enum Proofs {
     Email(EmailProof),
     #[serde(rename = "github")]
     GitHub(GitHubProof),
+    #[serde(rename = "nft_ownership")]
+    NftOwnership(NftOwnershipProof),
     #[serde(rename = "reddit")]
     Reddit(RedditStmt),
     #[serde(rename = "same")]
@@ -169,6 +185,7 @@ impl Statement for Proofs {
             Proofs::Dns(x) => x.generate_statement(),
             Proofs::Email(x) => x.generate_statement(),
             Proofs::GitHub(x) => x.generate_statement(),
+            Proofs::NftOwnership(x) => x.generate_statement(),
             Proofs::Reddit(x) => x.generate_statement(),
             Proofs::Same(x) => x.generate_statement(),
             Proofs::SoundCloud(x) => x.generate_statement(),
@@ -183,6 +200,9 @@ impl Proof<Contents> for Proofs {
             Proofs::Dns(x) => Ok(Contents::Dns(x.to_content(statement, signature)?)),
             Proofs::Email(x) => Ok(Contents::Email(x.to_content(statement, signature)?)),
             Proofs::GitHub(x) => Ok(Contents::GitHub(x.to_content(statement, signature)?)),
+            Proofs::NftOwnership(x) => {
+                Ok(Contents::NftOwnership(x.to_content(statement, signature)?))
+            }
             Proofs::Reddit(x) => Ok(Contents::Reddit(x.to_content(statement, signature)?)),
             Proofs::Same(x) => Ok(Contents::Same(x.to_content(statement, signature)?)),
             Proofs::SoundCloud(x) => Ok(Contents::SoundCloud(x.to_content(statement, signature)?)),
@@ -196,6 +216,7 @@ pub struct WitnessFlow {
     dns: Option<DnsFlow>,
     email: Option<EmailFlow>,
     github: Option<GitHubFlow>,
+    nft_ownership: Option<NftOwnershipFlow>,
     reddit: Option<RedditFlow>,
     same: Option<SameFlow>,
     soundcloud: Option<SoundCloudFlow>,
@@ -227,6 +248,12 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                 Some(x) => Ok(x.statement(&s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no github flow configured".to_owned(),
+                )),
+            },
+            Statements::NftOwnership(s) => match &self.nft_ownership {
+                Some(x) => Ok(x.statement(&s, issuer).await?),
+                None => Err(FlowError::Validation(
+                    "no nft_ownership flow configured".to_owned(),
                 )),
             },
             Statements::Reddit(s) => match &self.reddit {
@@ -272,6 +299,12 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                 Some(x) => Ok(Contents::GitHub(x.validate_proof(&p, issuer).await?)),
                 None => Err(FlowError::Validation(
                     "no github flow configured".to_owned(),
+                )),
+            },
+            Proofs::NftOwnership(p) => match &self.nft_ownership {
+                Some(x) => Ok(Contents::NftOwnership(x.validate_proof(&p, issuer).await?)),
+                None => Err(FlowError::Validation(
+                    "no nft_ownership flow configured".to_owned(),
                 )),
             },
             Proofs::Reddit(p) => match &self.reddit {
@@ -341,6 +374,12 @@ impl WitnessFlow {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no github flow configured".to_owned(),
+                )),
+            },
+            InstructionsType::NftOwnership => match &self.nft_ownership {
+                Some(x) => x.instructions(),
+                _ => Err(FlowError::Validation(
+                    "no nft_ownership flow configured".to_owned(),
                 )),
             },
             InstructionsType::Reddit => match &self.reddit {

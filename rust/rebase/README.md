@@ -27,6 +27,7 @@ Current credentials supported:
 * same (links two Subject instances)
 * soundcloud
 * twitter
+* nft_ownership (NOT PRODUCTION READY)
 
 Current Witness flows:
 * dns
@@ -36,6 +37,7 @@ Current Witness flows:
 * same (links two Subject instances)
 * soundcloud
 * twitter
+* nft_ownership (NOT PRODUCTION READY)
 
 Current Subjects:
 * ethereum

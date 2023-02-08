@@ -216,6 +216,16 @@ function witnessOpts() {
     }
   }
 
+  let useAlchemy = ALCHEMY_API_KEY 
+    && ALCHEMY_MAX_ELAPSED_MINS 
+    && !isNaN(parseInt(ALCHEMY_MAX_ELAPSED_MINS));
+  if (useAlchemy) {
+    o.nft_ownership = {
+      api_key: ALCHEMY_API_KEY,
+      max_elapsed_minutes: parseInt(ALCHEMY_MAX_ELAPSED_MINS)
+    }
+  }
+
   return o
 };
 
