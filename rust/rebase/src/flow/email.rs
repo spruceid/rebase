@@ -19,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use url::Url;
 
+// TODO: When revamping for publication, add challenge-parsing delimitor to config handle all on this side.
 #[derive(Clone, Deserialize, Serialize)]
 pub struct SendGridBasic {
     api_key: String,
@@ -142,6 +143,8 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasic {
             )));
         }
 
+        // TODO: Fix this part to have the delimitor part of the config.
+        // TODO: Add parsing logic based on that config.
         let t = format!(
             "{}:::{}",
             proof.statement.generate_statement()?,
