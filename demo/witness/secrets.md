@@ -45,14 +45,24 @@ The `SENDGRID_MAX_ELAPSED_MINS` is a number set to something greater than 0. It 
 ### GITHUB_USER_AGENT (GitHub Flow)
 The `GITHUB_USER_AGENT` secret will be the user agent sent to GitHub when querying it's public API.
 
-## NFT Ownership Flow
+## NFT Ownership Flow (WIP)
 
 NOTE: The NFT Ownership route is not in a complete state and will encounter breaking changes before final release, use in production at your own peril!
 ### ALCHEMY_API_KEY (NFT Ownership Flow)
 The `ALCHEMY_API_KEY` secret will be used to access the alchemy api for querying about NFT ownership. An API key can be gained by signing up [here](https://docs.alchemy.com/reference/api-overview).
 
-### ALCHEMY_MAX_ELAPSED_MINS
-The `ALCHEMY_MAX_ELAPSED_MINS` is a number set to something greater than 0. It represents how many minutes can ellapse from the email challenge being sent and the end-user pasting it back before the witness considers the challenge expired. If set to not a number, a negative number, or 0 it will error out.
+### ALCHEMY_MAX_ELAPSED_MINS (NFT Ownership Flow)
+The `ALCHEMY_MAX_ELAPSED_MINS` is a number set to something greater than 0. It represents how many minutes can ellapse from the NFT challenge being sent and the end-user returning it back before the witness considers the challenge expired. If set to not a number, a negative number, or 0 it will error out.
+
+## POAP Ownership Flow (WIP)
+
+NOTE: The POAP Ownership route is not in a complete state and will encounter breaking changes before final release, use in production at your own peril!
+### POAP_API_KEY (POAP Ownership Flow)
+The `POAP_API_KEY` secret will be used to access the POAP api for querying about POAP ownership. An API key can be gained by signing up [here](https://documentation.poap.tech/docs/authentication).
+
+### POAP_MAX_ELAPSED_MINS (POAP Ownership Flow)
+The `POAP_MAX_ELAPSED_MINS` is a number set to something greater than 0. It represents how many minutes can ellapse from the POAP challenge being sent and the end-user returning it back before the witness considers the challenge expired. If set to not a number, a negative number, or 0 it will error out.
+
 ## Twitter Flow
 ### TWITTER_BEARER_TOKEN (Twitter Flow)
 The `TWITTER_BEARER_TOKEN` is the bearer token given from Twitter to the application developer using the [Twitter API](https://developer.twitter.com/en/docs/twitter-api) and will be used (as described [here](https://developer.twitter.com/en/docs/authentication/oauth-2-0/bearer-tokens)) when querying the API.

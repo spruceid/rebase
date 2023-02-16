@@ -69,6 +69,7 @@ impl NftOwnership {
         Ok(())
     }
 
+    // TODO: Change so URL gets generated in here.
     pub async fn process_page(
         &self,
         client: &reqwest::Client,
@@ -137,10 +138,11 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
         })
     }
 
+    // TODO: Change this whole flow so URL gets generated in process_page.
     async fn validate_proof<I: Issuer>(&self, proof: &Prf, _issuer: &I) -> Result<Ctnt, FlowError> {
         self.sanity_check(&proof.statement.issued_at)?;
 
-        let u = Url::parse(&format!(
+        let base = format!(
             "https://{}-{}.g.alchemy.com/nft/v2/{}/getNFTs?owner={}&withMetadata=false",
             // TODO: Replace with enum.
             "eth".to_string(),
@@ -148,12 +150,12 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
             proof.statement.network,
             self.api_key,
             proof.statement.subject.display_id()?
-        ))
-        .map_err(|e| FlowError::BadLookup(e.to_string()))?;
+        );
 
         let client = Client::new();
 
-        let mut next_u: url::Url = u.clone();
+        let mut next_u: url::Url =
+            Url::parse(&base).map_err(|e| FlowError::BadLookup(e.to_string()))?;
 
         let res = loop {
             let inner_res = self
@@ -168,7 +170,7 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
             match page_key {
                 None => break inner_res,
                 Some(s) => {
-                    next_u = u.join(&format!("&pageKey={}", s)).map_err(|_e| {
+                    next_u = Url::parse(&format!("{}&pageKey={}", base, s)).map_err(|_e| {
                         FlowError::BadLookup("Could not follow paginated results".to_string())
                     })?;
                 }
