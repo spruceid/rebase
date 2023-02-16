@@ -10,14 +10,14 @@ use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
 
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
-pub struct NftOwnership {
-    pub contract_address: String,
+pub struct PoapOwnership {
+    pub event_id: String,
     pub subject: Subjects,
     pub statement: String,
     pub signature: String,
 }
 
-impl Content for NftOwnership {
+impl Content for PoapOwnership {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
@@ -28,8 +28,8 @@ impl Content for NftOwnership {
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, ContentError> {
         let mut evidence_map = std::collections::HashMap::new();
         evidence_map.insert(
-            "contract_address".to_string(),
-            serde_json::Value::String(self.contract_address.clone()),
+            "event_id".to_string(),
+            serde_json::Value::String(self.event_id.clone()),
         );
 
         evidence_map.insert(
@@ -49,7 +49,7 @@ impl Content for NftOwnership {
 
         let evidence = Evidence {
             id: None,
-            type_: vec!["NftOwnershipMessage".to_string()],
+            type_: vec!["PoapOwnershipMessage".to_string()],
             property_set: Some(evidence_map),
         };
 
@@ -59,14 +59,14 @@ impl Content for NftOwnership {
     fn subject(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!({
             "id": self.subject.did()?,
-            "owns_asset_from": self.contract_address.clone(),
+            "event_id": self.event_id.clone(),
         }))
     }
 
     fn types(&self) -> Result<Vec<String>, ContentError> {
         Ok(vec![
             "VerifiableCredential".to_owned(),
-            "NftOwnershipVerification".to_owned(),
+            "PoapOwnershipVerification".to_owned(),
         ])
     }
 }

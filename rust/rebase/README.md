@@ -38,6 +38,7 @@ Current Witness flows:
 * soundcloud
 * twitter
 * nft_ownership (NOT PRODUCTION READY)
+* poap_ownership (NOT PRODUCTION READY)
 
 Current Subjects:
 * ethereum

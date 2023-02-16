@@ -226,6 +226,17 @@ function witnessOpts() {
     }
   }
 
+  let usePoap = POAP_API_KEY 
+    && POAP_MAX_ELAPSED_MINS 
+    && !isNaN(parseInt(POAP_MAX_ELAPSED_MINS));
+
+  if (usePoap) {
+    o.poap_ownership = {
+      api_key: POAP_API_KEY,
+      max_elapsed_minutes: parseInt(POAP_MAX_ELAPSED_MINS),
+    };
+  }
+
   return o
 };
 
@@ -247,13 +258,13 @@ async function stmt(request) {
       const res = await statement(REBASE_SK, body_str, JSON.stringify(opts));
       return new Response(res, {status: 200, headers: headers});
     } else {
-      return new Response(JSON.stringify(new Error(`Expected content-type application/json, got: ${contentType}`)), {
+      return new Response(JSON.stringify({ error: `Expected content-type application/json, got: ${contentType}`}), {
         status: 400,
         headers: headers
       });
     }
   } catch (e) {
-    return new Response(JSON.stringify(e), { status: 400, headers: headers});
+    return new Response(JSON.stringify({ error: e?.message ?? `${e}` }), { status: 400, headers: headers});
   }
 }
 
