@@ -38,7 +38,7 @@ The `SENDGRID_FROM_NAME` secret is the name that will appear as the owner of the
 The `SENDGRID_SUBJECT_NAME` is the name of the service as displayed in the subject of the challenge email. This subject is generated as `format!("Verifying ownership of {} {} for {}`, subject_type, subject_id, SENDGRID_SUBJECT_NAME)`.
 
 #### SENDGRID_MAX_ELAPSED_MINS
-The `SENDGRID_MAX_ELAPSED_MINS` is a number set to something greater than 0. It represents how many minutes can ellapse from the email challenge being sent and the end-user pasting it back before the witness considers the challenge expired. If set to not a number, a negative number, or 0 it will error out.
+The `SENDGRID_MAX_ELAPSED_MINS` is a number set to something greater than 0. It represents how many minutes can elapse from the email challenge being sent and the end-user pasting it back before the witness considers the challenge expired. If set to not a number, a negative number, or 0 it will error out.
 
 ## GitHub Flow
 
@@ -52,7 +52,7 @@ NOTE: The NFT Ownership route is not in a complete state and will encounter brea
 The `ALCHEMY_API_KEY` secret will be used to access the alchemy api for querying about NFT ownership. An API key can be gained by signing up [here](https://docs.alchemy.com/reference/api-overview).
 
 ### ALCHEMY_MAX_ELAPSED_MINS
-The `ALCHEMY_MAX_ELAPSED_MINS` is a number set to something greater than 0. It represents how many minutes can ellapse from the email challenge being sent and the end-user pasting it back before the witness considers the challenge expired. If set to not a number, a negative number, or 0 it will error out.
+The `ALCHEMY_MAX_ELAPSED_MINS` is a number set to something greater than 0. It represents how many minutes can elapse from the email challenge being sent and the end-user pasting it back before the witness considers the challenge expired. If set to not a number, a negative number, or 0 it will error out.
 ## Twitter Flow
 ### TWITTER_BEARER_TOKEN (Twitter Flow)
 The `TWITTER_BEARER_TOKEN` is the bearer token given from Twitter to the application developer using the [Twitter API](https://developer.twitter.com/en/docs/twitter-api) and will be used (as described [here](https://developer.twitter.com/en/docs/authentication/oauth-2-0/bearer-tokens)) when querying the API.
