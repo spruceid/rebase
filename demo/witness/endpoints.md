@@ -14,17 +14,17 @@ Assuming everything is valid, the witness issues a Verifiable Credential in the 
 
 1) The user supplies information relevant to create a statement. It will always include at least one public key and either an identifier to link to that key, or a second key to link with the first.
 
-2) The information from step 1 is passed to the worker in the body of a `POST` request to the route `/statement`, the UI tests that the `POST` request body conforms to the schema recieved in step 0.
+2) The information from step 1 is passed to the worker in the body of a `POST` request to the route `/statement`, the UI tests that the `POST` request body conforms to the schema received in step 0.
 
-3) The information is parsed, and if it matches the form specified below, is used to generate a plain text statement and optionally a delimitor (sometimes ommitted) which are returned in the response body as `statement` and `delimitor` respectively.
+3) The information is parsed, and if it matches the form specified below, is used to generate a plain text statement and optionally a delimitor (sometimes omitted) which are returned in the response body as `statement` and `delimitor` respectively.
 
 4) The user signs the statement at least once. For linking two public keys, the statement is signed twice and signatures returned to the witness in the format as described below. 
 
     In the case of other identity linking flows that involve delimitors, a post is created in the format of: `${statement}${delimitor}${signature}`, then posted somewhere only the identity in the statement could access. 
 
-    In other flows, the user is only expected to post the `signature`. Alternatively, in some flows, like email, the witness generates a challenge, sends it to the targeted account, and the user has to present the challenge along side the signature to prove ownership.
+    In other flows, the user is only expected to post the `signature`. Alternatively, in some flows, like email, the witness generates a challenge, sends it to the targeted account, and the user has to present the challenge alongside the signature to prove ownership.
 
-    Once sufficent proof is gathered it is `POST`ed, along with the options used to generate the statement initially are supplied to `/witness`. The UI makes sure this `POST` body conforms to the schema given in step 0.
+    Once sufficient proof is gathered it is `POST`ed, along with the options used to generate the statement initially are supplied to `/witness`. The UI makes sure this `POST` body conforms to the schema given in step 0.
 
 5) The witness parses the `POST` request and assuming it conforms to the format described below either validates the proof, compares the owner of the proof to the owner described in the statement and verifies that public key described in the statement was the one that signed the statement. 
 
@@ -61,7 +61,7 @@ interface WitnessRes {
 }
 ```
 
-(NOTE: The Rebase Witness SDK also supports LD-proof format, even though this demo ommits it).
+(NOTE: The Rebase Witness SDK also supports LD-proof format, even though this demo omits it).
 
 The `POST` body of `/statement` (and all routes supported by the Witness) are described in the [Rebase Witness SDK](https://github.com/spruceid/rebase/tree/main/rust/rebase_witness_sdk), in the `src/types.rs` file, defined as `StatementReq`.
 
@@ -138,7 +138,7 @@ interface TwitterStmt {
 ```
 
 `Subject`s must conform to the JSON representation of the supported Rebase Subject type found [here](https://github.com/spruceid/rebase/blob/main/rust/rebase/src/types/enums/subject.rs).
-They TypeScript definition of Subjects and it's child types would look like:
+The TypeScript definition of Subjects and its child types would look like:
 ```typescript
 type Subjects = Eth | Solana | Web;
 
