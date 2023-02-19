@@ -9,7 +9,7 @@ Requires
 * A Cloudflare account (the Account ID needs to go in the `wrangler.toml`).
 * Several secrets for the Worker.
 
-The Worker needs several secrets set using `wrangler secret put`, the details of which are outlined in this repository's `secrets.md` [found here](https://github.com/spruceid/rebase/blob/main/demo/witness/secrets.md). Additionally, the `wrangler.toml` must be exist and contain the properties found in the `wrangler.example.toml`.
+The Worker needs several secrets set using `wrangler secret put`, the details of which are outlined in this repository's `secrets.md` [found here](https://github.com/spruceid/rebase/blob/main/demo/witness/secrets.md). Additionally, the `wrangler.toml` must exist and contain the properties found in the `wrangler.example.toml`.
 
 To publish a new version of the worker to your CloudFlare account simply run:
 ```bash
