@@ -13,8 +13,8 @@ $ npm i
 $ npm run dev
 ```
 
-The the UI should be running on `localhost:3000` and is simple to operate. Signers (currently limited to Ethereum and Solana) can be connected through the header and claims can be created by visiting the `available` option at the top of the app. 
+The UI should be running on `localhost:3000` and is simple to operate. Signers (currently limited to Ethereum and Solana) can be connected through the header and claims can be created by visiting the `available` option at the top of the app. 
 
-In the future, there may be a more abstract way of handling witness flows, but for now, `WitnessForm` switches on the type and changes the instructions accordingly. The application also requries an `INFURA_ID` as an environment variable if you wish to utilize WalletConnect, otherwise it defaults to only supporting MetaMask.
+In the future, there may be a more abstract way of handling witness flows, but for now, `WitnessForm` switches on the type and changes the instructions accordingly. The application also requires an `INFURA_ID` as an environment variable if you wish to utilize WalletConnect, otherwise it defaults to only supporting MetaMask.
 
 By default, Phantom is the only supported Solana wallet available in the demo.
