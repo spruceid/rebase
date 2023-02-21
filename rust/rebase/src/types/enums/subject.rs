@@ -1,5 +1,5 @@
 use crate::subject::{ed25519::DidWeb as Ed25519, ethereum::Eip155, solana::Solana};
-use crate::types::{error::SubjectError, types::Subject};
+use crate::types::{defs::Subject, error::SubjectError};
 
 use async_trait::async_trait;
 use schemars::JsonSchema;
@@ -45,6 +45,14 @@ impl Subject for Subjects {
             Subjects::Pkh(Pkh::Eip155(x)) => x.display_id(),
             Subjects::Pkh(Pkh::Solana(x)) => x.display_id(),
             Subjects::Web(Web::Ed25519(x)) => x.display_id(),
+        }
+    }
+
+    fn verification_method(&self) -> Result<String, SubjectError> {
+        match &self {
+            Subjects::Pkh(Pkh::Eip155(x)) => x.verification_method(),
+            Subjects::Pkh(Pkh::Solana(x)) => x.verification_method(),
+            Subjects::Web(Web::Ed25519(x)) => x.verification_method(),
         }
     }
 

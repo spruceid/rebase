@@ -2,8 +2,8 @@ use crate::{
     content::dns::Dns as Ctnt,
     statement::dns::Dns as Stmt,
     types::{
+        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
-        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -81,8 +81,8 @@ impl Flow<Ctnt, Stmt, Stmt> for DnsFlow {
             if sig.starts_with(&proof.prefix) {
                 sig = sig.trim_start_matches(&proof.prefix);
                 let stmt = proof.generate_statement()?;
-                proof.subject.valid_signature(&stmt, &sig).await?;
-                return Ok(proof.to_content(&stmt, &sig)?);
+                proof.subject.valid_signature(&stmt, sig).await?;
+                return Ok(proof.to_content(&stmt, sig)?);
             }
         }
 
@@ -101,8 +101,8 @@ mod tests {
             test_witness_statement, MockFlow, MockIssuer, TestKey, TestWitness,
         },
         types::{
+            defs::{Issuer, Proof, Statement, Subject},
             enums::subject::Subjects,
-            types::{Issuer, Proof, Statement, Subject},
         },
     };
 
@@ -158,7 +158,7 @@ mod tests {
 
             Ok(proof
                 .to_content(&self.statement, &self.signature)
-                .map_err(|e| FlowError::Proof(e))?)
+                .map_err(FlowError::Proof)?)
         }
     }
 

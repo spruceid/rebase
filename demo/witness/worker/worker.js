@@ -245,7 +245,7 @@ const opts = {
   did: DID_WEB
 }
 
-const {statement, witness, instructions} = wasm_bindgen;
+const {statement, witness, instructions, verify} = wasm_bindgen;
 const instance = wasm_bindgen(wasm);
 
 async function stmt(request) {
@@ -264,7 +264,7 @@ async function stmt(request) {
       });
     }
   } catch (e) {
-    return new Response(JSON.stringify({ error: e?.message ?? `${e}` }), { status: 400, headers: headers});
+    return new Response(JSON.stringify({ error: e?.message ?? `${e}` }), {status: 400, headers: headers});
   }
 }
 
@@ -286,7 +286,7 @@ async function wtns(request) {
       throw new Error(`Expected content-type application/json, got: ${contentType}`)
     }
   } catch (e) {
-    return new Response(JSON.stringify({error: e?.message ? e.message : e}), { status: 400, headers: headers});
+    return new Response(JSON.stringify({error: e?.message ? e.message : e}), {status: 400, headers: headers});
   }
 }
 
@@ -306,7 +306,27 @@ async function inst(request) {
       throw new Error(`Expected content-type application/json, got: ${contentType}`)
     }
   } catch (e) {
-    return new Response(JSON.stringify({error: e?.message ? e.message : e}), { status: 400, headers: headers});
+    return new Response(JSON.stringify({error: e?.message ? e.message : e}), {status: 400, headers: headers});
+  }
+}
+
+async function verif(request) {
+  try {
+    await instance;
+    const h = request.headers;
+
+    const contentType = h.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      let body = await request.json();
+      const res = await verify(REBASE_SK, JSON.stringify(body), JSON.stringify(opts));
+
+      return new Response(res, {status: 200, headers: headers});
+    } else {
+      throw new Error(`Expected content-type application/json, got: ${contentType}`)
+    }
+  } catch (e) {
+    return new Response(JSON.stringify({error: e?.message ? e.message : e}), {status: 400, headers: headers});
   }
 }
 
@@ -315,7 +335,7 @@ async function handleRequest(request) {
   r.post("/statement", (request) => stmt(request));
   r.post("/witness", (request) => wtns(request));
   r.post("/instructions", (request) => inst(request));
-  // r.post("/verify", (request) => verify(request))
+  r.post("/verify", (request) => verif(request))
   const resp = await r.route(request);
   return resp;
 }

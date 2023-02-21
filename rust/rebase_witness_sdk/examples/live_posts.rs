@@ -1,11 +1,10 @@
-use rebase::{proof, statement, test_util::util::*, types::types::Statement};
+use rebase::{proof, statement, test_util::util::*, types::defs::Statement};
 
 use rebase_witness_sdk::{
     client::{Client, Endpoints},
     types::{Proofs, StatementReq, Statements, WitnessReq},
 };
 use std::env;
-use tokio;
 use url::Url;
 
 fn new_client(base_url: &str) -> Result<Client, String> {
@@ -15,6 +14,8 @@ fn new_client(base_url: &str) -> Result<Client, String> {
         ld: None,
         statement: Url::parse(&format!("{}/statement", base_url)).unwrap(),
         instructions: Url::parse(&format!("{}/instructions", base_url)).unwrap(),
+        verify_jwt: None,
+        verify_ld: None,
     };
 
     Client::new(endpoints).map_err(|e| e.to_string())
@@ -37,7 +38,7 @@ async fn check_statement(client: &Client, opts: Statements, statement: &str) -> 
 #[tokio::main]
 async fn main() {
     println!("Building client...");
-    let url = env::args().skip(1).next().unwrap();
+    let url = env::args().nth(1).unwrap();
     let client = new_client(&url).unwrap();
 
     println!("Starting Ethereum tests:");

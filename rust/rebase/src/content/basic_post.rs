@@ -1,4 +1,4 @@
-use crate::types::{error::ContentError, types::Content};
+use crate::types::{defs::Content, error::ContentError};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};

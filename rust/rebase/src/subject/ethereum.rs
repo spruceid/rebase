@@ -1,4 +1,4 @@
-use crate::types::{error::*, types::Subject};
+use crate::types::{defs::Subject, error::*};
 use async_trait::async_trait;
 use ed25519_dalek::ed25519::signature::Signature as Ed25519Sig;
 use hex::FromHex;
@@ -31,6 +31,10 @@ impl Subject for Eip155 {
         Ok(self.address.clone())
     }
 
+    fn verification_method(&self) -> Result<String, SubjectError> {
+        Ok(format!("{}#blockchainAccountId", self.did()?))
+    }
+
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
         // NOTE: THIS ASSUMES EIP191 SIGNING.
         // TODO: Call this out in the type system?
@@ -42,40 +46,31 @@ impl Subject for Eip155 {
         .into();
 
         let signature = <[u8; 65]>::from_hex(signature.trim_start_matches("0x")).map_err(|e| {
-            SubjectError::Validation(format!(
-                "could not marshal signature to hex: {}",
-                e.to_string()
-            ))
+            SubjectError::Validation(format!("could not marshal signature to hex: {}", e))
         })?;
 
         let pk = EcdsaSig::new(
             &Sig::from_bytes(&signature[..64]).map_err(|e| {
                 SubjectError::Validation(format!(
                     "could not process signature to recover key: {}",
-                    e.to_string()
+                    e
                 ))
             })?,
             Id::new(&signature[64] % 27).map_err(|e| {
                 SubjectError::Validation(format!(
                     "could not process signature to recover key: {}",
-                    e.to_string()
+                    e
                 ))
             })?,
         )
-        .map_err(|e| SubjectError::Validation(format!("could not recover key: {}", e.to_string())))?
+        .map_err(|e| SubjectError::Validation(format!("could not recover key: {}", e)))?
         .recover_verifying_key(&statement)
         .map_err(|e| {
-            SubjectError::Validation(format!(
-                "could not process statement to recover key: {}",
-                e.to_string()
-            ))
+            SubjectError::Validation(format!("could not process statement to recover key: {}", e))
         })?;
 
         let address = <[u8; 20]>::from_hex(self.address.trim_start_matches("0x")).map_err(|e| {
-            SubjectError::Validation(format!(
-                "could not marshal address to hex: {}",
-                e.to_string()
-            ))
+            SubjectError::Validation(format!("could not marshal address to hex: {}", e))
         })?;
 
         if Keccak256::default()
@@ -140,120 +135,127 @@ mod test {
     #[tokio::test]
     async fn test_eth_fail() {
         let subject = &test_eth_did();
-        match subject
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::DNS, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::DNS, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::Twitter, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::GitHub, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::DNS, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::GitHub, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::Twitter, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::Twitter, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::Twitter, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::DNS, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
+            panic!("Said invalid signature was valid");
+        }
     }
 
     #[tokio::test]
     async fn test_eth_bad_key() {
         let subject = &test_eth_did_2();
-        match subject
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::DNS, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::DNS, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Invalid signature permitted");
+        }
+
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::GitHub, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::GitHub, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Invalid signature permitted");
+        }
+
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::Reddit, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::Reddit, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Invalid signature permitted");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::SoundCloud, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::SoundCloud, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Invalid signature permitted");
+        }
+
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::Twitter, TestKey::Eth).unwrap(),
                 &test_witness_signature(TestWitness::Twitter, TestKey::Eth).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
+            panic!("Invalid signature permitted");
         };
     }
 }

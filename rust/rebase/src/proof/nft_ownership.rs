@@ -2,8 +2,8 @@ use crate::{
     content::nft_ownership::NftOwnership as Ctnt,
     statement::nft_ownership::NftOwnership as Stmt,
     types::{
+        defs::{Proof, Statement},
         error::{ProofError, StatementError},
-        types::{Proof, Statement},
     },
 };
 use schemars::JsonSchema;

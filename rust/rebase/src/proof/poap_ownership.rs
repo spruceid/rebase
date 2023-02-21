@@ -2,8 +2,8 @@ use crate::{
     content::poap_ownership::PoapOwnership as Ctnt,
     statement::poap_ownership::PoapOwnership as Stmt,
     types::{
+        defs::{Proof, Statement},
         error::{ProofError, StatementError},
-        types::{Proof, Statement},
     },
 };
 use schemars::JsonSchema;

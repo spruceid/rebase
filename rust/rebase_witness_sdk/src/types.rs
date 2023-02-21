@@ -27,11 +27,11 @@ use rebase::{
         twitter::Twitter as TwitterStmt,
     },
     types::{
-        error::{ContentError, FlowError, ProofError, StatementError},
-        types::{
-            Content, Credential, Evidence, Flow, FlowResponse, Instructions, Issuer, OneOrMany,
-            Proof, Statement,
+        defs::{
+            new_resolver, Content, ContextLoader, Credential, Evidence, Flow, FlowResponse,
+            Instructions, Issuer, LinkedDataProofOptions, OneOrMany, Proof, Statement, URI,
         },
+        error::{ContentError, FlowError, ProofError, StatementError},
     },
 };
 
@@ -258,49 +258,49 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
     ) -> Result<FlowResponse, FlowError> {
         match stmt {
             Statements::Dns(s) => match &self.dns {
-                Some(x) => Ok(x.statement(&s, issuer).await?),
+                Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation("no dns flow configured".to_owned())),
             },
             Statements::Email(s) => match &self.email {
-                Some(x) => Ok(x.statement(&s, issuer).await?),
+                Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation("no email flow configured".to_owned())),
             },
             Statements::GitHub(s) => match &self.github {
-                Some(x) => Ok(x.statement(&s, issuer).await?),
+                Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no github flow configured".to_owned(),
                 )),
             },
             Statements::NftOwnership(s) => match &self.nft_ownership {
-                Some(x) => Ok(x.statement(&s, issuer).await?),
+                Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no nft_ownership flow configured".to_owned(),
                 )),
             },
             Statements::PoapOwnership(s) => match &self.poap_ownership {
-                Some(x) => Ok(x.statement(&s, issuer).await?),
+                Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no poap_ownership flow configured".to_owned(),
                 )),
             },
             Statements::Reddit(s) => match &self.reddit {
-                Some(x) => Ok(x.statement(&s, issuer).await?),
+                Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no reddit flow configured".to_owned(),
                 )),
             },
             Statements::Same(s) => match &self.same {
-                Some(x) => Ok(x.statement(&s, issuer).await?),
+                Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation("no same flow configured".to_owned())),
             },
             Statements::SoundCloud(s) => match &self.soundcloud {
-                Some(x) => Ok(x.statement(&s, issuer).await?),
+                Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no soundcloud flow configured".to_owned(),
                 )),
             },
             Statements::Twitter(s) => match &self.twitter {
-                Some(x) => Ok(x.statement(&s, issuer).await?),
+                Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no twitter flow configured".to_owned(),
                 )),
@@ -315,49 +315,49 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
     ) -> Result<Contents, FlowError> {
         match proof {
             Proofs::Dns(p) => match &self.dns {
-                Some(x) => Ok(Contents::Dns(x.validate_proof(&p, issuer).await?)),
+                Some(x) => Ok(Contents::Dns(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation("no dns flow configured".to_owned())),
             },
             Proofs::Email(p) => match &self.email {
-                Some(x) => Ok(Contents::Email(x.validate_proof(&p, issuer).await?)),
+                Some(x) => Ok(Contents::Email(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation("no email flow configured".to_owned())),
             },
             Proofs::GitHub(p) => match &self.github {
-                Some(x) => Ok(Contents::GitHub(x.validate_proof(&p, issuer).await?)),
+                Some(x) => Ok(Contents::GitHub(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation(
                     "no github flow configured".to_owned(),
                 )),
             },
             Proofs::NftOwnership(p) => match &self.nft_ownership {
-                Some(x) => Ok(Contents::NftOwnership(x.validate_proof(&p, issuer).await?)),
+                Some(x) => Ok(Contents::NftOwnership(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation(
                     "no nft_ownership flow configured".to_owned(),
                 )),
             },
             Proofs::PoapOwnership(p) => match &self.poap_ownership {
-                Some(x) => Ok(Contents::PoapOwnership(x.validate_proof(&p, issuer).await?)),
+                Some(x) => Ok(Contents::PoapOwnership(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation(
                     "no poap_ownership flow configured".to_owned(),
                 )),
             },
             Proofs::Reddit(p) => match &self.reddit {
-                Some(x) => Ok(Contents::Reddit(x.validate_proof(&p, issuer).await?)),
+                Some(x) => Ok(Contents::Reddit(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation(
                     "no reddit flow configured".to_owned(),
                 )),
             },
             Proofs::Same(p) => match &self.same {
-                Some(x) => Ok(Contents::Same(x.validate_proof(&p, issuer).await?)),
+                Some(x) => Ok(Contents::Same(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation("no same flow configured".to_owned())),
             },
             Proofs::SoundCloud(p) => match &self.soundcloud {
-                Some(x) => Ok(Contents::SoundCloud(x.validate_proof(&p, issuer).await?)),
+                Some(x) => Ok(Contents::SoundCloud(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation(
                     "no soundcloud flow configured".to_owned(),
                 )),
             },
             Proofs::Twitter(p) => match &self.twitter {
-                Some(x) => Ok(Contents::Twitter(x.validate_proof(&p, issuer).await?)),
+                Some(x) => Ok(Contents::Twitter(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation(
                     "no twitter flow configured".to_owned(),
                 )),
@@ -382,6 +382,7 @@ pub struct WitnessReq {
     pub proof: Proofs,
 }
 
+// TODO: Refactor the base names of the structs?
 #[derive(Clone, Deserialize, Serialize)]
 pub struct WitnessJWTRes {
     pub jwt: String,
@@ -390,6 +391,16 @@ pub struct WitnessJWTRes {
 #[derive(Deserialize, Serialize)]
 pub struct WitnessLDRes {
     pub credential: Credential,
+}
+
+// TODO: Refactor the base names of the structs?
+// TODO: Make the request an enum and flatten on serailization.
+pub type VerifyJWTReq = WitnessJWTRes;
+pub type VerifyLDReq = WitnessLDRes;
+
+#[derive(Clone, serde::Deserialize, serde::Serialize)]
+pub struct VerifyRes {
+    pub success: bool,
 }
 
 impl WitnessFlow {
@@ -475,5 +486,56 @@ impl WitnessFlow {
         issuer: &I,
     ) -> Result<serde_json::Value, FlowError> {
         Ok(json!(self.statement(&req.opts, issuer).await?))
+    }
+
+    // TODO: Unify these two if the request becomes an enum
+    pub async fn handle_verify_credential_req<I: Issuer>(
+        &self,
+        req: &VerifyLDReq,
+        issuer: &I,
+    ) -> Result<(), FlowError> {
+        let ldpo = LinkedDataProofOptions {
+            verification_method: Some(URI::String(issuer.verification_method()?)),
+            ..Default::default()
+        };
+
+        let res = req
+            .credential
+            .verify(Some(ldpo), &new_resolver(), &mut ContextLoader::default())
+            .await;
+
+        if res.errors.is_empty() {
+            Ok(())
+        } else {
+            let message = res.errors.join(" ");
+            Err(FlowError::BadLookup(message))
+        }
+    }
+
+    // TODO: Unify these two if the request becomes an enum
+    pub async fn handle_verify_jwt_req<I: Issuer>(
+        &self,
+        req: &VerifyJWTReq,
+        issuer: &I,
+    ) -> Result<(), FlowError> {
+        let ldpo = LinkedDataProofOptions {
+            verification_method: Some(URI::String(issuer.verification_method()?)),
+            ..Default::default()
+        };
+
+        let res = Credential::verify_jwt(
+            &req.jwt,
+            Some(ldpo),
+            &new_resolver(),
+            &mut ContextLoader::default(),
+        )
+        .await;
+
+        if res.errors.is_empty() {
+            Ok(())
+        } else {
+            let message = res.errors.join(" ");
+            Err(FlowError::BadLookup(message))
+        }
     }
 }

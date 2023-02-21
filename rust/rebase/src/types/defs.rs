@@ -1,19 +1,31 @@
 use crate::types::error::*;
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
+use did_web::DIDWeb;
 use schemars::schema::RootSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{
+    jsonld::ContextLoader as JSONLDContextLoader,
     ldp::Proof as LDProof,
     one_or_many::OneOrMany as SSIOneOrMany,
-    vc::{Credential as SSICred, Evidence as SSIEvidence},
+    vc::{
+        Credential as SSICred, Evidence as SSIEvidence, LinkedDataProofOptions as LDPOpts,
+        URI as VCURI,
+    },
 };
 use uuid::Uuid;
 
 pub type Credential = SSICred;
+pub type ContextLoader = JSONLDContextLoader;
+pub type LinkedDataProofOptions = LDPOpts;
+pub type URI = VCURI;
 pub type OneOrMany<T> = SSIOneOrMany<T>;
 pub type Evidence = SSIEvidence;
+
+pub fn new_resolver() -> DIDWeb {
+    DIDWeb
+}
 
 #[async_trait(?Send)]
 pub trait Subject
@@ -23,6 +35,8 @@ where
     fn did(&self) -> Result<String, SubjectError>;
 
     fn display_id(&self) -> Result<String, SubjectError>;
+
+    fn verification_method(&self) -> Result<String, SubjectError>;
 
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError>;
 }
@@ -56,7 +70,7 @@ pub trait Content {
 
         let mut vc: Credential = serde_json::from_value(json!({
             "@context": self.context()?,
-            "id": format!("urn:uuid:{}", Uuid::new_v4().to_string()),
+            "id": format!("urn:uuid:{}", Uuid::new_v4()),
             "issuer": &did,
             "issuanceDate": Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true),
             "type": self.types()?,

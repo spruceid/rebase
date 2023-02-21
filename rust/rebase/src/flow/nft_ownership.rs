@@ -3,9 +3,9 @@ use crate::{
     proof::nft_ownership::NftOwnership as Prf,
     statement::nft_ownership::NftOwnership as Stmt,
     types::{
+        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         enums::subject::{Pkh, Subjects},
         error::FlowError,
-        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -56,15 +56,15 @@ impl NftOwnership {
             .map_err(|e| FlowError::Validation(e.to_string()))?;
 
         if then > now {
-            return Err(FlowError::Validation(format!(
-                "Timestamp provided comes from the future"
-            )));
+            return Err(FlowError::Validation(
+                "Timestamp provided comes from the future".to_string(),
+            ));
         }
 
         if now - Duration::minutes(self.max_elapsed_minutes) > then {
-            return Err(FlowError::Validation(format!(
-                "Validation window has expired"
-            )));
+            return Err(FlowError::Validation(
+                "Validation window has expired".to_string(),
+            ));
         };
         Ok(())
     }
@@ -145,7 +145,7 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
         let base = format!(
             "https://{}-{}.g.alchemy.com/nft/v2/{}/getNFTs?owner={}&withMetadata=false",
             // TODO: Replace with enum.
-            "eth".to_string(),
+            "eth",
             // TODO: Replace with enum.
             proof.statement.network,
             self.api_key,

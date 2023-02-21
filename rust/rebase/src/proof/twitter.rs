@@ -2,8 +2,8 @@ use crate::{
     content::twitter::Twitter as Ctnt,
     statement::twitter::Twitter as Stmt,
     types::{
+        defs::{Proof, Statement},
         error::{ProofError, StatementError},
-        types::{Proof, Statement},
     },
 };
 use schemars::JsonSchema;

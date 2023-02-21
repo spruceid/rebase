@@ -2,8 +2,8 @@ use crate::{
     content::soundcloud::SoundCloud as Ctnt,
     statement::soundcloud::SoundCloud as Stmt,
     types::{
+        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
-        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -28,7 +28,7 @@ impl SoundCloudFlow {
             Err(FlowError::Validation(
                 "limit must be less than or equal to 200".to_string(),
             ))
-        } else if self.limit <= 0 {
+        } else if self.limit == 0 {
             Err(FlowError::Validation(
                 "limit must be greater than 0".to_string(),
             ))
@@ -106,29 +106,23 @@ impl Flow<Ctnt, Stmt, Stmt> for SoundCloudFlow {
                 .await
                 .map_err(|e| FlowError::BadLookup(e.to_string()))?;
 
-            if res.collection.len() <= 0 {
+            if res.collection.is_empty() {
                 break;
             }
 
             for entry in res.collection {
-                match entry.permalink {
-                    Some(permalink) => {
-                        if permalink.to_lowercase() == proof.permalink.to_lowercase() {
-                            match entry.description {
-                                Some(description) => {
-                                    let stmt = proof.generate_statement()?;
-                                    proof.subject.valid_signature(&stmt, &description).await?;
-                                    return Ok(proof.to_content(&stmt, &description)?);
-                                }
-                                None => {}
-                            }
+                if let Some(permalink) = entry.permalink {
+                    if permalink.to_lowercase() == proof.permalink.to_lowercase() {
+                        if let Some(description) = entry.description {
+                            let stmt = proof.generate_statement()?;
+                            proof.subject.valid_signature(&stmt, &description).await?;
+                            return Ok(proof.to_content(&stmt, &description)?);
                         }
                     }
-                    None => {}
                 }
             }
 
-            offset = offset + self.limit;
+            offset += self.limit;
         }
 
         Err(FlowError::BadLookup(format!(
@@ -155,8 +149,8 @@ mod tests {
             TestWitness,
         },
         types::{
+            defs::{Issuer, Statement, Subject},
             enums::subject::Subjects,
-            types::{Issuer, Statement, Subject},
         },
     };
 
@@ -207,7 +201,7 @@ mod tests {
 
             Ok(proof
                 .to_content(&self.statement, &self.signature)
-                .map_err(|e| FlowError::Proof(e))?)
+                .map_err(FlowError::Proof)?)
         }
     }
 

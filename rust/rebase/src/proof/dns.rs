@@ -1,6 +1,6 @@
 use crate::{
-    content::dns::Dns as Ctnt, statement::dns::Dns as Stmt, types::error::ProofError,
-    types::types::Proof,
+    content::dns::Dns as Ctnt, statement::dns::Dns as Stmt, types::defs::Proof,
+    types::error::ProofError,
 };
 
 impl Proof<Ctnt> for Stmt {

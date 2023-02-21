@@ -1,4 +1,4 @@
-use crate::types::{error::SubjectError, types::*};
+use crate::types::{defs::*, error::SubjectError};
 use async_trait::async_trait;
 use base58::{FromBase58, FromBase58Error};
 use ed25519_dalek::{ed25519::signature::Signature as Ed25519Sig, PublicKey, Verifier};
@@ -26,14 +26,10 @@ pub struct Solana {
 
 impl Solana {
     fn pubkey(&self) -> Result<PublicKey, SubjectError> {
-        Ok(
-            PublicKey::from_bytes(&self.address.from_base58().map_err(|e| {
-                SubjectError::Validation(format!("failed to decode from base58: {}", b58_err(e)))
-            })?)
-            .map_err(|e| {
-                SubjectError::Validation(format!("failed to create from bytes: {}", e.to_string()))
-            })?,
-        )
+        PublicKey::from_bytes(&self.address.from_base58().map_err(|e| {
+            SubjectError::Validation(format!("failed to decode from base58: {}", b58_err(e)))
+        })?)
+        .map_err(|e| SubjectError::Validation(format!("failed to create from bytes: {}", e)))
     }
 }
 
@@ -48,6 +44,11 @@ impl Subject for Solana {
 
     fn display_id(&self) -> Result<String, SubjectError> {
         Ok(self.address.clone())
+    }
+
+    fn verification_method(&self) -> Result<String, SubjectError> {
+        // NOTE: If encountering issues with this approach, use: SolanaMethod2021 instead of "controller"
+        Ok(format!("{}#controller", self.did()?))
     }
 
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
@@ -113,120 +114,121 @@ mod test {
     #[tokio::test]
     async fn test_solana_fail() {
         let subject = &test_solana_did();
-        match subject
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::DNS, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::GitHub, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::DNS, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::Twitter, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::GitHub, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::DNS, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::GitHub, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::Twitter, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::Twitter, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::GitHub, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Said invalid signature was valid");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::Twitter, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::DNS, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Said invalid signature was valid"),
-            Err(_) => {}
-        };
+            panic!("Said invalid signature was valid");
+        }
     }
 
     #[tokio::test]
     async fn test_solana_bad_key() {
         let subject = &test_solana_did_2();
-        match subject
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::DNS, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::DNS, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Invalid signature permitted");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::GitHub, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::GitHub, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Invalid signature permitted");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::Reddit, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::Reddit, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Invalid signature permitted");
+        }
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::SoundCloud, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::SoundCloud, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
-        };
-        match subject
+            panic!("Invalid signature permitted");
+        }
+
+        if subject
             .valid_signature(
                 &test_witness_statement(TestWitness::Twitter, TestKey::Solana).unwrap(),
                 &test_witness_signature(TestWitness::Twitter, TestKey::Solana).unwrap(),
             )
             .await
+            .is_ok()
         {
-            Ok(_) => panic!("Invalid signature permitted"),
-            Err(_) => {}
+            panic!("Invalid signature permitted");
         };
     }
 }

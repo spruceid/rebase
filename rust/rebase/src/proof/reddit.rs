@@ -1,7 +1,7 @@
 use crate::{
     content::reddit::Reddit as Ctnt,
     statement::reddit::Reddit as Stmt,
-    types::{error::ProofError, types::Proof},
+    types::{defs::Proof, error::ProofError},
 };
 
 impl Proof<Ctnt> for Stmt {
