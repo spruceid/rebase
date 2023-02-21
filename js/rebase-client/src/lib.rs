@@ -2,7 +2,7 @@ mod utils;
 
 use rebase_witness_sdk::{
     client::{Client as RebaseClient, Endpoints},
-    types::{InstructionsReq, StatementReq, WitnessReq},
+    types::{InstructionsReq, StatementReq, VerifyJWTReq, VerifyLDReq, WitnessReq},
 };
 // use serde_json::from_str;
 use js_sys::Promise;
@@ -37,17 +37,30 @@ pub struct Client {
 impl Client {
     #[wasm_bindgen(constructor)]
     pub fn new(
+        // TODO: Change this to an options struct
         instructions: String,
         statement: String,
         jwt: Option<String>,
         ld: Option<String>,
+        verify_jwt: Option<String>,
+        verify_ld: Option<String>,
     ) -> Result<Client, String> {
         let jwt: Option<Url> = match jwt {
             Some(s) => Some(Url::parse(&s).map_err(|e| e.to_string())?),
             None => None,
         };
 
+        let verify_jwt: Option<Url> = match verify_jwt {
+            Some(s) => Some(Url::parse(&s).map_err(|e| e.to_string())?),
+            None => None,
+        };
+
         let ld: Option<Url> = match ld {
+            Some(s) => Some(Url::parse(&s).map_err(|e| e.to_string())?),
+            None => None,
+        };
+
+        let verify_ld: Option<Url> = match verify_ld {
             Some(s) => Some(Url::parse(&s).map_err(|e| e.to_string())?),
             None => None,
         };
@@ -61,6 +74,8 @@ impl Client {
                     ld,
                     statement,
                     instructions,
+                    verify_jwt,
+                    verify_ld,
                 })
                 .map_err(|e| e.to_string())?,
             ),
@@ -94,11 +109,29 @@ impl Client {
         })
     }
 
+    pub fn verify_jwt(&self, req: String) -> Promise {
+        let client = self.client.clone();
+        future_to_promise(async move {
+            let req: VerifyJWTReq = jserr!(serde_json::from_str(&req));
+            let res = jserr!(client.verify_jwt(req).await);
+            Ok(jserr!(serde_json::to_string(&res)).into())
+        })
+    }
+
     pub fn ld(&self, req: String) -> Promise {
         let client = self.client.clone();
         future_to_promise(async move {
             let req: WitnessReq = jserr!(serde_json::from_str(&req));
             let res = jserr!(client.ld(req).await);
+            Ok(jserr!(serde_json::to_string(&res)).into())
+        })
+    }
+
+    pub fn verify_ld(&self, req: String) -> Promise {
+        let client = self.client.clone();
+        future_to_promise(async move {
+            let req: VerifyLDReq = jserr!(serde_json::from_str(&req));
+            let res = jserr!(client.verify_ld(req).await);
             Ok(jserr!(serde_json::to_string(&res)).into())
         })
     }

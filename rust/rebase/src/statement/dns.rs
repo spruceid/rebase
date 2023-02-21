@@ -1,7 +1,7 @@
 use crate::types::{
+    defs::{Statement, Subject},
     enums::subject::Subjects,
     error::StatementError,
-    types::{Statement, Subject},
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

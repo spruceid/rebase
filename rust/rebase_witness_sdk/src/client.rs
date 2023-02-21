@@ -1,5 +1,8 @@
-use crate::types::{InstructionsReq, StatementReq, WitnessJWTRes, WitnessLDRes, WitnessReq};
-use rebase::types::types::FlowResponse;
+use crate::types::{
+    InstructionsReq, StatementReq, VerifyJWTReq, VerifyLDReq, VerifyRes, WitnessJWTRes,
+    WitnessLDRes, WitnessReq,
+};
+use rebase::types::defs::FlowResponse;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -24,6 +27,8 @@ pub struct Endpoints {
     pub ld: Option<Url>,
     pub statement: Url,
     pub instructions: Url,
+    pub verify_jwt: Option<Url>,
+    pub verify_ld: Option<Url>,
 }
 
 #[derive(Clone)]
@@ -62,7 +67,7 @@ impl Client {
     pub async fn statement(&self, req: StatementReq) -> Result<FlowResponse, ClientError> {
         let client = HttpClient::new();
 
-        Ok(client
+        let res = client
             .post(self.endpoints.statement.clone())
             .json(&req)
             .send()
@@ -70,7 +75,9 @@ impl Client {
             .map_err(|e| ClientError::Statement(e.to_string()))?
             .json()
             .await
-            .map_err(|e| ClientError::Statement(e.to_string()))?)
+            .map_err(|e| ClientError::Statement(e.to_string()))?;
+
+        Ok(res)
     }
 
     pub async fn jwt(&self, req: WitnessReq) -> Result<WitnessJWTRes, ClientError> {
@@ -110,6 +117,54 @@ impl Client {
                 Ok(res)
             }
             None => Err(ClientError::Ld("No configured LD endpoint".to_string())),
+        }
+    }
+
+    // TODO: Unify these when making the request a single enum.
+    pub async fn verify_jwt(&self, req: VerifyJWTReq) -> Result<VerifyRes, ClientError> {
+        match &self.endpoints.verify_jwt {
+            Some(endpoint) => {
+                let client = HttpClient::new();
+
+                let res: VerifyRes = client
+                    .post(endpoint.clone())
+                    .json(&req)
+                    .send()
+                    .await
+                    .map_err(|e| ClientError::Ld(e.to_string()))?
+                    .json()
+                    .await
+                    .map_err(|e| ClientError::Ld(e.to_string()))?;
+
+                Ok(res)
+            }
+            None => Err(ClientError::Ld(
+                "No configured verify JWT endpoint".to_string(),
+            )),
+        }
+    }
+
+    // TODO: Unify these when making the request a single type enum.
+    pub async fn verify_ld(&self, req: VerifyLDReq) -> Result<VerifyRes, ClientError> {
+        match &self.endpoints.verify_ld {
+            Some(endpoint) => {
+                let client = HttpClient::new();
+
+                let res: VerifyRes = client
+                    .post(endpoint.clone())
+                    .json(&req)
+                    .send()
+                    .await
+                    .map_err(|e| ClientError::Ld(e.to_string()))?
+                    .json()
+                    .await
+                    .map_err(|e| ClientError::Ld(e.to_string()))?;
+
+                Ok(res)
+            }
+            None => Err(ClientError::Ld(
+                "No configured verify LD endpoint".to_string(),
+            )),
         }
     }
 }

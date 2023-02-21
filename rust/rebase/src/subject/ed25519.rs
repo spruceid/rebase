@@ -1,4 +1,4 @@
-use crate::types::{error::SubjectError, types::Subject};
+use crate::types::{defs::Subject, error::SubjectError};
 use async_trait::async_trait;
 use ed25519_dalek::{ed25519::signature::Signature, PublicKey, Verifier};
 use hex;
@@ -11,6 +11,7 @@ use url::Url;
 #[serde(rename = "did_web")]
 pub struct DidWeb {
     pub did: String,
+    pub key_name: String,
 }
 
 impl DidWeb {
@@ -27,40 +28,26 @@ impl DidWeb {
                     .send()
                     .await
                     .map_err(|e| {
-                        SubjectError::Validation(format!(
-                            "failed to retrieve public key: {}",
-                            e.to_string()
-                        ))
+                        SubjectError::Validation(format!("failed to retrieve public key: {}", e))
                     })?
                     .json()
                     .await
                     .map_err(|e| {
-                        SubjectError::Validation(format!(
-                            "invalid public key format: {}",
-                            e.to_string()
-                        ))
+                        SubjectError::Validation(format!("invalid public key format: {}", e))
                     })?;
 
-                if res.verification_method.len() < 1 {
+                if res.verification_method.is_empty() {
                     return Err(SubjectError::Validation(
                         "no verifications found in did document".to_string(),
                     ));
                 };
 
                 let b = Base64urlUInt::try_from(res.verification_method[0].key.x.clone()).map_err(
-                    |e| {
-                        SubjectError::Validation(format!(
-                            "failed to decode public key: {}",
-                            e.to_string()
-                        ))
-                    },
+                    |e| SubjectError::Validation(format!("failed to decode public key: {}", e)),
                 )?;
 
                 Ok(PublicKey::from_bytes(&b.0).map_err(|e| {
-                    SubjectError::Validation(format!(
-                        "failed to create from bytes: {}",
-                        e.to_string()
-                    ))
+                    SubjectError::Validation(format!("failed to create from bytes: {}", e))
                 })?)
             }
             None => Err(SubjectError::Validation(format!(
@@ -82,6 +69,10 @@ impl Subject for DidWeb {
         Ok(s.to_owned())
     }
 
+    fn verification_method(&self) -> Result<String, SubjectError> {
+        Ok(format!("{}#{}", &self.did, &self.key_name))
+    }
+
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
         let sig = Signature::from_bytes(
             &hex::decode(signature).map_err(|e| SubjectError::Validation(e.to_string()))?,
@@ -92,7 +83,7 @@ impl Subject for DidWeb {
         let pubkey = self.pubkey().await?;
 
         pubkey
-            .verify(&stmt, &sig)
+            .verify(stmt, &sig)
             .map_err(|e| SubjectError::Validation(e.to_string()))
     }
 }

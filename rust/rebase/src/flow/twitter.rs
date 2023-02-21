@@ -3,8 +3,8 @@ use crate::{
     proof::twitter::Twitter as Prf,
     statement::twitter::Twitter as Stmt,
     types::{
+        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
-        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -76,8 +76,8 @@ impl Flow<Ctnt, Stmt, Prf> for TwitterFlow {
         headers.insert(AUTHORIZATION, s);
         let client = Client::new();
 
-        let url_vec: Vec<&str> = proof.tweet_url.split("/").collect();
-        if url_vec.len() < 1 {
+        let url_vec: Vec<&str> = proof.tweet_url.split('/').collect();
+        if url_vec.is_empty() {
             return Err(FlowError::Validation("could not find tweet id".to_owned()));
         }
 
@@ -101,7 +101,7 @@ impl Flow<Ctnt, Stmt, Prf> for TwitterFlow {
             .await
             .map_err(|e| FlowError::BadLookup(e.to_string()))?;
 
-        if res.includes.users.len() < 1 {
+        if res.includes.users.is_empty() {
             return Err(FlowError::BadLookup("No users found".to_string()));
         };
 
@@ -113,7 +113,7 @@ impl Flow<Ctnt, Stmt, Prf> for TwitterFlow {
             )));
         };
 
-        if res.data.len() < 1 {
+        if res.data.is_empty() {
             return Err(FlowError::BadLookup("No users found".to_string()));
         };
 
@@ -140,8 +140,8 @@ mod tests {
             test_witness_statement, MockFlow, MockIssuer, TestKey, TestWitness,
         },
         types::{
+            defs::{Issuer, Proof, Statement, Subject},
             enums::subject::Subjects,
-            types::{Issuer, Proof, Statement, Subject},
         },
     };
 
@@ -196,7 +196,7 @@ mod tests {
 
             Ok(proof
                 .to_content(&self.statement, &self.signature)
-                .map_err(|e| FlowError::Proof(e))?)
+                .map_err(FlowError::Proof)?)
         }
     }
 

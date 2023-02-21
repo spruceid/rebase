@@ -3,8 +3,8 @@ use crate::{
     proof::email::Email as Prf,
     statement::email::Email as Stmt,
     types::{
+        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
-        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -91,9 +91,8 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasic {
             }
         });
 
-        let u = Url::parse("https://api.sendgrid.com/v3/mail/send").map_err(|e| {
-            FlowError::BadLookup(format!("Failed to parse email API Url: {}", e.to_string()))
-        })?;
+        let u = Url::parse("https://api.sendgrid.com/v3/mail/send")
+            .map_err(|e| FlowError::BadLookup(format!("Failed to parse email API Url: {}", e)))?;
 
         let key_header: HeaderValue =
             format!("Bearer {}", &self.api_key).parse().map_err(|_| {
@@ -116,9 +115,7 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasic {
             .json(&req)
             .send()
             .await
-            .map_err(|e| {
-                FlowError::BadLookup(format!("Could not send email: {}", e.to_string()))
-            })?;
+            .map_err(|e| FlowError::BadLookup(format!("Could not send email: {}", e)))?;
 
         Ok(FlowResponse {
             statement,
@@ -138,9 +135,9 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasic {
             .map_err(|e| FlowError::Validation(e.to_string()))?;
 
         if now - Duration::minutes(self.max_elapsed_minutes) > then {
-            return Err(FlowError::Validation(format!(
-                "Validation window has expired"
-            )));
+            return Err(FlowError::Validation(
+                "Validation window has expired".to_string(),
+            ));
         }
 
         // TODO: Fix this part to have the delimitor part of the config.

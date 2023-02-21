@@ -2,8 +2,8 @@ use crate::{
     content::email::Email as Ctnt,
     statement::email::Email as Stmt,
     types::{
+        defs::{Proof, Statement},
         error::{ProofError, StatementError},
-        types::{Proof, Statement},
     },
 };
 use schemars::JsonSchema;

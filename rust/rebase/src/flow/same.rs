@@ -3,8 +3,8 @@ use crate::{
     proof::same::Same as Prf,
     statement::same::Same as Stmt,
     types::{
+        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
-        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 

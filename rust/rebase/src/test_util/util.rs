@@ -1,9 +1,9 @@
 use crate::{
     subject::{ed25519::DidWeb, ethereum::Eip155, solana::Solana},
     types::{
+        defs::{Issuer, Subject},
         enums::subject::{Pkh, Subjects, Web},
         error::{FlowError, IssuerError, SubjectError},
-        types::{Issuer, Subject},
     },
 };
 use async_trait::async_trait;
@@ -47,12 +47,14 @@ pub fn test_solana_did_2() -> Subjects {
 pub fn test_ed25519_did() -> Subjects {
     Subjects::Web(Web::Ed25519(DidWeb {
         did: "did:web:rebasedemokey.pages.dev".to_string(),
+        key_name: "controller".to_string(),
     }))
 }
 
 pub fn test_ed25519_did_2() -> Subjects {
     Subjects::Web(Web::Ed25519(DidWeb {
         did: "did:web:tzprofiles.com".to_string(),
+        key_name: "controller".to_string(),
     }))
 }
 
@@ -128,6 +130,10 @@ impl Subject for MockIssuer {
     }
 
     fn display_id(&self) -> Result<String, SubjectError> {
+        Err(SubjectError::Validation("unimplemented".to_string()))
+    }
+
+    fn verification_method(&self) -> Result<String, SubjectError> {
         Err(SubjectError::Validation("unimplemented".to_string()))
     }
 

@@ -2,8 +2,8 @@ use crate::{
     content::same::Same as Ctnt,
     statement::same::Same as Stmt,
     types::{
+        defs::{Proof, Statement},
         error::{ProofError, StatementError},
-        types::{Proof, Statement},
     },
 };
 use schemars::JsonSchema;

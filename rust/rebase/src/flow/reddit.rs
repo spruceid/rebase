@@ -2,8 +2,8 @@ use crate::{
     content::reddit::Reddit as Ctnt,
     statement::reddit::Reddit as Stmt,
     types::{
+        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
-        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 use async_trait::async_trait;
@@ -91,8 +91,8 @@ mod tests {
             MockFlow, MockIssuer, TestKey, TestWitness,
         },
         types::{
+            defs::{FlowResponse, Issuer, Statement, Subject},
             enums::subject::Subjects,
-            types::{FlowResponse, Issuer, Statement, Subject},
         },
     };
 
@@ -146,7 +146,7 @@ mod tests {
 
             Ok(proof
                 .to_content(&self.statement, &self.signature)
-                .map_err(|e| FlowError::Proof(e))?)
+                .map_err(FlowError::Proof)?)
         }
     }
 

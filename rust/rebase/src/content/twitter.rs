@@ -1,7 +1,7 @@
 use crate::types::{
+    defs::{Content, Subject},
     enums::subject::Subjects,
     error::ContentError,
-    types::{Content, Subject},
 };
 use chrono::{SecondsFormat, Utc};
 use schemars::JsonSchema;
@@ -36,8 +36,8 @@ impl Content for Twitter {
             "timestamp".to_string(),
             serde_json::Value::String(Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true)),
         );
-        let url_vec: Vec<&str> = self.tweet_url.split("/").collect();
-        if url_vec.len() < 1 {
+        let url_vec: Vec<&str> = self.tweet_url.split('/').collect();
+        if url_vec.is_empty() {
             return Err(ContentError::Invalid("could not find tweet id".to_owned()));
         }
 

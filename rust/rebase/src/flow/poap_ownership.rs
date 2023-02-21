@@ -3,9 +3,9 @@ use crate::{
     proof::poap_ownership::PoapOwnership as Prf,
     statement::poap_ownership::PoapOwnership as Stmt,
     types::{
+        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         enums::subject::{Pkh, Subjects},
         error::FlowError,
-        types::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
     },
 };
 
@@ -49,15 +49,15 @@ impl PoapOwnership {
             .map_err(|e| FlowError::Validation(e.to_string()))?;
 
         if then > now {
-            return Err(FlowError::Validation(format!(
-                "Timestamp provided comes from the future"
-            )));
+            return Err(FlowError::Validation(
+                "Timestamp provided comes from the future".to_string(),
+            ));
         }
 
         if now - Duration::minutes(self.max_elapsed_minutes) > then {
-            return Err(FlowError::Validation(format!(
-                "Validation window has expired"
-            )));
+            return Err(FlowError::Validation(
+                "Validation window has expired".to_string(),
+            ));
         };
         Ok(())
     }
@@ -139,7 +139,7 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnership {
             "https://api.poap.tech/actions/scan/{}",
             proof.statement.subject.display_id()?
         ))
-        .map_err(|e| FlowError::BadLookup(format!("Failed in API request: {}", e.to_string())))?;
+        .map_err(|e| FlowError::BadLookup(format!("Failed in API request: {}", e)))?;
 
         let mut headers = HeaderMap::new();
         let hv: HeaderValue = self

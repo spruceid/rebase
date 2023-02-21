@@ -2,8 +2,8 @@ use crate::{
     content::github::GitHub as Ctnt,
     statement::github::GitHub as Stmt,
     types::{
+        defs::{Proof, Statement},
         error::{ProofError, StatementError},
-        types::{Proof, Statement},
     },
 };
 use schemars::JsonSchema;

@@ -4,7 +4,7 @@ use crate::{
     statement::github::GitHub as Stmt,
     types::{
         error::FlowError,
-        types::{Flow, FlowResponse, Issuer, Proof, Statement, Subject, Instructions},
+        defs::{Flow, FlowResponse, Issuer, Proof, Statement, Subject, Instructions},
     },
 };
 
@@ -81,7 +81,7 @@ impl Flow<Ctnt, Stmt, Prf> for GitHubFlow {
         let mut headers = HeaderMap::new();
         headers.insert(
             USER_AGENT,
-            format!("{}", self.user_agent).parse().map_err(|_| {
+            self.user_agent.to_string().parse().map_err(|_| {
                 FlowError::BadLookup("could not generate header for lookup".to_string())
             })?,
         );
@@ -156,7 +156,7 @@ mod tests {
         },
         types::{
             enums::subject::Subjects,
-            types::{Issuer, Proof, Statement, Subject},
+            defs::{Issuer, Proof, Statement, Subject},
         },
     };
 
@@ -207,7 +207,7 @@ mod tests {
 
             Ok(proof
                 .to_content(&self.statement, &self.signature)
-                .map_err(|e| FlowError::Proof(e))?)
+                .map_err(FlowError::Proof)?)
         }
     }
 

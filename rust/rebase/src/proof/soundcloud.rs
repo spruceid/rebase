@@ -1,7 +1,7 @@
 use crate::{
     content::soundcloud::SoundCloud as Ctnt,
     statement::soundcloud::SoundCloud as Stmt,
-    types::{error::ProofError, types::Proof},
+    types::{defs::Proof, error::ProofError},
 };
 
 impl Proof<Ctnt> for Stmt {
