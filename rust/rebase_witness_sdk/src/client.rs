@@ -36,6 +36,13 @@ pub struct Client {
     endpoints: Endpoints,
 }
 
+// TODO: Make this more explicit higher up so that this is less of a pinky promise
+// and actually type enforced.
+#[derive(Deserialize, Serialize)]
+struct WitnessErr {
+    error: String,
+}
+
 impl Client {
     pub fn new(endpoints: Endpoints) -> Result<Client, ClientError> {
         if endpoints.jwt.is_none() && endpoints.ld.is_none() {
@@ -67,17 +74,21 @@ impl Client {
     pub async fn statement(&self, req: StatementReq) -> Result<FlowResponse, ClientError> {
         let client = HttpClient::new();
 
+        // let res: FlowResponse = client
         let res = client
             .post(self.endpoints.statement.clone())
             .json(&req)
             .send()
             .await
-            .map_err(|e| ClientError::Statement(e.to_string()))?
-            .json()
-            .await
             .map_err(|e| ClientError::Statement(e.to_string()))?;
 
-        Ok(res)
+        match res.json::<FlowResponse>().await {
+            Ok(r) => Ok(r),
+            Err(e) => match res.json::<WitnessErr>().await {
+                Ok(w) => Err(ClientError::Statement(w.error)),
+                Err(_) => Err(ClientError::Statement(e.to_string())),
+            },
+        }
     }
 
     pub async fn jwt(&self, req: WitnessReq) -> Result<WitnessJWTRes, ClientError> {
