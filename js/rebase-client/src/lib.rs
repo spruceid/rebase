@@ -95,6 +95,7 @@ impl Client {
         let client = self.client.clone();
         future_to_promise(async move {
             let req: StatementReq = jserr!(serde_json::from_str(&req));
+            // TODO: Work from here to extricate witness error, if exists.
             let res = jserr!(client.statement(req).await);
             Ok(jserr!(serde_json::to_string(&res)).into())
         })

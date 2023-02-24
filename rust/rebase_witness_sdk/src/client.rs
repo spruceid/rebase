@@ -40,7 +40,7 @@ pub struct Client {
 // and actually type enforced.
 #[derive(Deserialize, Serialize)]
 struct WitnessErr {
-    error: String,
+    pub error: String,
 }
 
 impl Client {
@@ -82,11 +82,14 @@ impl Client {
             .await
             .map_err(|e| ClientError::Statement(e.to_string()))?;
 
-        match res.json::<FlowResponse>().await {
-            Ok(r) => Ok(r),
-            Err(e) => match res.json::<WitnessErr>().await {
-                Ok(w) => Err(ClientError::Statement(w.error)),
-                Err(_) => Err(ClientError::Statement(e.to_string())),
+        match res.json::<serde_json::Value>().await {
+            Err(e) => Err(ClientError::Statement(e.to_string())),
+            Ok(val) => match serde_json::from_value::<FlowResponse>(val.clone()) {
+                Ok(r) => Ok(r),
+                Err(p) => match serde_json::from_value::<WitnessErr>(val) {
+                    Err(_) => Err(ClientError::Statement(p.to_string())),
+                    Ok(w) => Err(ClientError::Statement(w.error)),
+                },
             },
         }
     }
@@ -96,15 +99,23 @@ impl Client {
             Some(endpoint) => {
                 let client = HttpClient::new();
 
-                client
+                let res = client
                     .post(endpoint.clone())
                     .json(&req)
                     .send()
                     .await
-                    .map_err(|e| ClientError::JWT(e.to_string()))?
-                    .json::<WitnessJWTRes>()
-                    .await
-                    .map_err(|e| ClientError::JWT(e.to_string()))
+                    .map_err(|e| ClientError::JWT(e.to_string()))?;
+
+                match res.json::<serde_json::Value>().await {
+                    Err(e) => Err(ClientError::JWT(e.to_string())),
+                    Ok(val) => match serde_json::from_value::<WitnessJWTRes>(val.clone()) {
+                        Ok(r) => Ok(r),
+                        Err(p) => match serde_json::from_value::<WitnessErr>(val) {
+                            Err(_) => Err(ClientError::JWT(p.to_string())),
+                            Ok(w) => Err(ClientError::JWT(w.error)),
+                        },
+                    },
+                }
             }
             None => Err(ClientError::JWT("No configured JWT endpoint".to_string())),
         }
@@ -115,17 +126,23 @@ impl Client {
             Some(endpoint) => {
                 let client = HttpClient::new();
 
-                let res: WitnessLDRes = client
+                let res = client
                     .post(endpoint.clone())
                     .json(&req)
                     .send()
                     .await
-                    .map_err(|e| ClientError::Ld(e.to_string()))?
-                    .json()
-                    .await
                     .map_err(|e| ClientError::Ld(e.to_string()))?;
 
-                Ok(res)
+                match res.json::<serde_json::Value>().await {
+                    Err(e) => Err(ClientError::Ld(e.to_string())),
+                    Ok(val) => match serde_json::from_value::<WitnessLDRes>(val.clone()) {
+                        Ok(r) => Ok(r),
+                        Err(p) => match serde_json::from_value::<WitnessErr>(val) {
+                            Err(_) => Err(ClientError::Ld(p.to_string())),
+                            Ok(w) => Err(ClientError::Ld(w.error)),
+                        },
+                    },
+                }
             }
             None => Err(ClientError::Ld("No configured LD endpoint".to_string())),
         }
@@ -137,17 +154,23 @@ impl Client {
             Some(endpoint) => {
                 let client = HttpClient::new();
 
-                let res: VerifyRes = client
+                let res = client
                     .post(endpoint.clone())
                     .json(&req)
                     .send()
                     .await
-                    .map_err(|e| ClientError::Ld(e.to_string()))?
-                    .json()
-                    .await
                     .map_err(|e| ClientError::Ld(e.to_string()))?;
 
-                Ok(res)
+                match res.json::<serde_json::Value>().await {
+                    Err(e) => Err(ClientError::JWT(e.to_string())),
+                    Ok(val) => match serde_json::from_value::<VerifyRes>(val.clone()) {
+                        Ok(r) => Ok(r),
+                        Err(p) => match serde_json::from_value::<WitnessErr>(val) {
+                            Err(_) => Err(ClientError::JWT(p.to_string())),
+                            Ok(w) => Err(ClientError::JWT(w.error)),
+                        },
+                    },
+                }
             }
             None => Err(ClientError::Ld(
                 "No configured verify JWT endpoint".to_string(),
@@ -161,17 +184,23 @@ impl Client {
             Some(endpoint) => {
                 let client = HttpClient::new();
 
-                let res: VerifyRes = client
+                let res = client
                     .post(endpoint.clone())
                     .json(&req)
                     .send()
                     .await
-                    .map_err(|e| ClientError::Ld(e.to_string()))?
-                    .json()
-                    .await
                     .map_err(|e| ClientError::Ld(e.to_string()))?;
 
-                Ok(res)
+                match res.json::<serde_json::Value>().await {
+                    Err(e) => Err(ClientError::Ld(e.to_string())),
+                    Ok(val) => match serde_json::from_value::<VerifyRes>(val.clone()) {
+                        Ok(r) => Ok(r),
+                        Err(p) => match serde_json::from_value::<WitnessErr>(val) {
+                            Err(_) => Err(ClientError::Ld(p.to_string())),
+                            Ok(w) => Err(ClientError::Ld(w.error)),
+                        },
+                    },
+                }
             }
             None => Err(ClientError::Ld(
                 "No configured verify LD endpoint".to_string(),
