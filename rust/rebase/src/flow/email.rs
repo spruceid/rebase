@@ -36,7 +36,7 @@ impl SendGridBasic {
         let now = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
         let statement = format!("{}:::{}", stmt.generate_statement()?, now);
         let challenge = issuer.sign(&statement).await?;
-        Ok(format!("Please paste the following into the challenge input on the witness page used to generate this email:\n\nChallenge:\n\n{}:::{}", challenge, now))
+        Ok(format!("Please paste the following into the challenge input on the witness page used to generate this email:\n\n{}:::{}", challenge, now))
     }
 
     async fn subject(&self, stmt: &Stmt) -> Result<String, FlowError> {
