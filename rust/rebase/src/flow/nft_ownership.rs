@@ -134,7 +134,7 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
 
         Ok(FlowResponse {
             statement: stmt.generate_statement()?,
-            delimitor: None,
+            delimiter: None,
         })
     }
 

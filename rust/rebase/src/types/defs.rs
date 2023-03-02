@@ -138,7 +138,7 @@ pub struct Instructions {
 #[derive(Deserialize, Serialize)]
 pub struct FlowResponse {
     pub statement: String,
-    pub delimitor: Option<String>,
+    pub delimiter: Option<String>,
 }
 
 #[async_trait(?Send)]

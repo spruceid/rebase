@@ -128,7 +128,7 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnership {
 
         Ok(FlowResponse {
             statement: stmt.generate_statement()?,
-            delimitor: None,
+            delimiter: None,
         })
     }
 

@@ -47,7 +47,7 @@ impl Flow<Ctnt, Stmt, Stmt> for DnsFlow {
     ) -> Result<FlowResponse, FlowError> {
         Ok(FlowResponse {
             statement: statement.generate_statement()?,
-            delimitor: None,
+            delimiter: None,
         })
     }
 
@@ -133,7 +133,7 @@ mod tests {
         ) -> Result<FlowResponse, FlowError> {
             Ok(FlowResponse {
                 statement: statement.generate_statement()?,
-                delimitor: None,
+                delimiter: None,
             })
         }
 
