@@ -34,7 +34,7 @@ impl Flow<Ctnt, Stmt, Prf> for SameFlow {
     ) -> Result<FlowResponse, FlowError> {
         Ok(FlowResponse {
             statement: statement.generate_statement()?,
-            delimitor: None,
+            delimiter: None,
         })
     }
 

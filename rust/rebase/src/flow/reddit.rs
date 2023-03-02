@@ -49,7 +49,7 @@ impl Flow<Ctnt, Stmt, Stmt> for RedditFlow {
     ) -> Result<FlowResponse, FlowError> {
         Ok(FlowResponse {
             statement: statement.generate_statement()?,
-            delimitor: None,
+            delimiter: None,
         })
     }
 
@@ -122,7 +122,7 @@ mod tests {
         ) -> Result<FlowResponse, FlowError> {
             Ok(FlowResponse {
                 statement: statement.generate_statement()?,
-                delimitor: None,
+                delimiter: None,
             })
         }
 

@@ -22,7 +22,7 @@ use url::Url;
 #[derive(Deserialize, Serialize)]
 pub struct GitHubFlow {
     pub user_agent: String,
-    pub delimitor: String,
+    pub delimiter: String,
 }
 
 #[derive(Deserialize, Debug, Serialize)]
@@ -64,7 +64,7 @@ impl Flow<Ctnt, Stmt, Prf> for GitHubFlow {
     ) -> Result<FlowResponse, FlowError> {
         Ok(FlowResponse {
             statement: statement.generate_statement()?,
-            delimitor: Some(self.delimitor.to_owned())
+            delimiter: Some(self.delimiter.to_owned())
         })
     }
 
@@ -122,7 +122,7 @@ impl Flow<Ctnt, Stmt, Prf> for GitHubFlow {
                 Some(x) => x,
             };
 
-            let mut a = p.split(&self.delimitor); 
+            let mut a = p.split(&self.delimiter); 
             let txt = a.next(); 
             let txt_sig = a.next();
 
@@ -189,7 +189,7 @@ mod tests {
         ) -> Result<FlowResponse, FlowError> {
             Ok(FlowResponse {
                 statement: statement.generate_statement()?,
-                delimitor: Some("\n\n".to_string())
+                delimiter: Some("\n\n".to_string())
             })
         }
 

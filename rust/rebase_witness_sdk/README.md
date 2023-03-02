@@ -168,7 +168,7 @@ function witnessOpts() {
   if (GITHUB_USER_AGENT) {
     o.github = {
       user_agent: GITHUB_USER_AGENT,
-      delimitor: "\n\n"
+      delimiter: "\n\n"
     }
   }
 
@@ -187,7 +187,7 @@ function witnessOpts() {
   if (TWITTER_BEARER_TOKEN) {
     o.twitter = {
       api_key: TWITTER_BEARER_TOKEN,
-      delimitor: "\n\n"
+      delimiter: "\n\n"
     }
   }
 

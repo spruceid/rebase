@@ -21,7 +21,7 @@ use url::Url;
 #[derive(Clone, Deserialize, Serialize)]
 pub struct TwitterFlow {
     pub api_key: String,
-    pub delimitor: String,
+    pub delimiter: String,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -63,7 +63,7 @@ impl Flow<Ctnt, Stmt, Prf> for TwitterFlow {
         _issuer: &I,
     ) -> Result<FlowResponse, FlowError> {
         Ok(FlowResponse {
-            delimitor: Some(self.delimitor.to_owned()),
+            delimiter: Some(self.delimiter.to_owned()),
             statement: statement.generate_statement()?,
         })
     }
@@ -117,7 +117,7 @@ impl Flow<Ctnt, Stmt, Prf> for TwitterFlow {
             return Err(FlowError::BadLookup("No users found".to_string()));
         };
 
-        let mut a = res.data[0].text.split(&self.delimitor);
+        let mut a = res.data[0].text.split(&self.delimiter);
         let maybe_stmt = a.next();
         let maybe_sig = a.next();
         match (maybe_stmt, maybe_sig) {
@@ -174,7 +174,7 @@ mod tests {
         ) -> Result<FlowResponse, FlowError> {
             Ok(FlowResponse {
                 statement: statement.generate_statement()?,
-                delimitor: Some("\n\n".to_owned()),
+                delimiter: Some("\n\n".to_owned()),
             })
         }
 

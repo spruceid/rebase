@@ -16,11 +16,11 @@ Assuming everything is valid, the witness issues a Verifiable Credential in the 
 
 2) The information from step 1 is passed to the worker in the body of a `POST` request to the route `/statement`, the UI tests that the `POST` request body conforms to the schema recieved in step 0.
 
-3) The information is parsed, and if it matches the form specified below, is used to generate a plain text statement and optionally a delimitor (sometimes ommitted) which are returned in the response body as `statement` and `delimitor` respectively.
+3) The information is parsed, and if it matches the form specified below, is used to generate a plain text statement and optionally a delimiter (sometimes ommitted) which are returned in the response body as `statement` and `delimiter` respectively.
 
 4) The user signs the statement at least once. For linking two public keys, the statement is signed twice and signatures returned to the witness in the format as described below. 
 
-    In the case of other identity linking flows that involve delimitors, a post is created in the format of: `${statement}${delimitor}${signature}`, then posted somewhere only the identity in the statement could access. 
+    In the case of other identity linking flows that involve delimiters, a post is created in the format of: `${statement}${delimiter}${signature}`, then posted somewhere only the identity in the statement could access. 
 
     In other flows, the user is only expected to post the `signature`. Alternatively, in some flows, like email, the witness generates a challenge, sends it to the targeted account, and the user has to present the challenge along side the signature to prove ownership.
 
@@ -50,7 +50,7 @@ The `statement` response rendered as a TypeScript type is always:
 ```typescript
 interface StatementRes {
     "statement": string,
-    "delimitor"?: string
+    "delimiter"?: string
 }
 ```
 
@@ -187,7 +187,7 @@ The response would look like:
 ```json
 {
     "statement": "I am attesting that this GitHub handle foo is linked to the Ethereum Address 0x1111111111111111111111111111111111111111",
-    "delimitor": "\n\n"
+    "delimiter": "\n\n"
 }
 ```
 
