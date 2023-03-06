@@ -167,6 +167,9 @@ function handleOptions(request) {
   }
 }
 
+// TODO: move all other non-secrect code to a config object along with this.
+const sendGridChallengeDelimiter = ":::";
+
 function witnessOpts() {  
   let o = {};
   o.dns = {};
@@ -209,6 +212,7 @@ function witnessOpts() {
   if (useSendGrid) {
     o.email = {
       api_key: SENDGRID_BEARER_TOKEN,
+      challenge_delimiter: sendGridChallengeDelimiter,
       from_addr: SENDGRID_FROM_ADDRESS,
       from_name: SENDGRID_FROM_NAME,
       max_elapsed_minutes: parseInt(SENDGRID_MAX_ELAPSED_MINS),

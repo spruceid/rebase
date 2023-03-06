@@ -277,8 +277,7 @@
                 opts["email"]["statement"] = {};
                 opts["email"]["statement"]["email"] = handle;
                 opts["email"]["statement"]["subject"] = getSubject(current);
-                opts["email"]["auth"] = proof.split(":::")[0].trim();
-                opts["email"]["timestamp"] = proof.split(":::")[1].trim();
+                opts["email"]["challenge"] = proof.trim();
                 opts["email"]["signature"] = signature;
                 break;
             default:
@@ -300,6 +299,7 @@
             let { jwt } = JSON.parse(res);
             setNew(jwt);
         } catch (e) {
+            console.error(e);
             throw new Error(
                 "Failed to issue credential, please retry the flow"
             );

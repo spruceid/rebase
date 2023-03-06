@@ -12,10 +12,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
 #[serde(rename = "proof")]
 pub struct Email {
-    pub auth: String,
+    pub challenge: String,
     pub signature: String,
     pub statement: Stmt,
-    pub timestamp: String,
 }
 
 impl Statement for Email {

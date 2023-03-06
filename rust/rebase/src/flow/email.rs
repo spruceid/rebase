@@ -23,6 +23,7 @@ use url::Url;
 #[derive(Clone, Deserialize, Serialize)]
 pub struct SendGridBasic {
     api_key: String,
+    challenge_delimiter: String,
     from_addr: String,
     from_name: String,
     // This is checked for a negative value or 0 and errs if one is found
@@ -34,7 +35,12 @@ pub struct SendGridBasic {
 impl SendGridBasic {
     async fn body<I: Issuer>(&self, stmt: &Stmt, issuer: &I) -> Result<String, FlowError> {
         let now = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
-        let statement = format!("{}:::{}", stmt.generate_statement()?, now);
+        let statement = format!(
+            "{}{}{}",
+            stmt.generate_statement()?,
+            &self.challenge_delimiter,
+            now
+        );
         let challenge = issuer.sign(&statement).await?;
         Ok(format!("Please paste the following into the challenge input on the witness page used to generate this email:\n\n{}:::{}", challenge, now))
     }
@@ -130,9 +136,19 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasic {
             ));
         }
 
+        let challenge_vec: Vec<&str> = proof.challenge.split(&self.challenge_delimiter).collect();
+        if challenge_vec.len() != 2 {
+            return Err(FlowError::Validation(
+                "Challenge in unexpected formatt".to_string(),
+            ));
+        }
+
+        let ch = challenge_vec[0];
+        let ts = challenge_vec[1];
+
         let now = Utc::now();
-        let then = DateTime::parse_from_rfc3339(&proof.timestamp)
-            .map_err(|e| FlowError::Validation(e.to_string()))?;
+        let then =
+            DateTime::parse_from_rfc3339(ts).map_err(|e| FlowError::Validation(e.to_string()))?;
 
         if now - Duration::minutes(self.max_elapsed_minutes) > then {
             return Err(FlowError::Validation(
@@ -140,15 +156,14 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasic {
             ));
         }
 
-        // TODO: Fix this part to have the delimiter part of the config.
-        // TODO: Add parsing logic based on that config.
         let t = format!(
-            "{}:::{}",
+            "{}{}{}",
             proof.statement.generate_statement()?,
-            proof.timestamp
+            &self.challenge_delimiter,
+            ts
         );
 
-        issuer.valid_signature(&t, &proof.auth).await?;
+        issuer.valid_signature(&t, ch).await?;
 
         let s = proof.statement.generate_statement()?;
         proof
