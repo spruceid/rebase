@@ -1,6 +1,6 @@
 use crate::{
-    content::dns_verification::DnsVerification as Ctnt,
-    statement::dns_verification::DnsVerification as Stmt,
+    content::dns_verification::DnsVerificationContent as Ctnt,
+    statement::dns_verification::DnsVerificationStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
@@ -11,9 +11,11 @@ use async_trait::async_trait;
 use reqwest::Client;
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use url::Url;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct DnsVerificationFlow {}
 
 #[derive(Deserialize, Debug)]

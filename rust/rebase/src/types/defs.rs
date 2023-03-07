@@ -15,6 +15,7 @@ use ssi::{
         URI as VCURI,
     },
 };
+use ts_rs::TS;
 use uuid::Uuid;
 
 pub type Credential = SSICred;
@@ -127,16 +128,20 @@ where
     fn to_content(&self, statement: &str, signature: &str) -> Result<T, ProofError>;
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct Instructions {
     pub statement: String,
     pub signature: String,
     pub witness: String,
+    #[ts(type = "object")]
     pub statement_schema: RootSchema,
+    #[ts(type = "object")]
     pub witness_schema: RootSchema,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct FlowResponse {
     pub statement: String,
     pub delimiter: Option<String>,
@@ -182,7 +187,8 @@ where
 
 // NOTE: Currently only supports main-nets. Other networks could be added here.
 // The serialized string variant is what is used in requests to Alchemy's API.
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
 pub enum AlchemyNetworks {
     #[serde(rename = "eth-mainnet")]
     EthMainnet,

@@ -3,17 +3,19 @@ use crate::types::{
     enums::subject::Subjects,
     error::StatementError,
 };
+use chrono::DateTime;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "statement")]
-pub struct EmailVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct EmailVerificationStatement {
     pub email: String,
     pub subject: Subjects,
 }
 
-impl Statement for EmailVerification {
+impl Statement for EmailVerificationStatement {
     fn generate_statement(&self) -> Result<String, StatementError> {
         Ok(format!(
             "{} is linked to the {} {}",

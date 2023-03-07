@@ -7,6 +7,7 @@ use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use thiserror::Error;
+use ts_rs::TS;
 use url::Url;
 
 #[derive(Debug, Deserialize, Error, Serialize)]
@@ -21,13 +22,20 @@ pub enum ClientError {
     Ld(String),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub struct Endpoints {
+    #[ts(type = "string", optional)]
     pub jwt: Option<Url>,
+    #[ts(type = "string", optional)]
     pub ld: Option<Url>,
+    #[ts(type = "string")]
     pub statement: Url,
+    #[ts(type = "string")]
     pub instructions: Url,
+    #[ts(type = "string", optional)]
     pub verify_jwt: Option<Url>,
+    #[ts(type = "string", optional)]
     pub verify_ld: Option<Url>,
 }
 
@@ -36,9 +44,8 @@ pub struct Client {
     endpoints: Endpoints,
 }
 
-// TODO: Make this more explicit higher up so that this is less of a pinky promise
-// and actually type enforced.
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
 struct WitnessErr {
     pub error: String,
 }

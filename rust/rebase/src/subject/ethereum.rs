@@ -12,10 +12,11 @@ use k256::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
+use ts_rs::TS;
 
 // This represents the usage of did:pkh:eip155
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "eip155")]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
 pub struct Eip155 {
     pub address: String,
     pub chain_id: String,

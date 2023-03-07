@@ -8,16 +8,18 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-pub struct SoundCloudVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct SoundCloudVerificationContent {
     pub subject: Subjects,
     pub statement: String,
     pub signature: String,
     pub permalink: String,
 }
 
-impl Content for SoundCloudVerification {
+impl Content for SoundCloudVerificationContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",

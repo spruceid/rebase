@@ -9,15 +9,15 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
 use std::collections::HashMap;
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "contents")]
-pub struct DnsVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+pub struct DnsVerificationContent {
     pub domain: String,
     pub subject: Subjects,
 }
 
-impl Content for DnsVerification {
+impl Content for DnsVerificationContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",

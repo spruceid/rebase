@@ -8,16 +8,18 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-pub struct PoapOwnershipVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct PoapOwnershipVerificationContent {
     pub event_id: String,
     pub subject: Subjects,
     pub statement: String,
     pub signature: String,
 }
 
-impl Content for PoapOwnershipVerification {
+impl Content for PoapOwnershipVerificationContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",

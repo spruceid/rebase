@@ -4,6 +4,9 @@
 # Rust
 target
 
+# Rust -> TS Bindings
+rust/*/bindings
+
 ### Emacs ###
 # -*- mode: gitignore; -*-
 *~

@@ -1,6 +1,6 @@
 use crate::{
-    content::github_verification::GitHubVerification as Ctnt,
-    statement::github_verification::GitHubVerification as Stmt,
+    content::github_verification::GitHubVerificationContent as Ctnt,
+    statement::github_verification::GitHubVerificationStatement as Stmt,
     types::{
         defs::{Proof, Statement},
         error::{ProofError, StatementError},
@@ -8,21 +8,22 @@ use crate::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "proof")]
-pub struct GitHubVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct GitHubVerificationProof {
     pub gist_id: String,
     pub statement: Stmt,
 }
 
-impl Statement for GitHubVerification {
+impl Statement for GitHubVerificationProof {
     fn generate_statement(&self) -> Result<String, StatementError> {
         self.statement.generate_statement()
     }
 }
 
-impl Proof<Ctnt> for GitHubVerification {
+impl Proof<Ctnt> for GitHubVerificationProof {
     fn to_content(&self, statement: &str, signature: &str) -> Result<Ctnt, ProofError> {
         Ok(Ctnt {
             gist_id: self.gist_id.clone(),

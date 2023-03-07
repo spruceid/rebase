@@ -1,7 +1,7 @@
 use crate::{
-    content::email_verification::EmailVerification as Ctnt,
-    proof::email_verification::EmailVerification as Prf,
-    statement::email_verification::EmailVerification as Stmt,
+    content::email_verification::EmailVerificationContent as Ctnt,
+    proof::email_verification::EmailVerificationProof as Prf,
+    statement::email_verification::EmailVerificationStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
@@ -17,11 +17,13 @@ use reqwest::{
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use ts_rs::TS;
 use url::Url;
 
 // TODO: When revamping for publication, add challenge-parsing delimiter to config handle all on this side.
-#[derive(Clone, Deserialize, Serialize)]
-pub struct SendGridBasic {
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
+pub struct SendGridBasicFlow {
     api_key: String,
     challenge_delimiter: String,
     from_addr: String,
@@ -32,7 +34,7 @@ pub struct SendGridBasic {
     subject_name: String,
 }
 
-impl SendGridBasic {
+impl SendGridBasicFlow {
     async fn body<I: Issuer>(&self, stmt: &Stmt, issuer: &I) -> Result<String, FlowError> {
         let now = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
         let statement = format!(
@@ -56,7 +58,7 @@ impl SendGridBasic {
 }
 
 #[async_trait(?Send)]
-impl Flow<Ctnt, Stmt, Prf> for SendGridBasic {
+impl Flow<Ctnt, Stmt, Prf> for SendGridBasicFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
             statement: "Enter the email addres you wish to prove the ownership of.".to_string(),

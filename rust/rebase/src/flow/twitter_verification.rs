@@ -1,7 +1,7 @@
 use crate::{
-    content::twitter_verification::TwitterVerification as Ctnt,
-    proof::twitter_verification::TwitterVerification as Prf,
-    statement::twitter_verification::TwitterVerification as Stmt,
+    content::twitter_verification::TwitterVerificationContent as Ctnt,
+    proof::twitter_verification::TwitterVerificationProof as Prf,
+    statement::twitter_verification::TwitterVerificationStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
@@ -16,9 +16,11 @@ use reqwest::{
 };
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use url::Url;
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct TwitterVerificationFlow {
     pub api_key: String,
     pub delimiter: String,

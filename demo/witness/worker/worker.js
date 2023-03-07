@@ -180,6 +180,9 @@ const configDefaults = {
     user_agent: "Spruce Systems",
     delimiter: "\n\n"
   }, 
+  RedditVerification: {
+    user_agent: "rebase-server:rebase-witness-sdk:0.0.1 (by eval-apply-quote)"
+  },
   PoapOwnershipVerification: {
     max_elapsed_minutes: 15,
     challenge_delimiter: "\n\n"
@@ -203,11 +206,14 @@ const configDefaults = {
 function witnessOpts() {  
   let o = {};
   o.DnsVerification = {};
-  o.RedditVerification = {};
   o.SameControllerAssertion = {};
 
   if (configDefaults.GitHubVerification) {
     o.GitHubVerification = configDefaults.GitHubVerification;
+  }
+
+  if (configDefaults.RedditVerification) {
+    o.RedditVerification = configDefaults.RedditVerification;
   }
 
   if (configDefaults.SoundCloudVerification && SOUNDCLOUD_CLIENT_ID) {

@@ -6,17 +6,17 @@ use crate::types::{
 use chrono::DateTime;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "statement")]
-pub struct NftOwnershipVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+pub struct NftOwnershipVerificationStatement {
     pub contract_address: String,
     pub subject: Subjects,
     pub network: AlchemyNetworks,
     pub issued_at: String,
 }
 
-impl Statement for NftOwnershipVerification {
+impl Statement for NftOwnershipVerificationStatement {
     fn generate_statement(&self) -> Result<String, StatementError> {
         DateTime::parse_from_rfc3339(&self.issued_at)
             .map_err(|e| StatementError::Statement(format!("failed to parse issued_at: {}", e)))?;
