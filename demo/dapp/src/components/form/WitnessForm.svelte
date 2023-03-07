@@ -14,7 +14,7 @@
         Signer,
         lookUp,
         alert,
-        needsDelimitor,
+        needsDelimiter,
         signerMapAppend,
         toQuery,
     } from "src/util";
@@ -73,7 +73,7 @@
 
     $: statement = "";
     $: signature = "";
-    $: delimitor = "";
+    $: delimiter = "";
     $: handle = "";
     $: proof = "";
 
@@ -99,7 +99,7 @@
             case "discord":
             case "github":
             case "twitter":
-                return `${statement}${delimitor}${signature}`;
+                return `${statement}${delimiter}${signature}`;
             case "dns":
                 return `${dnsPrefix}${signature}`;
             case "soundcloud":
@@ -217,12 +217,12 @@
                 throw new Error(badRespErr + " missing statement");
             }
 
-            if (needsDelimitor(type) && !body.delimitor) {
-                throw new Error(badRespErr + " missing delimitor");
+            if (needsDelimiter(type) && !body.delimiter) {
+                throw new Error(badRespErr + " missing delimiter");
             }
 
             statement = body.statement;
-            delimitor = body.delimitor;
+            delimiter = body.delimiter;
         } catch (e) {
             if (e.message === badRespErr) {
                 throw e;

@@ -226,6 +226,8 @@ function witnessOpts() {
   if (useAlchemy) {
     o.nft_ownership = {
       api_key: ALCHEMY_API_KEY,
+      // TODO: Put in conf obj:
+      challenge_delimiter: "\n\n",
       max_elapsed_minutes: parseInt(ALCHEMY_MAX_ELAPSED_MINS)
     }
   }
@@ -237,6 +239,8 @@ function witnessOpts() {
   if (usePoap) {
     o.poap_ownership = {
       api_key: POAP_API_KEY,
+      // TODO: Put in conf obj:
+      challenge_delimiter: "\n\n",
       max_elapsed_minutes: parseInt(POAP_MAX_ELAPSED_MINS),
     };
   }
