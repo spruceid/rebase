@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
 use did_web::DIDWeb;
 use schemars::schema::RootSchema;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{
@@ -177,4 +178,23 @@ where
     }
 
     async fn validate_proof<I: Issuer>(&self, proof: &P, issuer: &I) -> Result<C, FlowError>;
+}
+
+// NOTE: Currently only supports main-nets. Other networks could be added here.
+// The serialized string variant is what is used in requests to Alchemy's API.
+#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+pub enum AlchemyNetworks {
+    #[serde(rename = "eth-mainnet")]
+    EthMainnet,
+    #[serde(rename = "polygon-mainnet")]
+    PolygonMainnet,
+}
+
+impl std::string::ToString for AlchemyNetworks {
+    fn to_string(&self) -> String {
+        match self {
+            AlchemyNetworks::EthMainnet => "eth-mainnet".to_string(),
+            AlchemyNetworks::PolygonMainnet => "polygon-mainnet".to_string(),
+        }
+    }
 }

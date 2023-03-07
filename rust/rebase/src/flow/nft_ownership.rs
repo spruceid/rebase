@@ -1,7 +1,7 @@
 use crate::{
     content::nft_ownership::NftOwnership as Ctnt,
-    proof::nft_ownership::NftOwnership as Prf,
-    statement::nft_ownership::NftOwnership as Stmt,
+    proof::nft_ownership::AlchemyProof as Prf,
+    statement::nft_ownership::AlchemyStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         enums::subject::{Pkh, Subjects},
@@ -16,11 +16,43 @@ use schemars::schema_for;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-// TODO: Make this an Enum of which Alchemy is the only impl.
+#[derive(Deserialize, Serialize)]
+#[serde(untagged)]
+// NOTE: If adding other providers change `untagged` to something else.
+// NOTE: The above change would be a breaking change.
+pub enum NftOwnership {
+    Alchemy(Alchemy),
+}
+
+#[async_trait(?Send)]
+impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
+    fn instructions(&self) -> Result<Instructions, FlowError> {
+        match self {
+            NftOwnership::Alchemy(x) => x.instructions(),
+        }
+    }
+
+    async fn statement<I: Issuer>(
+        &self,
+        stmt: &Stmt,
+        issuer: &I,
+    ) -> Result<FlowResponse, FlowError> {
+        match self {
+            NftOwnership::Alchemy(x) => x.statement(stmt, issuer).await,
+        }
+    }
+
+    async fn validate_proof<I: Issuer>(&self, proof: &Prf, issuer: &I) -> Result<Ctnt, FlowError> {
+        match self {
+            NftOwnership::Alchemy(x) => x.validate_proof(proof, issuer).await,
+        }
+    }
+}
+
 // TODO: Make Alchemy variant be configurable by chain + per-chain configs.
 // NOTE: For now, this is just a wrapper around the alchemy API.
 #[derive(Clone, Deserialize, Serialize)]
-pub struct NftOwnership {
+pub struct Alchemy {
     api_key: String,
     challenge_delimiter: String,
     // The amount of time that can pass before the witness
@@ -30,14 +62,14 @@ pub struct NftOwnership {
     max_elapsed_minutes: i64,
 }
 
-pub struct PageResult {
+pub struct AlchemyPageResult {
     next_page: Option<String>,
     found: bool,
     // If more data is needed about the NFT pass this structure around.
     // res: AlchemyNftRes,
 }
 
-impl NftOwnership {
+impl Alchemy {
     // This makes sure the timestamps the client supplies make sense and are
     // with in the limits of configured expration and that the max elapsed
     // minutes are greater than 0.
@@ -66,13 +98,20 @@ impl NftOwnership {
         Ok(())
     }
 
-    // TODO: Change so URL gets generated in here.
     pub async fn process_page(
         &self,
         client: &reqwest::Client,
-        u: url::Url,
         contract_address: &str,
-    ) -> Result<PageResult, FlowError> {
+        base_url: &str,
+        page_key: Option<String>,
+    ) -> Result<AlchemyPageResult, FlowError> {
+        let u = match page_key {
+            None => Url::parse(base_url).map_err(|e| FlowError::BadLookup(e.to_string()))?,
+            Some(pk) => Url::parse(&format!("{}&pageKey={}", base_url, pk)).map_err(|_e| {
+                FlowError::BadLookup("Could not follow paginated results".to_string())
+            })?,
+        };
+
         let res: AlchemyNftRes = client
             .get(u)
             .send()
@@ -82,7 +121,7 @@ impl NftOwnership {
             .await
             .map_err(|e| FlowError::BadLookup(e.to_string()))?;
 
-        let mut result: PageResult = PageResult {
+        let mut result = AlchemyPageResult {
             next_page: res.page_key.clone(),
             found: false,
             // res: res.clone(),
@@ -100,7 +139,7 @@ impl NftOwnership {
 }
 
 #[async_trait(?Send)]
-impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
+impl Flow<Ctnt, Stmt, Prf> for Alchemy {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
             statement: "Enter the contract address and network of asset".to_string(),
@@ -147,44 +186,42 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
         })
     }
 
-    // TODO: Change this whole flow so URL gets generated in process_page.
     async fn validate_proof<I: Issuer>(&self, proof: &Prf, issuer: &I) -> Result<Ctnt, FlowError> {
         self.sanity_check(&proof.statement.issued_at)?;
 
         let base = format!(
-            "https://{}-{}.g.alchemy.com/nft/v2/{}/getNFTs?owner={}&withMetadata=false",
-            // TODO: Replace with enum.
-            "eth",
-            // TODO: Replace with enum.
-            proof.statement.network,
+            "https://{}.g.alchemy.com/nft/v2/{}/getNFTs?owner={}&withMetadata=false",
+            proof.statement.network.to_string(),
             self.api_key,
             proof.statement.subject.display_id()?
         );
 
         let client = Client::new();
 
-        let mut next_u: url::Url =
-            Url::parse(&base).map_err(|e| FlowError::BadLookup(e.to_string()))?;
+        // NOTE: This is mutable but safe. It doesn't even leave the fn boundry.
+        // Code that removes mut is longer and less clear
+        // or requires a 3rd party lib for async recursion.
+        // Clippy approves as well.
+        let mut res = self
+            .process_page(&client, &proof.statement.contract_address, &base, None)
+            .await?;
 
-        let res = loop {
-            let inner_res = self
-                .process_page(&client, next_u.clone(), &proof.statement.contract_address)
-                .await?;
+        if !res.found && res.next_page.is_some() {
+            loop {
+                res = self
+                    .process_page(
+                        &client,
+                        &proof.statement.contract_address,
+                        &base,
+                        res.next_page,
+                    )
+                    .await?;
 
-            if inner_res.found {
-                break inner_res;
-            }
-
-            let page_key = inner_res.next_page.clone();
-            match page_key {
-                None => break inner_res,
-                Some(s) => {
-                    next_u = Url::parse(&format!("{}&pageKey={}", base, s)).map_err(|_e| {
-                        FlowError::BadLookup("Could not follow paginated results".to_string())
-                    })?;
+                if res.found || res.next_page.is_none() {
+                    break;
                 }
             }
-        };
+        }
 
         if !res.found {
             return Err(FlowError::BadLookup(format!(
@@ -194,8 +231,7 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
         }
 
         let s = proof.statement.generate_statement()?;
-        // NOTE: We would generate and append the challenge
-        // here if using that scheme.
+
         proof
             .statement
             .subject
