@@ -385,7 +385,7 @@
             <div class="w-full">
                 <p>Currently this flow only supports Ethereum subjects.</p>
                 <div
-                    class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end"
+                    class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center content-end"
                 >
                     <Button
                         class="w-fit  my-[16px]"
@@ -414,7 +414,7 @@
             </div>
         </div>
         <div
-            class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end"
+            class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center content-end"
         >
             <Button
                 class="w-2/5"
