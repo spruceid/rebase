@@ -80,7 +80,9 @@
             lookUp1.set(_lookUp);
         }
 
-        let res = await client.instructions(JSON.stringify({ type: "same" }));
+        let res = await client.instructions(
+            JSON.stringify({ type: "SameControllerAssertion" })
+        );
         let instruction_res = JSON.parse(res);
         statement_schema = instruction_res?.statement_schema;
         witness_schema = instruction_res?.witness_schema;
@@ -137,7 +139,7 @@
 
         let o = {
             opts: {
-                same: {
+                SameControllerAssertion: {
                     id1: _key1,
                     id2: _key2,
                 },
@@ -148,7 +150,7 @@
             throw new Error("No JSON Schema found for Statement Request");
         }
 
-        if (!ajv.validate(statement_schema, o.opts.same)) {
+        if (!ajv.validate(statement_schema, o.opts.SameControllerAssertion)) {
             throw new Error("Validation of Statement Request failed");
         }
 
@@ -177,7 +179,7 @@
         let next: Array<Claim> = [];
         for (let i = 0, n = _claims.length; i < n; i++) {
             let claim = _claims[i];
-            if (claim.credential_type === "same") {
+            if (claim.credential_type === "SameControllerAssertion") {
                 claim.credentials.push(credential);
             }
             next.push(claim);
@@ -194,7 +196,7 @@
         }
 
         const proof = {
-            same: {
+            SameControllerAssertion: {
                 statement: {
                     id1: _key1,
                     id2: _key2,
@@ -208,7 +210,7 @@
             throw new Error("No JSON Schema found for Witness Request");
         }
 
-        if (!ajv.validate(witness_schema, proof.same)) {
+        if (!ajv.validate(witness_schema, proof.SameControllerAssertion)) {
             throw new Error("Validation of Witness Request failed");
         }
 

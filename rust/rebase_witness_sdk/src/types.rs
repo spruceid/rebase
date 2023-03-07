@@ -1,28 +1,45 @@
 pub use rebase::issuer;
 use rebase::{
     content::{
-        dns::Dns as DnsCtnt, email::Email as EmailCtnt, github::GitHub as GitHubCtnt,
-        nft_ownership::NftOwnership as NftOwnershipCtnt,
-        poap_ownership::PoapOwnership as PoapOwnershipCtnt, reddit::Reddit as RedditCtnt,
-        same::Same as SameCtnt, soundcloud::SoundCloud as SoundCloudCtnt,
-        twitter::Twitter as TwitterCtnt,
+        dns_verification::DnsVerification as DnsVerificationCtnt,
+        email_verification::EmailVerification as EmailVerificationCtnt,
+        github_verification::GitHubVerification as GitHubVerificationCtnt,
+        nft_ownership_verification::NftOwnershipVerification as NftOwnershipVerificationCtnt,
+        poap_ownership_verification::PoapOwnershipVerification as PoapOwnershipVerificationCtnt,
+        reddit_verification::RedditVerification as RedditVerificationCtnt,
+        same_controller_assertion::SameControllerAssertion as SameControllerAssertionCtnt,
+        soundcloud_verification::SoundCloudVerification as SoundCloudVerificationCtnt,
+        twitter_verification::TwitterVerification as TwitterVerificationCtnt,
     },
     flow::{
-        dns::DnsFlow, email::SendGridBasic as EmailFlow, github::GitHubFlow,
-        nft_ownership::NftOwnership as NftOwnershipFlow,
-        poap_ownership::PoapOwnership as PoapOwnershipFlow, reddit::RedditFlow, same::SameFlow,
-        soundcloud::SoundCloudFlow, twitter::TwitterFlow,
+        dns_verification::DnsVerificationFlow,
+        email_verification::SendGridBasic as EmailVerificationFlow,
+        github_verification::GitHubVerificationFlow,
+        nft_ownership_verification::NftOwnershipVerificationFlow,
+        poap_ownership_verification::PoapOwnershipVerificationFlow,
+        reddit_verification::RedditVerificationFlow,
+        same_controller_assertion::SameControllerAssertionFlow,
+        soundcloud_verification::SoundCloudVerificationFlow,
+        twitter_verification::TwitterVerificationFlow,
     },
     proof::{
-        email::Email as EmailProof, github::GitHub as GitHubProof,
-        nft_ownership::NftOwnershipProof, poap_ownership::PoapOwnership as PoapOwnershipProof,
-        same::Same as SameProof, twitter::Twitter as TwitterProof,
+        email_verification::EmailVerification as EmailVerificationProof,
+        github_verification::GitHubVerification as GitHubVerificationProof,
+        nft_ownership_verification::NftOwnershipVerification as NftOwnershipVerificationProof,
+        poap_ownership_verification::PoapOwnershipVerification as PoapOwnershipVerificationProof,
+        same_controller_assertion::SameControllerAssertion as SameControllerAssertionProof,
+        twitter_verification::TwitterVerification as TwitterVerificationProof,
     },
     statement::{
-        dns::Dns as DnsStmt, email::Email as EmailStmt, github::GitHub as GitHubStmt,
-        nft_ownership::NftOwnershipStatement, poap_ownership::PoapOwnership as PoapOwnershipStmt,
-        reddit::Reddit as RedditStmt, same::Same as SameStmt,
-        soundcloud::SoundCloud as SoundCloudStmt, twitter::Twitter as TwitterStmt,
+        dns_verification::DnsVerification as DnsStmt,
+        email_verification::EmailVerification as EmailStmt,
+        github_verification::GitHubVerification as GitHubStmt,
+        nft_ownership_verification::NftOwnershipVerification as NftOwnershipStmt,
+        poap_ownership_verification::PoapOwnershipVerification as PoapOwnershipStmt,
+        reddit_verification::RedditVerification as RedditStmt,
+        same_controller_assertion::SameControllerAssertion as SameStmt,
+        soundcloud_verification::SoundCloudVerification as SoundCloudStmt,
+        twitter_verification::TwitterVerification as TwitterStmt,
     },
     types::{
         defs::{
@@ -39,94 +56,85 @@ use serde_json::json;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub enum InstructionsType {
-    #[serde(rename = "dns")]
-    Dns,
-    #[serde(rename = "email")]
-    Email,
-    #[serde(rename = "github")]
-    GitHub,
-    #[serde(rename = "nft_ownership")]
-    NftOwnership,
-    #[serde(rename = "poap_ownership")]
-    PoapOwnership,
-    #[serde(rename = "reddit")]
-    Reddit,
-    #[serde(rename = "same")]
-    Same,
-    #[serde(rename = "soundcloud")]
-    SoundCloud,
-    #[serde(rename = "twitter")]
-    Twitter,
+    DnsVerification,
+    EmailVerification,
+    GitHubVerification,
+    NftOwnershipVerification,
+    PoapOwnershipVerification,
+    RedditVerification,
+    SameControllerAssertion,
+    SoundCloudVerification,
+    TwitterVerification,
 }
 
 #[derive(Deserialize, Serialize)]
 pub enum Contents {
-    Dns(DnsCtnt),
-    Email(EmailCtnt),
-    GitHub(GitHubCtnt),
-    NftOwnership(NftOwnershipCtnt),
-    PoapOwnership(PoapOwnershipCtnt),
-    Reddit(RedditCtnt),
-    Same(SameCtnt),
-    SoundCloud(SoundCloudCtnt),
-    Twitter(TwitterCtnt),
+    DnsVerification(DnsVerificationCtnt),
+    EmailVerification(EmailVerificationCtnt),
+    GitHubVerification(GitHubVerificationCtnt),
+    NftOwnershipVerification(NftOwnershipVerificationCtnt),
+    PoapOwnershipVerification(PoapOwnershipVerificationCtnt),
+    RedditVerification(RedditVerificationCtnt),
+    SameControllerAssertion(SameControllerAssertionCtnt),
+    SoundCloudVerification(SoundCloudVerificationCtnt),
+    TwitterVerification(TwitterVerificationCtnt),
 }
 
 #[async_trait(?Send)]
 impl Content for Contents {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         match self {
-            Contents::Dns(x) => x.context(),
-            Contents::Email(x) => x.context(),
-            Contents::GitHub(x) => x.context(),
-            Contents::NftOwnership(x) => x.context(),
-            Contents::PoapOwnership(x) => x.context(),
-            Contents::Reddit(x) => x.context(),
-            Contents::Same(x) => x.context(),
-            Contents::SoundCloud(x) => x.context(),
-            Contents::Twitter(x) => x.context(),
+            Contents::DnsVerification(x) => x.context(),
+            Contents::EmailVerification(x) => x.context(),
+            Contents::GitHubVerification(x) => x.context(),
+            Contents::NftOwnershipVerification(x) => x.context(),
+            Contents::PoapOwnershipVerification(x) => x.context(),
+            Contents::RedditVerification(x) => x.context(),
+            Contents::SameControllerAssertion(x) => x.context(),
+            Contents::SoundCloudVerification(x) => x.context(),
+            Contents::TwitterVerification(x) => x.context(),
         }
     }
 
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, ContentError> {
         match self {
-            Contents::Dns(x) => x.evidence(),
-            Contents::Email(x) => x.evidence(),
-            Contents::GitHub(x) => x.evidence(),
-            Contents::NftOwnership(x) => x.evidence(),
-            Contents::PoapOwnership(x) => x.evidence(),
-            Contents::Reddit(x) => x.evidence(),
-            Contents::Same(x) => x.evidence(),
-            Contents::SoundCloud(x) => x.evidence(),
-            Contents::Twitter(x) => x.evidence(),
+            Contents::DnsVerification(x) => x.evidence(),
+            Contents::EmailVerification(x) => x.evidence(),
+            Contents::GitHubVerification(x) => x.evidence(),
+            Contents::NftOwnershipVerification(x) => x.evidence(),
+            Contents::PoapOwnershipVerification(x) => x.evidence(),
+            Contents::RedditVerification(x) => x.evidence(),
+            Contents::SameControllerAssertion(x) => x.evidence(),
+            Contents::SoundCloudVerification(x) => x.evidence(),
+            Contents::TwitterVerification(x) => x.evidence(),
         }
     }
 
     fn subject(&self) -> Result<serde_json::Value, ContentError> {
         match self {
-            Contents::Dns(x) => x.subject(),
-            Contents::Email(x) => x.subject(),
-            Contents::GitHub(x) => x.subject(),
-            Contents::NftOwnership(x) => x.subject(),
-            Contents::PoapOwnership(x) => x.subject(),
-            Contents::Reddit(x) => x.subject(),
-            Contents::Same(x) => x.subject(),
-            Contents::SoundCloud(x) => x.subject(),
-            Contents::Twitter(x) => x.subject(),
+            Contents::DnsVerification(x) => x.subject(),
+            Contents::EmailVerification(x) => x.subject(),
+            Contents::GitHubVerification(x) => x.subject(),
+            Contents::NftOwnershipVerification(x) => x.subject(),
+            Contents::PoapOwnershipVerification(x) => x.subject(),
+            Contents::RedditVerification(x) => x.subject(),
+            Contents::SameControllerAssertion(x) => x.subject(),
+            Contents::SoundCloudVerification(x) => x.subject(),
+            Contents::TwitterVerification(x) => x.subject(),
         }
     }
 
     fn types(&self) -> Result<Vec<String>, ContentError> {
         match self {
-            Contents::Dns(x) => x.types(),
-            Contents::Email(x) => x.types(),
-            Contents::GitHub(x) => x.types(),
-            Contents::NftOwnership(x) => x.types(),
-            Contents::PoapOwnership(x) => x.types(),
-            Contents::Reddit(x) => x.types(),
-            Contents::Same(x) => x.types(),
-            Contents::SoundCloud(x) => x.types(),
-            Contents::Twitter(x) => x.types(),
+            Contents::DnsVerification(x) => x.types(),
+            Contents::EmailVerification(x) => x.types(),
+            Contents::GitHubVerification(x) => x.types(),
+            Contents::NftOwnershipVerification(x) => x.types(),
+            Contents::PoapOwnershipVerification(x) => x.types(),
+            Contents::RedditVerification(x) => x.types(),
+            Contents::SameControllerAssertion(x) => x.types(),
+            Contents::SoundCloudVerification(x) => x.types(),
+            Contents::TwitterVerification(x) => x.types(),
         }
     }
 }
@@ -134,38 +142,31 @@ impl Content for Contents {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(rename = "opts")]
 pub enum Statements {
-    #[serde(rename = "dns")]
-    Dns(DnsStmt),
-    #[serde(rename = "email")]
-    Email(EmailStmt),
-    #[serde(rename = "github")]
-    GitHub(GitHubStmt),
-    #[serde(rename = "nft_ownership")]
-    NftOwnership(NftOwnershipStatement),
-    #[serde(rename = "poap_ownership")]
-    PoapOwnership(PoapOwnershipStmt),
-    #[serde(rename = "reddit")]
-    Reddit(RedditStmt),
-    #[serde(rename = "same")]
-    Same(SameStmt),
-    #[serde(rename = "soundcloud")]
-    SoundCloud(SoundCloudStmt),
-    #[serde(rename = "twitter")]
-    Twitter(TwitterStmt),
+    DnsVerification(DnsStmt),
+    EmailVerification(EmailStmt),
+    GitHubVerification(GitHubStmt),
+    // NOTE: If adding non-alchemy providers, this will need to change
+    // to an enum.
+    NftOwnershipVerification(NftOwnershipStmt),
+    PoapOwnershipVerification(PoapOwnershipStmt),
+    RedditVerification(RedditStmt),
+    SameControllerAssertion(SameStmt),
+    SoundCloudVerification(SoundCloudStmt),
+    TwitterVerification(TwitterStmt),
 }
 
 impl Statement for Statements {
     fn generate_statement(&self) -> Result<String, StatementError> {
         match &self {
-            Statements::Dns(x) => x.generate_statement(),
-            Statements::Email(x) => x.generate_statement(),
-            Statements::GitHub(x) => x.generate_statement(),
-            Statements::NftOwnership(x) => x.generate_statement(),
-            Statements::PoapOwnership(x) => x.generate_statement(),
-            Statements::Reddit(x) => x.generate_statement(),
-            Statements::Same(x) => x.generate_statement(),
-            Statements::SoundCloud(x) => x.generate_statement(),
-            Statements::Twitter(x) => x.generate_statement(),
+            Statements::DnsVerification(x) => x.generate_statement(),
+            Statements::EmailVerification(x) => x.generate_statement(),
+            Statements::GitHubVerification(x) => x.generate_statement(),
+            Statements::NftOwnershipVerification(x) => x.generate_statement(),
+            Statements::PoapOwnershipVerification(x) => x.generate_statement(),
+            Statements::RedditVerification(x) => x.generate_statement(),
+            Statements::SameControllerAssertion(x) => x.generate_statement(),
+            Statements::SoundCloudVerification(x) => x.generate_statement(),
+            Statements::TwitterVerification(x) => x.generate_statement(),
         }
     }
 }
@@ -173,38 +174,31 @@ impl Statement for Statements {
 #[derive(Deserialize, Serialize)]
 #[serde(rename = "proof")]
 pub enum Proofs {
-    #[serde(rename = "dns")]
-    Dns(DnsStmt),
-    #[serde(rename = "email")]
-    Email(EmailProof),
-    #[serde(rename = "github")]
-    GitHub(GitHubProof),
-    #[serde(rename = "nft_ownership")]
-    NftOwnership(NftOwnershipProof),
-    #[serde(rename = "poap_ownership")]
-    PoapOwnership(PoapOwnershipProof),
-    #[serde(rename = "reddit")]
-    Reddit(RedditStmt),
-    #[serde(rename = "same")]
-    Same(SameProof),
-    #[serde(rename = "soundcloud")]
-    SoundCloud(SoundCloudStmt),
-    #[serde(rename = "twitter")]
-    Twitter(TwitterProof),
+    DnsVerification(DnsStmt),
+    EmailVerification(EmailVerificationProof),
+    GitHubVerification(GitHubVerificationProof),
+    // NOTE: If adding non-alchemy providers, this will need to change
+    // to an enum.
+    NftOwnershipVerification(NftOwnershipVerificationProof),
+    PoapOwnershipVerification(PoapOwnershipVerificationProof),
+    RedditVerification(RedditStmt),
+    SameControllerAssertion(SameControllerAssertionProof),
+    SoundCloudVerification(SoundCloudStmt),
+    TwitterVerification(TwitterVerificationProof),
 }
 
 impl Statement for Proofs {
     fn generate_statement(&self) -> Result<String, StatementError> {
         match &self {
-            Proofs::Dns(x) => x.generate_statement(),
-            Proofs::Email(x) => x.generate_statement(),
-            Proofs::GitHub(x) => x.generate_statement(),
-            Proofs::NftOwnership(x) => x.generate_statement(),
-            Proofs::PoapOwnership(x) => x.generate_statement(),
-            Proofs::Reddit(x) => x.generate_statement(),
-            Proofs::Same(x) => x.generate_statement(),
-            Proofs::SoundCloud(x) => x.generate_statement(),
-            Proofs::Twitter(x) => x.generate_statement(),
+            Proofs::DnsVerification(x) => x.generate_statement(),
+            Proofs::EmailVerification(x) => x.generate_statement(),
+            Proofs::GitHubVerification(x) => x.generate_statement(),
+            Proofs::NftOwnershipVerification(x) => x.generate_statement(),
+            Proofs::PoapOwnershipVerification(x) => x.generate_statement(),
+            Proofs::RedditVerification(x) => x.generate_statement(),
+            Proofs::SameControllerAssertion(x) => x.generate_statement(),
+            Proofs::SoundCloudVerification(x) => x.generate_statement(),
+            Proofs::TwitterVerification(x) => x.generate_statement(),
         }
     }
 }
@@ -212,34 +206,51 @@ impl Statement for Proofs {
 impl Proof<Contents> for Proofs {
     fn to_content(&self, statement: &str, signature: &str) -> Result<Contents, ProofError> {
         match self {
-            Proofs::Dns(x) => Ok(Contents::Dns(x.to_content(statement, signature)?)),
-            Proofs::Email(x) => Ok(Contents::Email(x.to_content(statement, signature)?)),
-            Proofs::GitHub(x) => Ok(Contents::GitHub(x.to_content(statement, signature)?)),
-            Proofs::NftOwnership(x) => {
-                Ok(Contents::NftOwnership(x.to_content(statement, signature)?))
-            }
-            Proofs::PoapOwnership(x) => {
-                Ok(Contents::PoapOwnership(x.to_content(statement, signature)?))
-            }
-            Proofs::Reddit(x) => Ok(Contents::Reddit(x.to_content(statement, signature)?)),
-            Proofs::Same(x) => Ok(Contents::Same(x.to_content(statement, signature)?)),
-            Proofs::SoundCloud(x) => Ok(Contents::SoundCloud(x.to_content(statement, signature)?)),
-            Proofs::Twitter(x) => Ok(Contents::Twitter(x.to_content(statement, signature)?)),
+            Proofs::DnsVerification(x) => Ok(Contents::DnsVerification(
+                x.to_content(statement, signature)?,
+            )),
+            Proofs::EmailVerification(x) => Ok(Contents::EmailVerification(
+                x.to_content(statement, signature)?,
+            )),
+            Proofs::GitHubVerification(x) => Ok(Contents::GitHubVerification(
+                x.to_content(statement, signature)?,
+            )),
+            Proofs::NftOwnershipVerification(x) => Ok(Contents::NftOwnershipVerification(
+                x.to_content(statement, signature)?,
+            )),
+            Proofs::PoapOwnershipVerification(x) => Ok(Contents::PoapOwnershipVerification(
+                x.to_content(statement, signature)?,
+            )),
+            Proofs::RedditVerification(x) => Ok(Contents::RedditVerification(
+                x.to_content(statement, signature)?,
+            )),
+            Proofs::SameControllerAssertion(x) => Ok(Contents::SameControllerAssertion(
+                x.to_content(statement, signature)?,
+            )),
+            Proofs::SoundCloudVerification(x) => Ok(Contents::SoundCloudVerification(
+                x.to_content(statement, signature)?,
+            )),
+            Proofs::TwitterVerification(x) => Ok(Contents::TwitterVerification(
+                x.to_content(statement, signature)?,
+            )),
         }
     }
 }
 
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct WitnessFlow {
-    dns: Option<DnsFlow>,
-    email: Option<EmailFlow>,
-    github: Option<GitHubFlow>,
-    nft_ownership: Option<NftOwnershipFlow>,
-    poap_ownership: Option<PoapOwnershipFlow>,
-    reddit: Option<RedditFlow>,
-    same: Option<SameFlow>,
-    soundcloud: Option<SoundCloudFlow>,
-    twitter: Option<TwitterFlow>,
+    dns_verification: Option<DnsVerificationFlow>,
+    email_verification: Option<EmailVerificationFlow>,
+    #[serde(rename = "GitHubVerification")]
+    github_verification: Option<GitHubVerificationFlow>,
+    nft_ownership_verification: Option<NftOwnershipVerificationFlow>,
+    poap_ownership_verification: Option<PoapOwnershipVerificationFlow>,
+    reddit_verification: Option<RedditVerificationFlow>,
+    same_controller_assertion: Option<SameControllerAssertionFlow>,
+    #[serde(rename = "SoundCloudVerification")]
+    soundcloud_verification: Option<SoundCloudVerificationFlow>,
+    twitter_verification: Option<TwitterVerificationFlow>,
 }
 
 #[async_trait(?Send)]
@@ -255,49 +266,53 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
         issuer: &I,
     ) -> Result<FlowResponse, FlowError> {
         match stmt {
-            Statements::Dns(s) => match &self.dns {
-                Some(x) => Ok(x.statement(s, issuer).await?),
-                None => Err(FlowError::Validation("no dns flow configured".to_owned())),
-            },
-            Statements::Email(s) => match &self.email {
-                Some(x) => Ok(x.statement(s, issuer).await?),
-                None => Err(FlowError::Validation("no email flow configured".to_owned())),
-            },
-            Statements::GitHub(s) => match &self.github {
+            Statements::DnsVerification(s) => match &self.dns_verification {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
-                    "no github flow configured".to_owned(),
+                    "no dns_verification flow configured".to_owned(),
                 )),
             },
-            Statements::NftOwnership(s) => match &self.nft_ownership {
+            Statements::EmailVerification(s) => match &self.email_verification {
+                Some(x) => Ok(x.statement(s, issuer).await?),
+                None => Err(FlowError::Validation(
+                    "no email_verification flow configured".to_owned(),
+                )),
+            },
+            Statements::GitHubVerification(s) => match &self.github_verification {
+                Some(x) => Ok(x.statement(s, issuer).await?),
+                None => Err(FlowError::Validation(
+                    "no github_verification flow configured".to_owned(),
+                )),
+            },
+            Statements::NftOwnershipVerification(s) => match &self.nft_ownership_verification {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no nft_ownership flow configured".to_owned(),
                 )),
             },
-            Statements::PoapOwnership(s) => match &self.poap_ownership {
+            Statements::PoapOwnershipVerification(s) => match &self.poap_ownership_verification {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no poap_ownership flow configured".to_owned(),
                 )),
             },
-            Statements::Reddit(s) => match &self.reddit {
+            Statements::RedditVerification(s) => match &self.reddit_verification {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no reddit flow configured".to_owned(),
                 )),
             },
-            Statements::Same(s) => match &self.same {
+            Statements::SameControllerAssertion(s) => match &self.same_controller_assertion {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation("no same flow configured".to_owned())),
             },
-            Statements::SoundCloud(s) => match &self.soundcloud {
+            Statements::SoundCloudVerification(s) => match &self.soundcloud_verification {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no soundcloud flow configured".to_owned(),
                 )),
             },
-            Statements::Twitter(s) => match &self.twitter {
+            Statements::TwitterVerification(s) => match &self.twitter_verification {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no twitter flow configured".to_owned(),
@@ -312,50 +327,72 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
         issuer: &I,
     ) -> Result<Contents, FlowError> {
         match proof {
-            Proofs::Dns(p) => match &self.dns {
-                Some(x) => Ok(Contents::Dns(x.validate_proof(p, issuer).await?)),
-                None => Err(FlowError::Validation("no dns flow configured".to_owned())),
+            Proofs::DnsVerification(p) => match &self.dns_verification {
+                Some(x) => Ok(Contents::DnsVerification(
+                    x.validate_proof(p, issuer).await?,
+                )),
+                None => Err(FlowError::Validation(
+                    "no dns_verification flow configured".to_owned(),
+                )),
             },
-            Proofs::Email(p) => match &self.email {
-                Some(x) => Ok(Contents::Email(x.validate_proof(p, issuer).await?)),
-                None => Err(FlowError::Validation("no email flow configured".to_owned())),
+            Proofs::EmailVerification(p) => match &self.email_verification {
+                Some(x) => Ok(Contents::EmailVerification(
+                    x.validate_proof(p, issuer).await?,
+                )),
+                None => Err(FlowError::Validation(
+                    "no email_verification flow configured".to_owned(),
+                )),
             },
-            Proofs::GitHub(p) => match &self.github {
-                Some(x) => Ok(Contents::GitHub(x.validate_proof(p, issuer).await?)),
+            Proofs::GitHubVerification(p) => match &self.github_verification {
+                Some(x) => Ok(Contents::GitHubVerification(
+                    x.validate_proof(p, issuer).await?,
+                )),
                 None => Err(FlowError::Validation(
                     "no github flow configured".to_owned(),
                 )),
             },
-            Proofs::NftOwnership(p) => match &self.nft_ownership {
-                Some(x) => Ok(Contents::NftOwnership(x.validate_proof(p, issuer).await?)),
+            Proofs::NftOwnershipVerification(p) => match &self.nft_ownership_verification {
+                Some(x) => Ok(Contents::NftOwnershipVerification(
+                    x.validate_proof(p, issuer).await?,
+                )),
                 None => Err(FlowError::Validation(
                     "no nft_ownership flow configured".to_owned(),
                 )),
             },
-            Proofs::PoapOwnership(p) => match &self.poap_ownership {
-                Some(x) => Ok(Contents::PoapOwnership(x.validate_proof(p, issuer).await?)),
+            Proofs::PoapOwnershipVerification(p) => match &self.poap_ownership_verification {
+                Some(x) => Ok(Contents::PoapOwnershipVerification(
+                    x.validate_proof(p, issuer).await?,
+                )),
                 None => Err(FlowError::Validation(
                     "no poap_ownership flow configured".to_owned(),
                 )),
             },
-            Proofs::Reddit(p) => match &self.reddit {
-                Some(x) => Ok(Contents::Reddit(x.validate_proof(p, issuer).await?)),
+            Proofs::RedditVerification(p) => match &self.reddit_verification {
+                Some(x) => Ok(Contents::RedditVerification(
+                    x.validate_proof(p, issuer).await?,
+                )),
                 None => Err(FlowError::Validation(
                     "no reddit flow configured".to_owned(),
                 )),
             },
-            Proofs::Same(p) => match &self.same {
-                Some(x) => Ok(Contents::Same(x.validate_proof(p, issuer).await?)),
+            Proofs::SameControllerAssertion(p) => match &self.same_controller_assertion {
+                Some(x) => Ok(Contents::SameControllerAssertion(
+                    x.validate_proof(p, issuer).await?,
+                )),
                 None => Err(FlowError::Validation("no same flow configured".to_owned())),
             },
-            Proofs::SoundCloud(p) => match &self.soundcloud {
-                Some(x) => Ok(Contents::SoundCloud(x.validate_proof(p, issuer).await?)),
+            Proofs::SoundCloudVerification(p) => match &self.soundcloud_verification {
+                Some(x) => Ok(Contents::SoundCloudVerification(
+                    x.validate_proof(p, issuer).await?,
+                )),
                 None => Err(FlowError::Validation(
                     "no soundcloud flow configured".to_owned(),
                 )),
             },
-            Proofs::Twitter(p) => match &self.twitter {
-                Some(x) => Ok(Contents::Twitter(x.validate_proof(p, issuer).await?)),
+            Proofs::TwitterVerification(p) => match &self.twitter_verification {
+                Some(x) => Ok(Contents::TwitterVerification(
+                    x.validate_proof(p, issuer).await?,
+                )),
                 None => Err(FlowError::Validation(
                     "no twitter flow configured".to_owned(),
                 )),
@@ -404,49 +441,53 @@ pub struct VerifyRes {
 impl WitnessFlow {
     pub fn get_instructions(&self, t: InstructionsType) -> Result<Instructions, FlowError> {
         match t {
-            InstructionsType::Dns => match &self.dns {
+            InstructionsType::DnsVerification => match &self.dns_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation("no dns flow configured".to_owned())),
             },
-            InstructionsType::Email => match &self.email {
+            InstructionsType::EmailVerification => match &self.email_verification {
                 Some(x) => x.instructions(),
-                _ => Err(FlowError::Validation("no email flow configured".to_owned())),
+                _ => Err(FlowError::Validation(
+                    "no email_verification flow configured".to_owned(),
+                )),
             },
-            InstructionsType::GitHub => match &self.github {
+            InstructionsType::GitHubVerification => match &self.github_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no github flow configured".to_owned(),
                 )),
             },
-            InstructionsType::NftOwnership => match &self.nft_ownership {
+            InstructionsType::NftOwnershipVerification => match &self.nft_ownership_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no nft_ownership flow configured".to_owned(),
                 )),
             },
-            InstructionsType::PoapOwnership => match &self.poap_ownership {
-                Some(x) => x.instructions(),
-                _ => Err(FlowError::Validation(
-                    "no poap_ownership flow configured".to_owned(),
-                )),
-            },
-            InstructionsType::Reddit => match &self.reddit {
+            InstructionsType::PoapOwnershipVerification => {
+                match &self.poap_ownership_verification {
+                    Some(x) => x.instructions(),
+                    _ => Err(FlowError::Validation(
+                        "no poap_ownership flow configured".to_owned(),
+                    )),
+                }
+            }
+            InstructionsType::RedditVerification => match &self.reddit_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no reddit flow configured".to_owned(),
                 )),
             },
-            InstructionsType::Same => match &self.same {
+            InstructionsType::SameControllerAssertion => match &self.same_controller_assertion {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation("no same flow configured".to_owned())),
             },
-            InstructionsType::SoundCloud => match &self.soundcloud {
+            InstructionsType::SoundCloudVerification => match &self.soundcloud_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no soundcloud flow configured".to_owned(),
                 )),
             },
-            InstructionsType::Twitter => match &self.twitter {
+            InstructionsType::TwitterVerification => match &self.twitter_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no twitter flow configured".to_owned(),

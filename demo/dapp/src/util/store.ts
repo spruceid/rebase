@@ -47,7 +47,7 @@ function defaultClaims(): Claim[] {
     return [
         {
             credentials: [],
-            credential_type: "twitter",
+            credential_type: "TwitterVerification",
             icon: TwitterIcon,
             title: "Twitter",
             type: "public",
@@ -55,7 +55,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "github",
+            credential_type: "GitHubVerification",
             icon: GitHubIcon,
             title: "GitHub",
             type: "public",
@@ -63,7 +63,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "dns",
+            credential_type: "DnsVerification",
             icon: GlobeIcon,
             title: "DNS",
             type: "public",
@@ -71,7 +71,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "email",
+            credential_type: "EmailVerification",
             icon: EmailIcon,
             title: "Email",
             type: "public",
@@ -79,7 +79,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "same",
+            credential_type: "SameControllerAssertion",
             icon: KeyIcon,
             title: "Same Controller",
             type: "public",
@@ -87,7 +87,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "reddit",
+            credential_type: "RedditVerification",
             icon: RedditIcon,
             title: "Reddit",
             type: "public",
@@ -95,7 +95,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "soundcloud",
+            credential_type: "SoundCloudVerification",
             icon: SoundCloudIcon,
             title: "SoundCloud",
             type: "public",
@@ -103,7 +103,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "nft_ownership",
+            credential_type: "NftOwnershipVerification",
             icon: ImageIcon,
             title: "NFT Ownership",
             type: "public",
@@ -111,7 +111,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "poap_ownership",
+            credential_type: "PoapOwnershipVerification",
             icon: RibbonIcon,
             title: "POAP Ownership",
             type: "public",

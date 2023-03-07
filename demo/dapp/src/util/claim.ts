@@ -3,16 +3,15 @@ import type { DiscordIcon, EmailIcon, EthereumIcon, ImageIcon, TwitterIcon, GitH
 import { parseJWT } from './jwt';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
-export type CredentialType = "discord" 
-    | "dns" 
-    | "email"
-    | "twitter" 
-    | "github" 
-    | "nft_ownership"
-    | "poap_ownership"
-    | "reddit" 
-    | "same" 
-    | "soundcloud";
+export type CredentialType = "DnsVerification" 
+    | "EmailVerification"
+    | "GitHubVerification" 
+    | "NftOwnershipVerification"
+    | "PoapOwnershipVerification"
+    | "RedditVerification" 
+    | "SameControllerAssertion" 
+    | "SoundCloudVerification"
+    | "TwitterVerification";
 
 export type ClaimIcon = typeof TwitterIcon 
     | typeof EthereumIcon 

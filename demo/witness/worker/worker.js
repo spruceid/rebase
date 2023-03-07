@@ -172,73 +172,71 @@ function handleOptions(request) {
 // TODO: Change to use the Flow VC's type for keys in future.
 // To disable a flow, change the value of the flow in configDefaults to a falsey value.
 const configDefaults = {
-  // TODO: Generalize this to NFTs?
-  alchemy: {
+  NftOwnershipVerification: {
     max_elapsed_minutes: 15,
     challenge_delimiter: "\n\n"
   },
-  github: {
+  GitHubVerification: {
     user_agent: "Spruce Systems",
     delimiter: "\n\n"
   }, 
-  poap: {
+  PoapOwnershipVerification: {
     max_elapsed_minutes: 15,
     challenge_delimiter: "\n\n"
   },
-  // TODO: Generalize this to e-mail?
-  sendgrid: {
+  EmailVerification: {
     challenge_delimiter: ":::",
     from_addr: "hello@rebaseexample.com",
     from_name: "Spruce",
     subject_name: "Rebase Credentialing",
     max_elapsed_minutes: 15,
   },
-  soundcloud: {
+  SoundCloudVerification: {
     limit: 100,
     max_offset: 9000,
   },
-  twitter: {
+  TwitterVerification: {
     delimiter: "\n\n"
   }
 }
 
 function witnessOpts() {  
   let o = {};
-  o.dns = {};
-  o.reddit = {};
-  o.same = {};
+  o.DnsVerification = {};
+  o.RedditVerification = {};
+  o.SameControllerAssertion = {};
 
-  if (configDefaults.github) {
-    o.github = configDefaults.github;
+  if (configDefaults.GitHubVerification) {
+    o.GitHubVerification = configDefaults.GitHubVerification;
   }
 
-  if (configDefaults.soundcloud && SOUNDCLOUD_CLIENT_ID) {
-    let {limit, max_offset} = configDefaults.soundcloud;
-    o.soundcloud = {
+  if (configDefaults.SoundCloudVerification && SOUNDCLOUD_CLIENT_ID) {
+    let {limit, max_offset} = configDefaults.SoundCloudVerification;
+    o.SoundCloudVerification = {
       client_id: SOUNDCLOUD_CLIENT_ID,
       limit,
       max_offset,
     }
   }
 
-  if (configDefaults.twitter && TWITTER_BEARER_TOKEN) {
-    o.twitter = {
+  if (configDefaults.TwitterVerification && TWITTER_BEARER_TOKEN) {
+    o.TwitterVerification = {
       api_key: TWITTER_BEARER_TOKEN,
-      delimiter: configDefaults.twitter.delimiter,
+      delimiter: configDefaults.TwitterVerification.delimiter,
     }
   }
 
 
-  if (configDefaults.sendgrid && SENDGRID_BEARER_TOKEN) {
+  if (configDefaults.EmailVerification && SENDGRID_BEARER_TOKEN) {
     let {
       challenge_delimiter,
       from_addr,
       from_name,
       max_elapsed_minutes,
       subject_name
-    } = configDefaults.sendgrid;
+    } = configDefaults.EmailVerification;
 
-    o.email = {
+    o.EmailVerification = {
       api_key: SENDGRID_BEARER_TOKEN,
       challenge_delimiter,
       from_addr,
@@ -248,24 +246,23 @@ function witnessOpts() {
     }
   }
 
-  if (configDefaults.alchemy && ALCHEMY_API_KEY) {
-    let {challenge_delimiter, max_elapsed_minutes} = configDefaults.alchemy;
-    o.nft_ownership = {
+  if (configDefaults.NftOwnershipVerification && ALCHEMY_API_KEY) {
+    let {challenge_delimiter, max_elapsed_minutes} = configDefaults.NftOwnershipVerification;
+    o.NftOwnershipVerification = {
       api_key: ALCHEMY_API_KEY,
       challenge_delimiter,
       max_elapsed_minutes,
     }
   }
 
-  if (configDefaults.poap && POAP_API_KEY) {
-    let {challenge_delimiter, max_elapsed_minutes} = configDefaults.poap;
-    o.poap_ownership = {
+  if (configDefaults.PoapOwnershipVerification && POAP_API_KEY) {
+    let {challenge_delimiter, max_elapsed_minutes} = configDefaults.PoapOwnershipVerification;
+    o.PoapOwnershipVerification = {
       api_key: POAP_API_KEY,
       challenge_delimiter,
       max_elapsed_minutes,
     };
   }
-
   return o
 };
 

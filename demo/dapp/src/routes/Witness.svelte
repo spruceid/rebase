@@ -13,7 +13,7 @@
 
     onMount(async () => {
         try {
-            if (type !== "same") {
+            if (type !== "SameControllerAssertion") {
                 let i = await instructions(type);
                 inst.set(i as Instructions);
             }
@@ -28,7 +28,7 @@
 
 <BasePage>
     <div class="min-h-[577px] h-full flex flex-wrap">
-        {#if type === "same"}
+        {#if type === "SameControllerAssertion"}
             <SameForm />
         {:else if !_inst}
             <p class="inner-center">Building workflow...</p>

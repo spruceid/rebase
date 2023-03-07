@@ -17,7 +17,7 @@ The primary use-case of this library is to provide types to make the creation of
 ```rust
 #[derive(Deserialize, Serialize)]
 pub struct WitnessFlow {
-    dns: Option<DnsFlow>,
+    dns: Option<DnsVerificationFlow>,
     email: Option<EmailFlow>,
     github: Option<GitHubFlow>,
     reddit: Option<RedditFlow>,

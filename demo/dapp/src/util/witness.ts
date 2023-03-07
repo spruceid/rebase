@@ -15,8 +15,8 @@ export const client = new Client(JSON.stringify(clientConfig));
 
 export function needsDelimiter(c: CredentialType): boolean {
     switch (c) {
-        case "github": 
-        case "twitter":
+        case "GitHubVerification": 
+        case "TwitterVerification":
             return true;
         default:
             return false;
@@ -69,16 +69,24 @@ const ICONS = {
 
 export const titleCase = (s: CredentialType): string => {
     switch (s) {
-        case "github":
-            return 'GitHub';
-        case "soundcloud":
-            return 'SoundCloud';
-        case "nft_ownership":
+        case "DnsVerification":
+            return "DNS";
+        case "EmailVerification":
+            return "Email";
+        case "GitHubVerification":
+            return "GitHub";
+        case "NftOwnershipVerification":
             return "NFT Ownership";
-        case "poap_ownership": 
+        case "PoapOwnershipVerification": 
             return "POAP Ownership";
-        default: 
-            return s.charAt(0).toUpperCase() + s.slice(1);
+        case "RedditVerification":
+            return "Reddit";
+        case "SameControllerAssertion":
+            return "Same Controller";
+        case "SoundCloudVerification":
+            return 'SoundCloud';
+        case "TwitterVerification":
+            return 'Twitter';
     }
 }
 
@@ -96,7 +104,7 @@ function witness_info(t: CredentialType): WitnessInfo {
     let statement_label = "Enter Account Handle";
     let statement_placeholder =  `Enter your ${titleCase(t)} handle`;
     switch (t) {
-        case "poap_ownership": 
+        case "PoapOwnershipVerification": 
             return {
                 statement: "Please enter the event id of the POAP you wish to attest ownership of",
                 statement_label: "Enter the POAP's event ID",
@@ -105,7 +113,7 @@ function witness_info(t: CredentialType): WitnessInfo {
                 witness_label: "The witness will verify you own an POAP from the event you supplied",
                 witness_placeholder: "N/A",
             }
-        case "nft_ownership": 
+        case "NftOwnershipVerification": 
             return {
                 statement: "Please enter the contract address of the NFT collection, for example, the ENS contract is 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85",
                 statement_label: "Enter the NFT collection's contract address",
@@ -114,8 +122,7 @@ function witness_info(t: CredentialType): WitnessInfo {
                 witness_label: "The witness will verify you own an NFT from the contract you supplied",
                 witness_placeholder: "N/A",
             }
-        
-        case "github":
+        case "GitHubVerification":
             return {
                 statement,
                 statement_label,
@@ -124,7 +131,7 @@ function witness_info(t: CredentialType): WitnessInfo {
                 witness_label: "Create a Gist",
                 witness_placeholder: "Paste your gist URL"
             }
-        case "twitter":
+        case "TwitterVerification":
             return {
                 statement,
                 statement_label,
@@ -133,7 +140,7 @@ function witness_info(t: CredentialType): WitnessInfo {
                 witness_label: "Tweet Message",
                 witness_placeholder: "Paste your tweet URL"
             }
-        case "reddit":
+        case "RedditVerification":
             return {
                 statement,
                 statement_label,
@@ -142,7 +149,7 @@ function witness_info(t: CredentialType): WitnessInfo {
                 witness_label: "Update your profile's About section",
                 witness_placeholder: "N/A"
             }
-        case "soundcloud":
+        case "SoundCloudVerification":
             return {
                 statement: "Enter the link to your SoundCloud profile",
                 statement_label: "Enter your SoundCloud profile url",
@@ -151,7 +158,6 @@ function witness_info(t: CredentialType): WitnessInfo {
                 witness_label: "Update your profile's Bio section",
                 witness_placeholder: "N/A"
             }
-        // case "discord":
         default:
             return {
                 statement,
@@ -168,8 +174,8 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
     let {statement, statement_label, statement_placeholder, witness, witness_label, witness_placeholder} = witness_info(t);
     switch (t) {
         // case "discord":
-        case "nft_ownership":
-        case "poap_ownership":
+        case "NftOwnershipVerification":
+        case "PoapOwnershipVerification":
             return {
                 icon: ICONS[t],
                 title: `${titleCase(t)} Verification Workflow`,
@@ -183,10 +189,10 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
                 witness_label,
                 witness_placeholder            
             }
-        case "github":
-        case "twitter":
-        case "reddit":
-        case "soundcloud":
+        case "GitHubVerification":
+        case "TwitterVerification":
+        case "RedditVerification":
+        case "SoundCloudVerification":
             return {
                 icon: ICONS[t],
                 title: `${titleCase(t)} Verification Workflow`,
@@ -203,7 +209,7 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
                 witness_label,
                 witness_placeholder            
             }
-        case "email":
+        case "EmailVerification":
             return {
                 icon: ICONS[t],
                 title: `${titleCase(t)} Verification Workflow`,
@@ -220,7 +226,7 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
                 witness_label: "Paste the Challenge found in your email",
                 witness_placeholder: "Paste the challenge"
             }
-        case "dns":
+        case "DnsVerification":
             return {
                 icon: ICONS[t],
                 title: `${titleCase(t)} Verification Workflow`,

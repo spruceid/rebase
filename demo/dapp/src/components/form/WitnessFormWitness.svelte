@@ -1,11 +1,11 @@
 <script lang="ts">
-    import type { Instructions, CredentialType } from "utils";
-    import { alert } from "utils";
-    import { Button, WitnessFormStepper, CopyTextArea } from "components";
+    import type { Instructions, CredentialType } from "src/util";
+    import { alert } from "src/util";
+    import { Button, WitnessFormStepper, CopyTextArea } from "src/components";
 
     export let step: number | string = 3;
     export let totalSteps: number | string = 4;
-    export let instructions: Instructions = {};
+    export let instructions: Instructions;
     export let loading: boolean = false;
     export let verified: boolean = false;
     export let type: CredentialType;
@@ -17,11 +17,19 @@
     export let advance: Function;
 
     const needsCopyArea = (t: CredentialType): boolean => {
-        return t !== "email" && t !== "nft_ownership" && t !== "poap_ownership";
+        return (
+            t !== "EmailVerification" &&
+            t !== "NftOwnershipVerification" &&
+            t !== "PoapOwnershipVerification"
+        );
     };
 
     const needsInput = (t: CredentialType): boolean => {
-        return t === "twitter" || t === "github" || t === "email";
+        return (
+            t === "TwitterVerification" ||
+            t === "GitHubVerification" ||
+            t === "EmailVerification"
+        );
     };
 </script>
 
