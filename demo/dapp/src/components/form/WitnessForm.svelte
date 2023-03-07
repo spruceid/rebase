@@ -120,18 +120,17 @@
 
     const post = (): string => {
         switch (type) {
-            case "discord":
-            case "github":
-            case "twitter":
+            case "GitHubVerification":
+            case "TwitterVerification":
                 return `${_statement}${_delimiter}${_signature}`;
-            case "dns":
+            case "DnsVerification":
                 return `${DNS_PREFIX}${_signature}`;
-            case "soundcloud":
-            case "reddit":
+            case "SoundCloudVerification":
+            case "RedditVerification":
                 return `${_signature}`;
-            case "email":
-            case "nft_ownership":
-            case "poap_ownership":
+            case "EmailVerification":
+            case "NftOwnershipVerification":
+            case "PoapOwnershipVerification":
                 return;
         }
     };
@@ -207,33 +206,33 @@
         }
 
         switch (type) {
-            case "dns":
+            case "DnsVerification":
                 opts[type]["domain"] = _handle;
                 opts[type]["prefix"] = DNS_PREFIX;
                 opts[type]["subject"] = getSubject(current);
                 break;
-            case "github":
-            case "twitter":
-            case "reddit":
+            case "GitHubVerification":
+            case "TwitterVerification":
+            case "RedditVerification":
                 opts[type]["handle"] = _handle;
                 opts[type]["subject"] = getSubject(current);
                 break;
-            case "soundcloud":
+            case "SoundCloudVerification":
                 opts[type]["permalink"] =
                     _handle.split("/")[_handle.split("/").length - 1];
                 opts[type]["subject"] = getSubject(current);
                 break;
-            case "email":
+            case "EmailVerification":
                 opts[type]["email"] = _handle;
                 opts[type]["subject"] = getSubject(current);
                 break;
-            case "nft_ownership":
+            case "NftOwnershipVerification":
                 opts[type]["contract_address"] = _handle;
                 opts[type]["network"] = NFT_NETWORK;
                 opts[type]["issued_at"] = _issuedAt;
                 opts[type]["subject"] = getSubject(current);
                 break;
-            case "poap_ownership":
+            case "PoapOwnershipVerification":
                 let next_id = parseInt(_handle);
                 if (isNaN(next_id) || !next_id) {
                     throw new Error(
@@ -291,40 +290,40 @@
         }
 
         switch (type) {
-            case "dns":
+            case "DnsVerification":
                 opts[type]["domain"] = _handle;
                 opts[type]["prefix"] = DNS_PREFIX;
                 opts[type]["subject"] = getSubject(current);
                 break;
-            case "reddit":
+            case "RedditVerification":
                 opts[type]["handle"] = _handle;
                 opts[type]["subject"] = getSubject(current);
                 break;
-            case "soundcloud":
+            case "SoundCloudVerification":
                 opts[type]["permalink"] =
                     _handle.split("/")[_handle.split("/").length - 1];
                 opts[type]["subject"] = getSubject(current);
                 break;
-            case "github":
+            case "GitHubVerification":
                 opts[type]["statement"] = {};
                 opts[type]["statement"]["handle"] = _handle;
                 opts[type]["statement"]["subject"] = getSubject(current);
                 opts[type]["gist_id"] = _proof.split("/").pop();
                 break;
-            case "twitter":
+            case "TwitterVerification":
                 opts[type]["statement"] = {};
                 opts[type]["statement"]["handle"] = _handle;
                 opts[type]["statement"]["subject"] = getSubject(current);
                 opts[type]["tweet_url"] = _proof.split("?")[0];
                 break;
-            case "email":
+            case "EmailVerification":
                 opts[type]["statement"] = {};
                 opts[type]["statement"]["email"] = _handle;
                 opts[type]["statement"]["subject"] = getSubject(current);
                 opts[type]["challenge"] = _proof.trim();
                 opts[type]["signature"] = _signature;
                 break;
-            case "nft_ownership":
+            case "NftOwnershipVerification":
                 opts[type]["statement"] = {};
                 opts[type]["statement"]["contract_address"] = _handle;
                 opts[type]["statement"]["network"] = NFT_NETWORK;
@@ -332,7 +331,7 @@
                 opts[type]["statement"]["subject"] = getSubject(current);
                 opts[type]["signature"] = _signature;
                 break;
-            case "poap_ownership":
+            case "PoapOwnershipVerification":
                 let next_id = parseInt(_handle);
                 if (isNaN(next_id) || !next_id) {
                     throw new Error(
@@ -379,7 +378,7 @@
     subtitle={instructions.subtitle}
 />
 
-{#if _lookUp && (type === "nft_ownership" || type === "poap_ownership") && _lookUp?.signerType !== "ethereum"}
+{#if _lookUp && (type === "NftOwnershipVerification" || type === "PoapOwnershipVerification") && _lookUp?.signerType !== "ethereum"}
     <div class="w-full">
         <div class="flex px-4 text-center">
             <div class="w-full">

@@ -45,13 +45,13 @@ async fn main() {
     println!("Testing DNS...");
     let did = test_eth_did();
 
-    let inner = statement::dns::Dns {
+    let inner = statement::dns_verification::DnsVerification {
         domain: "tzprofiles.dev".to_owned(),
         prefix: "rebase_sig=".to_owned(),
         subject: did,
     };
 
-    let opts = Statements::Dns(inner.clone());
+    let opts = Statements::DnsVerification(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -60,7 +60,7 @@ async fn main() {
     println!("DNS statement valid...");
 
     let req = WitnessReq {
-        proof: Proofs::Dns(inner.clone()),
+        proof: Proofs::DnsVerification(inner.clone()),
     };
 
     client.jwt(req).await.unwrap();
@@ -69,12 +69,12 @@ async fn main() {
 
     println!("Tesing GitHub...");
     let did = test_eth_did();
-    let inner = statement::github::GitHub {
+    let inner = statement::github_verification::GitHubVerification {
         handle: "krhoda".to_string(),
         subject: did,
     };
 
-    let opts = Statements::GitHub(inner.clone());
+    let opts = Statements::GitHubVerification(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -82,13 +82,13 @@ async fn main() {
 
     println!("GitHub statement valid...");
 
-    let proof = proof::github::GitHub {
+    let proof = proof::github_verification::GitHubVerification {
         gist_id: "28fb83438a26e70350ef3195d999882d".to_string(),
         statement: inner,
     };
 
     let req = WitnessReq {
-        proof: Proofs::GitHub(proof),
+        proof: Proofs::GitHubVerification(proof),
     };
 
     client.jwt(req).await.unwrap();
@@ -97,12 +97,12 @@ async fn main() {
 
     println!("Testing Reddit...");
     let did = test_eth_did();
-    let inner = statement::reddit::Reddit {
+    let inner = statement::reddit_verification::RedditVerification {
         handle: "eval-apply-quote".to_string(),
         subject: did,
     };
 
-    let opts = Statements::Reddit(inner.clone());
+    let opts = Statements::RedditVerification(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -111,7 +111,7 @@ async fn main() {
     println!("Reddit statement valid...");
 
     let req = WitnessReq {
-        proof: Proofs::Reddit(inner),
+        proof: Proofs::RedditVerification(inner),
     };
 
     client.jwt(req).await.unwrap();
@@ -120,12 +120,12 @@ async fn main() {
 
     println!("Testing SoundCloud...");
     let did = test_eth_did();
-    let inner = statement::soundcloud::SoundCloud {
+    let inner = statement::soundcloud_verification::SoundCloudVerification {
         permalink: "spruce-systems-dev".to_string(),
         subject: did,
     };
 
-    let opts = Statements::SoundCloud(inner.clone());
+    let opts = Statements::SoundCloudVerification(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -134,7 +134,7 @@ async fn main() {
     println!("SoundCloud statement valid...");
 
     let req = WitnessReq {
-        proof: Proofs::SoundCloud(inner),
+        proof: Proofs::SoundCloudVerification(inner),
     };
 
     client.jwt(req).await.unwrap();
@@ -144,12 +144,12 @@ async fn main() {
     println!("Testing Twitter...");
 
     let did = test_eth_did();
-    let inner = statement::twitter::Twitter {
+    let inner = statement::twitter_verification::TwitterVerification {
         handle: "evalapplyquote".to_string(),
         subject: did,
     };
 
-    let opts = Statements::Twitter(inner.clone());
+    let opts = Statements::TwitterVerification(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -157,13 +157,13 @@ async fn main() {
 
     println!("Twitter statement valid...");
 
-    let proof = proof::twitter::Twitter {
+    let proof = proof::twitter_verification::TwitterVerification {
         tweet_url: "https://twitter.com/evalapplyquote/status/1542901885815820288".to_string(),
         statement: inner,
     };
 
     let req = WitnessReq {
-        proof: Proofs::Twitter(proof),
+        proof: Proofs::TwitterVerification(proof),
     };
 
     client.jwt(req).await.unwrap();
@@ -175,12 +175,12 @@ async fn main() {
     let did = test_eth_did();
     let did2 = test_eth_did_2();
 
-    let inner = statement::same::Same {
+    let inner = statement::same_controller_assertion::SameControllerAssertion {
         id1: did,
         id2: did2,
     };
 
-    let opts = Statements::Same(inner.clone());
+    let opts = Statements::SameControllerAssertion(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -188,14 +188,14 @@ async fn main() {
 
     println!("Self Signed Statement valid...");
 
-    let proof = proof::same::Same {
+    let proof = proof::same_controller_assertion::SameControllerAssertion {
         statement: inner,
         signature1: TEST_2KEY_ETH_SIG_1.to_owned(),
         signature2: TEST_2KEY_ETH_SIG_2.to_owned(),
     };
 
     let req = WitnessReq {
-        proof: Proofs::Same(proof),
+        proof: Proofs::SameControllerAssertion(proof),
     };
 
     client.jwt(req).await.unwrap();
@@ -207,12 +207,12 @@ async fn main() {
     println!("NOTE: Does not test DNS, Reddit, or Soundcloud flows");
     println!("Testing GitHub...");
     let did = test_solana_did();
-    let inner = statement::github::GitHub {
+    let inner = statement::github_verification::GitHubVerification {
         handle: "krhoda".to_string(),
         subject: did,
     };
 
-    let opts = Statements::GitHub(inner.clone());
+    let opts = Statements::GitHubVerification(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -220,13 +220,13 @@ async fn main() {
 
     println!("GitHub statement valid...");
 
-    let proof = proof::github::GitHub {
+    let proof = proof::github_verification::GitHubVerification {
         gist_id: "b300fd41272159662bccf9702c0a66fd".to_string(),
         statement: inner,
     };
 
     let req = WitnessReq {
-        proof: Proofs::GitHub(proof),
+        proof: Proofs::GitHubVerification(proof),
     };
 
     client.jwt(req).await.unwrap();
@@ -235,12 +235,12 @@ async fn main() {
     println!("Testing Twitter...");
 
     let did = test_solana_did();
-    let inner = statement::twitter::Twitter {
+    let inner = statement::twitter_verification::TwitterVerification {
         handle: "evalapplyquote".to_string(),
         subject: did,
     };
 
-    let opts = Statements::Twitter(inner.clone());
+    let opts = Statements::TwitterVerification(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -248,13 +248,13 @@ async fn main() {
 
     println!("Twitter statement valid...");
 
-    let proof = proof::twitter::Twitter {
+    let proof = proof::twitter_verification::TwitterVerification {
         tweet_url: "https://twitter.com/evalapplyquote/status/1561743461287505920".to_string(),
         statement: inner,
     };
 
     let req = WitnessReq {
-        proof: Proofs::Twitter(proof),
+        proof: Proofs::TwitterVerification(proof),
     };
 
     client.jwt(req).await.unwrap();
@@ -265,12 +265,12 @@ async fn main() {
 
     let did = test_solana_did();
     let did2 = test_solana_did_2();
-    let inner = statement::same::Same {
+    let inner = statement::same_controller_assertion::SameControllerAssertion {
         id1: did,
         id2: did2,
     };
 
-    let opts = Statements::Same(inner.clone());
+    let opts = Statements::SameControllerAssertion(inner.clone());
 
     let statement = opts.generate_statement().unwrap();
 
@@ -278,14 +278,14 @@ async fn main() {
 
     println!("Self Signed Statement valid...");
 
-    let proof = proof::same::Same {
+    let proof = proof::same_controller_assertion::SameControllerAssertion {
         statement: inner,
         signature1: TEST_2KEY_SOLANA_SIG_1.to_owned(),
         signature2: TEST_2KEY_SOLANA_SIG_2.to_owned(),
     };
 
     let req = WitnessReq {
-        proof: Proofs::Same(proof),
+        proof: Proofs::SameControllerAssertion(proof),
     };
 
     client.jwt(req).await.unwrap();

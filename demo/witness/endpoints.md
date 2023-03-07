@@ -205,18 +205,18 @@ With `ProofTypes` being a sum type:
 ```typescript
 type ProofTypes =
         | DnsStmt
-        | EmailProof
-        | GitHubProof
+        | EmailVerificationProof
+        | GitHubVerificationProof
         | RedditStmt
-        | SameProof
+        | SameControllerAssertionProof
         | SoundCloudStmt
-        | TwitterProof;
+        | TwitterVerificationProof;
 ```
 (NOTE: `DnsStmt`, `RedditStmt`, and `SoundCloudStmt` are used for both the statement route and the witness route)
 
 The proofs that contain new information look like:
 ```typescript
-interface EmailProof {
+interface EmailVerificationProof {
     email: {
         auth: string;
         signature: string;
@@ -225,14 +225,14 @@ interface EmailProof {
     };
 }
 
-interface GitHubProof {
+interface GitHubVerificationProof {
     github: {
         gist_id: string;
         statement: GitHubStmt;
     };
 }
 
-interface SameProof {
+interface SameControllerAssertionProof {
     same: {
         signature1: string;
         signature2: string;
@@ -240,7 +240,7 @@ interface SameProof {
     };
 }
 
-interface TwitterProof {
+interface TwitterVerificationProof {
     twitter: {
         statement: TwitterStmt;
         tweet_url: string;
