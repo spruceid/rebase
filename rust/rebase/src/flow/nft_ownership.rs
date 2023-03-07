@@ -22,6 +22,7 @@ use url::Url;
 #[derive(Clone, Deserialize, Serialize)]
 pub struct NftOwnership {
     api_key: String,
+    challenge_delimiter: String,
     // The amount of time that can pass before the witness
     // wants a new flow initiated. In demo, set to 15 mins.
     // This is checked for a negative value or 0 and errs if one is found
@@ -37,13 +38,9 @@ pub struct PageResult {
 }
 
 impl NftOwnership {
-    // NOTE: This method would be vulnerable to someone foward-dating signatures.
-    // It likely wouldn't occur, but could be mitigated by doing a Challenge { challenge: string, timestamp: string}
-    // and attaching it to FlowResponse with a challenge: Option<Challenge> field.
-    // Then, we generate the TS here, like in email, but send it back over the wire as part of the statement.
-    // That said, there's no motivation for commiting that style of attack in the current NFT gating demo situation.
-    // NOTE: People with clocks that are off might mess this up too.
-    // TODO: When moving to post-demo impl, rework this to use the above strategy
+    // This makes sure the timestamps the client supplies make sense and are
+    // with in the limits of configured expration and that the max elapsed
+    // minutes are greater than 0.
     pub fn sanity_check(&self, timestamp: &str) -> Result<(), FlowError> {
         if self.max_elapsed_minutes <= 0 {
             return Err(FlowError::Validation(
@@ -118,7 +115,7 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
     async fn statement<I: Issuer>(
         &self,
         stmt: &Stmt,
-        _issuer: &I,
+        issuer: &I,
     ) -> Result<FlowResponse, FlowError> {
         self.sanity_check(&stmt.issued_at)?;
 
@@ -132,14 +129,26 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
             }
         }
 
+        let s = stmt.generate_statement()?;
+
+        // The witness takes the statement which is bound to a specific time by the "issued_at"
+        // timestamp, places the challenge delimiter in the middle, then adds their own version
+        // of the challenge. This ensures that the expected address is the one making this
+        // request and this request isn't being replayed from an interaction older than the
+        // max_elapsed_minutes.
         Ok(FlowResponse {
-            statement: stmt.generate_statement()?,
+            statement: format!(
+                "{}{}{}",
+                s,
+                self.challenge_delimiter,
+                issuer.sign(&s).await?
+            ),
             delimiter: None,
         })
     }
 
     // TODO: Change this whole flow so URL gets generated in process_page.
-    async fn validate_proof<I: Issuer>(&self, proof: &Prf, _issuer: &I) -> Result<Ctnt, FlowError> {
+    async fn validate_proof<I: Issuer>(&self, proof: &Prf, issuer: &I) -> Result<Ctnt, FlowError> {
         self.sanity_check(&proof.statement.issued_at)?;
 
         let base = format!(
@@ -190,7 +199,19 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnership {
         proof
             .statement
             .subject
-            .valid_signature(&s, &proof.signature)
+            .valid_signature(
+                // Because the timestamp is within the expected bounds, the witness
+                // then can recreate the statement by recreating the challenge.
+                // This is not vulnerable to replay attacks after the
+                // max_elapsed_minutes has elapsed.
+                &format!(
+                    "{}{}{}",
+                    s,
+                    &self.challenge_delimiter,
+                    issuer.sign(&s).await?
+                ),
+                &proof.signature,
+            )
             .await?;
 
         Ok(proof.to_content(&s, &proof.signature)?)

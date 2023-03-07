@@ -9,7 +9,7 @@ const jwtUrl = `${witnessUrl}/witness`;
 
 export const client = new Client(instructionsUrl, statementUrl, jwtUrl);
 
-export function needsDelimitor(c: CredentialType): boolean {
+export function needsDelimiter(c: CredentialType): boolean {
     switch (c) {
         case "github": 
         case "twitter":
