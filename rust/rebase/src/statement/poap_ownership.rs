@@ -3,6 +3,7 @@ use crate::types::{
     enums::subject::Subjects,
     error::StatementError,
 };
+use chrono::DateTime;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -16,7 +17,9 @@ pub struct PoapOwnership {
 
 impl Statement for PoapOwnership {
     fn generate_statement(&self) -> Result<String, StatementError> {
-        // TODO: Parse issued_at for valid date.
+        DateTime::parse_from_rfc3339(&self.issued_at)
+            .map_err(|e| StatementError::Statement(format!("failed to parse issued_at: {}", e)))?;
+
         Ok(format!(
             "The {} {} has a POAP for event id {} at time of {}",
             self.subject.statement_title()?,

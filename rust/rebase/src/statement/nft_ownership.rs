@@ -1,32 +1,33 @@
 use crate::types::{
-    defs::{Statement, Subject},
+    defs::{AlchemyNetworks, Statement, Subject},
     enums::subject::Subjects,
     error::StatementError,
 };
+use chrono::DateTime;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 // TODO: Change this to an enum of possible chains / details.
-// Will match an Alchemy specific instance of NftOwnership
-// As SendGrid is to Email.
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
 #[serde(rename = "statement")]
-pub struct NftOwnership {
+pub struct AlchemyStatement {
     pub contract_address: String,
     pub subject: Subjects,
-    pub network: String,
+    pub network: AlchemyNetworks,
     pub issued_at: String,
 }
 
-impl Statement for NftOwnership {
+impl Statement for AlchemyStatement {
     fn generate_statement(&self) -> Result<String, StatementError> {
-        // TODO: Parse issued_at for valid date.
+        DateTime::parse_from_rfc3339(&self.issued_at)
+            .map_err(|e| StatementError::Statement(format!("failed to parse issued_at: {}", e)))?;
+
         Ok(format!(
             "The {} {} owns an asset from the contract {} on the network {} at time of {}",
             self.subject.statement_title()?,
             self.subject.display_id()?,
             self.contract_address,
-            self.network,
+            self.network.to_string(),
             self.issued_at,
         ))
     }
