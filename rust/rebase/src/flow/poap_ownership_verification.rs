@@ -1,7 +1,7 @@
 use crate::{
-    content::poap_ownership_verification::PoapOwnershipVerification as Ctnt,
-    proof::poap_ownership_verification::PoapOwnershipVerification as Prf,
-    statement::poap_ownership_verification::PoapOwnershipVerification as Stmt,
+    content::poap_ownership_verification::PoapOwnershipVerificationContent as Ctnt,
+    proof::poap_ownership_verification::PoapOwnershipVerificationProof as Prf,
+    statement::poap_ownership_verification::PoapOwnershipVerificationStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         enums::subject::{Pkh, Subjects},
@@ -17,9 +17,11 @@ use reqwest::{
 };
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use url::Url;
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct PoapOwnershipVerificationFlow {
     api_key: String,
     challenge_delimiter: String,

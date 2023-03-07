@@ -18,6 +18,7 @@ use ssi::{
 
 use serde::{Deserialize, Serialize};
 
+// TODO: Add a TS type for JWK then this?
 #[derive(Clone, Deserialize, Serialize)]
 pub struct DidWebJwk {
     pub did: String,

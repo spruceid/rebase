@@ -5,10 +5,12 @@ use hex;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use ssi::jwk::Base64urlUInt;
+use ts_rs::TS;
 use url::Url;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
 #[serde(rename = "did_web")]
+#[ts(export, rename = "DidWeb")]
 pub struct DidWeb {
     pub did: String,
     pub key_name: String,

@@ -2,15 +2,17 @@ use crate::types::{defs::Content, error::ContentError};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
+use ts_rs::TS;
 
-#[derive(Deserialize, Serialize)]
-pub struct BasicPost {
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
+pub struct BasicPostContent {
     pub title: String,
     pub body: String,
     pub subject_id: String,
 }
 
-impl Content for BasicPost {
+impl Content for BasicPostContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",

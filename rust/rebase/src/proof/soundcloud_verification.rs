@@ -1,6 +1,6 @@
 use crate::{
-    content::soundcloud_verification::SoundCloudVerification as Ctnt,
-    statement::soundcloud_verification::SoundCloudVerification as Stmt,
+    content::soundcloud_verification::SoundCloudVerificationContent as Ctnt,
+    statement::soundcloud_verification::SoundCloudVerificationStatement as Stmt,
     types::{defs::Proof, error::ProofError},
 };
 

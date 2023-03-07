@@ -1,6 +1,6 @@
 use crate::{
-    content::dns_verification::DnsVerification as Ctnt,
-    statement::dns_verification::DnsVerification as Stmt, types::defs::Proof,
+    content::dns_verification::DnsVerificationContent as Ctnt,
+    statement::dns_verification::DnsVerificationStatement as Stmt, types::defs::Proof,
     types::error::ProofError,
 };
 

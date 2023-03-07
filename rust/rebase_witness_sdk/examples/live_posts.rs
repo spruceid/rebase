@@ -45,7 +45,7 @@ async fn main() {
     println!("Testing DNS...");
     let did = test_eth_did();
 
-    let inner = statement::dns_verification::DnsVerification {
+    let inner = statement::dns_verification::DnsVerificationStatement {
         domain: "tzprofiles.dev".to_owned(),
         prefix: "rebase_sig=".to_owned(),
         subject: did,
@@ -69,7 +69,7 @@ async fn main() {
 
     println!("Tesing GitHub...");
     let did = test_eth_did();
-    let inner = statement::github_verification::GitHubVerification {
+    let inner = statement::github_verification::GitHubVerificationStatement {
         handle: "krhoda".to_string(),
         subject: did,
     };
@@ -82,7 +82,7 @@ async fn main() {
 
     println!("GitHub statement valid...");
 
-    let proof = proof::github_verification::GitHubVerification {
+    let proof = proof::github_verification::GitHubVerificationProof {
         gist_id: "28fb83438a26e70350ef3195d999882d".to_string(),
         statement: inner,
     };
@@ -97,7 +97,7 @@ async fn main() {
 
     println!("Testing Reddit...");
     let did = test_eth_did();
-    let inner = statement::reddit_verification::RedditVerification {
+    let inner = statement::reddit_verification::RedditVerificationStatement {
         handle: "eval-apply-quote".to_string(),
         subject: did,
     };
@@ -120,7 +120,7 @@ async fn main() {
 
     println!("Testing SoundCloud...");
     let did = test_eth_did();
-    let inner = statement::soundcloud_verification::SoundCloudVerification {
+    let inner = statement::soundcloud_verification::SoundCloudVerificationStatement {
         permalink: "spruce-systems-dev".to_string(),
         subject: did,
     };
@@ -144,7 +144,7 @@ async fn main() {
     println!("Testing Twitter...");
 
     let did = test_eth_did();
-    let inner = statement::twitter_verification::TwitterVerification {
+    let inner = statement::twitter_verification::TwitterVerificationStatement {
         handle: "evalapplyquote".to_string(),
         subject: did,
     };
@@ -157,7 +157,7 @@ async fn main() {
 
     println!("Twitter statement valid...");
 
-    let proof = proof::twitter_verification::TwitterVerification {
+    let proof = proof::twitter_verification::TwitterVerificationProof {
         tweet_url: "https://twitter.com/evalapplyquote/status/1542901885815820288".to_string(),
         statement: inner,
     };
@@ -175,7 +175,7 @@ async fn main() {
     let did = test_eth_did();
     let did2 = test_eth_did_2();
 
-    let inner = statement::same_controller_assertion::SameControllerAssertion {
+    let inner = statement::same_controller_assertion::SameControllerAssertionStatement {
         id1: did,
         id2: did2,
     };
@@ -188,7 +188,7 @@ async fn main() {
 
     println!("Self Signed Statement valid...");
 
-    let proof = proof::same_controller_assertion::SameControllerAssertion {
+    let proof = proof::same_controller_assertion::SameControllerAssertionProof {
         statement: inner,
         signature1: TEST_2KEY_ETH_SIG_1.to_owned(),
         signature2: TEST_2KEY_ETH_SIG_2.to_owned(),
@@ -207,7 +207,7 @@ async fn main() {
     println!("NOTE: Does not test DNS, Reddit, or Soundcloud flows");
     println!("Testing GitHub...");
     let did = test_solana_did();
-    let inner = statement::github_verification::GitHubVerification {
+    let inner = statement::github_verification::GitHubVerificationStatement {
         handle: "krhoda".to_string(),
         subject: did,
     };
@@ -220,7 +220,7 @@ async fn main() {
 
     println!("GitHub statement valid...");
 
-    let proof = proof::github_verification::GitHubVerification {
+    let proof = proof::github_verification::GitHubVerificationProof {
         gist_id: "b300fd41272159662bccf9702c0a66fd".to_string(),
         statement: inner,
     };
@@ -235,7 +235,7 @@ async fn main() {
     println!("Testing Twitter...");
 
     let did = test_solana_did();
-    let inner = statement::twitter_verification::TwitterVerification {
+    let inner = statement::twitter_verification::TwitterVerificationStatement {
         handle: "evalapplyquote".to_string(),
         subject: did,
     };
@@ -248,7 +248,7 @@ async fn main() {
 
     println!("Twitter statement valid...");
 
-    let proof = proof::twitter_verification::TwitterVerification {
+    let proof = proof::twitter_verification::TwitterVerificationProof {
         tweet_url: "https://twitter.com/evalapplyquote/status/1561743461287505920".to_string(),
         statement: inner,
     };
@@ -265,7 +265,7 @@ async fn main() {
 
     let did = test_solana_did();
     let did2 = test_solana_did_2();
-    let inner = statement::same_controller_assertion::SameControllerAssertion {
+    let inner = statement::same_controller_assertion::SameControllerAssertionStatement {
         id1: did,
         id2: did2,
     };
@@ -278,7 +278,7 @@ async fn main() {
 
     println!("Self Signed Statement valid...");
 
-    let proof = proof::same_controller_assertion::SameControllerAssertion {
+    let proof = proof::same_controller_assertion::SameControllerAssertionProof {
         statement: inner,
         signature1: TEST_2KEY_SOLANA_SIG_1.to_owned(),
         signature2: TEST_2KEY_SOLANA_SIG_2.to_owned(),

@@ -1,7 +1,7 @@
 use crate::{
-    content::github_verification::GitHubVerification as Ctnt,
-    proof::github_verification::GitHubVerification as Prf,
-    statement::github_verification::GitHubVerification as Stmt,
+    content::github_verification::GitHubVerificationContent as Ctnt,
+    proof::github_verification::GitHubVerificationProof as Prf,
+    statement::github_verification::GitHubVerificationStatement as Stmt,
     types::{
         error::FlowError,
         defs::{Flow, FlowResponse, Issuer, Proof, Statement, Subject, Instructions},
@@ -17,9 +17,11 @@ use reqwest::{
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
 use serde_json::map::Map;
+use ts_rs::TS;
 use url::Url;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct GitHubVerificationFlow {
     pub user_agent: String,
     pub delimiter: String,

@@ -8,9 +8,11 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-pub struct TwitterVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct TwitterVerificationContent {
     pub handle: String,
     pub subject: Subjects,
     pub tweet_url: String,
@@ -18,7 +20,7 @@ pub struct TwitterVerification {
     pub signature: String,
 }
 
-impl Content for TwitterVerification {
+impl Content for TwitterVerificationContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",

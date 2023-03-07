@@ -5,15 +5,16 @@ use crate::types::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "statement")]
-pub struct SoundCloudVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct SoundCloudVerificationStatement {
     pub permalink: String,
     pub subject: Subjects,
 }
 
-impl Statement for SoundCloudVerification {
+impl Statement for SoundCloudVerificationStatement {
     fn generate_statement(&self) -> Result<String, StatementError> {
         Ok(format!(
             "I am attesting that this SoundCloud profile https://soundcloud.com/{} is linked to the {} {}",

@@ -5,16 +5,17 @@ use crate::types::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "statement")]
-pub struct DnsVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct DnsVerificationStatement {
     pub domain: String,
     pub prefix: String,
     pub subject: Subjects,
 }
 
-impl Statement for DnsVerification {
+impl Statement for DnsVerificationStatement {
     fn generate_statement(&self) -> Result<String, StatementError> {
         Ok(format!(
             "{} is linked to {}",

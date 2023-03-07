@@ -5,15 +5,16 @@ use crate::types::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "statement")]
-pub struct SameControllerAssertion {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct SameControllerAssertionStatement {
     pub id1: Subjects,
     pub id2: Subjects,
 }
 
-impl Statement for SameControllerAssertion {
+impl Statement for SameControllerAssertionStatement {
     fn generate_statement(&self) -> Result<String, StatementError> {
         Ok(format!(
             "I am attesting that {} {} is linked to {} {}",

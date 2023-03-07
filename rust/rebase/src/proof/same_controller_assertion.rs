@@ -1,6 +1,6 @@
 use crate::{
-    content::same_controller_assertion::SameControllerAssertion as Ctnt,
-    statement::same_controller_assertion::SameControllerAssertion as Stmt,
+    content::same_controller_assertion::SameControllerAssertionContent as Ctnt,
+    statement::same_controller_assertion::SameControllerAssertionStatement as Stmt,
     types::{
         defs::{Proof, Statement},
         error::{ProofError, StatementError},
@@ -8,22 +8,23 @@ use crate::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "proof")]
-pub struct SameControllerAssertion {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct SameControllerAssertionProof {
     pub statement: Stmt,
     pub signature1: String,
     pub signature2: String,
 }
 
-impl Statement for SameControllerAssertion {
+impl Statement for SameControllerAssertionProof {
     fn generate_statement(&self) -> Result<String, StatementError> {
         self.statement.generate_statement()
     }
 }
 
-impl Proof<Ctnt> for SameControllerAssertion {
+impl Proof<Ctnt> for SameControllerAssertionProof {
     fn to_content(&self, _statement: &str, _signature: &str) -> Result<Ctnt, ProofError> {
         Ok(Ctnt {
             id1: self.statement.id1.clone(),

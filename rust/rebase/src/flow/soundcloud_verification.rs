@@ -1,6 +1,6 @@
 use crate::{
-    content::soundcloud_verification::SoundCloudVerification as Ctnt,
-    statement::soundcloud_verification::SoundCloudVerification as Stmt,
+    content::soundcloud_verification::SoundCloudVerificationContent as Ctnt,
+    statement::soundcloud_verification::SoundCloudVerificationStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
@@ -11,9 +11,11 @@ use async_trait::async_trait;
 use reqwest::Client;
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use url::Url;
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct SoundCloudVerificationFlow {
     pub client_id: String,
     // Must be less than 200

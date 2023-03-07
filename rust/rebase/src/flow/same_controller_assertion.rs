@@ -1,7 +1,7 @@
 use crate::{
-    content::same_controller_assertion::SameControllerAssertion as Ctnt,
-    proof::same_controller_assertion::SameControllerAssertion as Prf,
-    statement::same_controller_assertion::SameControllerAssertion as Stmt,
+    content::same_controller_assertion::SameControllerAssertionContent as Ctnt,
+    proof::same_controller_assertion::SameControllerAssertionProof as Prf,
+    statement::same_controller_assertion::SameControllerAssertionStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
@@ -11,8 +11,9 @@ use crate::{
 use async_trait::async_trait;
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
 pub struct SameControllerAssertionFlow {}
 
 #[async_trait(?Send)]

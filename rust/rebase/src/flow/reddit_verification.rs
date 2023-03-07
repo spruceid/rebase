@@ -1,15 +1,19 @@
 use crate::{
-    content::reddit_verification::RedditVerification as Ctnt,
-    statement::reddit_verification::RedditVerification as Stmt,
+    content::reddit_verification::RedditVerificationContent as Ctnt,
+    statement::reddit_verification::RedditVerificationStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         error::FlowError,
     },
 };
 use async_trait::async_trait;
-use reqwest::Client;
+use reqwest::{
+    header::{HeaderMap, USER_AGENT},
+    Client,
+};
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use url::Url;
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -27,8 +31,11 @@ pub struct AboutSubreddit {
     pub public_description: String,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
-pub struct RedditVerificationFlow {}
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
+pub struct RedditVerificationFlow {
+    pub user_agent: String,
+}
 
 #[async_trait(?Send)]
 impl Flow<Ctnt, Stmt, Stmt> for RedditVerificationFlow {
@@ -60,6 +67,13 @@ impl Flow<Ctnt, Stmt, Stmt> for RedditVerificationFlow {
     ) -> Result<Ctnt, FlowError> {
         let u = format!("https:/www.reddit.com/user/{}/about/.json", proof.handle);
         let client = Client::new();
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            USER_AGENT,
+            self.user_agent.to_string().parse().map_err(|_| {
+                FlowError::BadLookup("could not generate header for lookup".to_string())
+            })?,
+        );
 
         let res: AboutWrapper = client
             .get(Url::parse(&u).map_err(|e| {
@@ -68,6 +82,7 @@ impl Flow<Ctnt, Stmt, Stmt> for RedditVerificationFlow {
                     u, e
                 ))
             })?)
+            .headers(headers)
             .send()
             .await
             .map_err(|e| FlowError::BadLookup(e.to_string()))?

@@ -1,19 +1,18 @@
 pub use rebase::issuer;
 use rebase::{
     content::{
-        dns_verification::DnsVerification as DnsVerificationCtnt,
-        email_verification::EmailVerification as EmailVerificationCtnt,
-        github_verification::GitHubVerification as GitHubVerificationCtnt,
-        nft_ownership_verification::NftOwnershipVerification as NftOwnershipVerificationCtnt,
-        poap_ownership_verification::PoapOwnershipVerification as PoapOwnershipVerificationCtnt,
-        reddit_verification::RedditVerification as RedditVerificationCtnt,
-        same_controller_assertion::SameControllerAssertion as SameControllerAssertionCtnt,
-        soundcloud_verification::SoundCloudVerification as SoundCloudVerificationCtnt,
-        twitter_verification::TwitterVerification as TwitterVerificationCtnt,
+        dns_verification::DnsVerificationContent, email_verification::EmailVerificationContent,
+        github_verification::GitHubVerificationContent,
+        nft_ownership_verification::NftOwnershipVerificationContent,
+        poap_ownership_verification::PoapOwnershipVerificationContent,
+        reddit_verification::RedditVerificationContent,
+        same_controller_assertion::SameControllerAssertionContent,
+        soundcloud_verification::SoundCloudVerificationContent,
+        twitter_verification::TwitterVerificationContent,
     },
     flow::{
         dns_verification::DnsVerificationFlow,
-        email_verification::SendGridBasic as EmailVerificationFlow,
+        email_verification::SendGridBasicFlow as EmailVerificationFlow,
         github_verification::GitHubVerificationFlow,
         nft_ownership_verification::NftOwnershipVerificationFlow,
         poap_ownership_verification::PoapOwnershipVerificationFlow,
@@ -23,23 +22,21 @@ use rebase::{
         twitter_verification::TwitterVerificationFlow,
     },
     proof::{
-        email_verification::EmailVerification as EmailVerificationProof,
-        github_verification::GitHubVerification as GitHubVerificationProof,
-        nft_ownership_verification::NftOwnershipVerification as NftOwnershipVerificationProof,
-        poap_ownership_verification::PoapOwnershipVerification as PoapOwnershipVerificationProof,
-        same_controller_assertion::SameControllerAssertion as SameControllerAssertionProof,
-        twitter_verification::TwitterVerification as TwitterVerificationProof,
+        email_verification::EmailVerificationProof, github_verification::GitHubVerificationProof,
+        nft_ownership_verification::NftOwnershipVerificationProof,
+        poap_ownership_verification::PoapOwnershipVerificationProof,
+        same_controller_assertion::SameControllerAssertionProof,
+        twitter_verification::TwitterVerificationProof,
     },
     statement::{
-        dns_verification::DnsVerification as DnsStmt,
-        email_verification::EmailVerification as EmailStmt,
-        github_verification::GitHubVerification as GitHubStmt,
-        nft_ownership_verification::NftOwnershipVerification as NftOwnershipStmt,
-        poap_ownership_verification::PoapOwnershipVerification as PoapOwnershipStmt,
-        reddit_verification::RedditVerification as RedditStmt,
-        same_controller_assertion::SameControllerAssertion as SameStmt,
-        soundcloud_verification::SoundCloudVerification as SoundCloudStmt,
-        twitter_verification::TwitterVerification as TwitterStmt,
+        dns_verification::DnsVerificationStatement, email_verification::EmailVerificationStatement,
+        github_verification::GitHubVerificationStatement,
+        nft_ownership_verification::NftOwnershipVerificationStatement,
+        poap_ownership_verification::PoapOwnershipVerificationStatement,
+        reddit_verification::RedditVerificationStatement,
+        same_controller_assertion::SameControllerAssertionStatement,
+        soundcloud_verification::SoundCloudVerificationStatement,
+        twitter_verification::TwitterVerificationStatement,
     },
     types::{
         defs::{
@@ -53,8 +50,10 @@ use rebase::{
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
 pub enum InstructionsType {
     DnsVerification,
     EmailVerification,
@@ -67,17 +66,18 @@ pub enum InstructionsType {
     TwitterVerification,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
 pub enum Contents {
-    DnsVerification(DnsVerificationCtnt),
-    EmailVerification(EmailVerificationCtnt),
-    GitHubVerification(GitHubVerificationCtnt),
-    NftOwnershipVerification(NftOwnershipVerificationCtnt),
-    PoapOwnershipVerification(PoapOwnershipVerificationCtnt),
-    RedditVerification(RedditVerificationCtnt),
-    SameControllerAssertion(SameControllerAssertionCtnt),
-    SoundCloudVerification(SoundCloudVerificationCtnt),
-    TwitterVerification(TwitterVerificationCtnt),
+    DnsVerification(DnsVerificationContent),
+    EmailVerification(EmailVerificationContent),
+    GitHubVerification(GitHubVerificationContent),
+    NftOwnershipVerification(NftOwnershipVerificationContent),
+    PoapOwnershipVerification(PoapOwnershipVerificationContent),
+    RedditVerification(RedditVerificationContent),
+    SameControllerAssertion(SameControllerAssertionContent),
+    SoundCloudVerification(SoundCloudVerificationContent),
+    TwitterVerification(TwitterVerificationContent),
 }
 
 #[async_trait(?Send)]
@@ -139,20 +139,21 @@ impl Content for Contents {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
 #[serde(rename = "opts")]
+#[ts(export, rename = "Statements")]
 pub enum Statements {
-    DnsVerification(DnsStmt),
-    EmailVerification(EmailStmt),
-    GitHubVerification(GitHubStmt),
+    DnsVerification(DnsVerificationStatement),
+    EmailVerification(EmailVerificationStatement),
+    GitHubVerification(GitHubVerificationStatement),
     // NOTE: If adding non-alchemy providers, this will need to change
     // to an enum.
-    NftOwnershipVerification(NftOwnershipStmt),
-    PoapOwnershipVerification(PoapOwnershipStmt),
-    RedditVerification(RedditStmt),
-    SameControllerAssertion(SameStmt),
-    SoundCloudVerification(SoundCloudStmt),
-    TwitterVerification(TwitterStmt),
+    NftOwnershipVerification(NftOwnershipVerificationStatement),
+    PoapOwnershipVerification(PoapOwnershipVerificationStatement),
+    RedditVerification(RedditVerificationStatement),
+    SameControllerAssertion(SameControllerAssertionStatement),
+    SoundCloudVerification(SoundCloudVerificationStatement),
+    TwitterVerification(TwitterVerificationStatement),
 }
 
 impl Statement for Statements {
@@ -171,19 +172,20 @@ impl Statement for Statements {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
 #[serde(rename = "proof")]
+#[ts(export, rename = "Proofs")]
 pub enum Proofs {
-    DnsVerification(DnsStmt),
+    DnsVerification(DnsVerificationStatement),
     EmailVerification(EmailVerificationProof),
     GitHubVerification(GitHubVerificationProof),
     // NOTE: If adding non-alchemy providers, this will need to change
     // to an enum.
     NftOwnershipVerification(NftOwnershipVerificationProof),
     PoapOwnershipVerification(PoapOwnershipVerificationProof),
-    RedditVerification(RedditStmt),
+    RedditVerification(RedditVerificationStatement),
     SameControllerAssertion(SameControllerAssertionProof),
-    SoundCloudVerification(SoundCloudStmt),
+    SoundCloudVerification(SoundCloudVerificationStatement),
     TwitterVerification(TwitterVerificationProof),
 }
 
@@ -400,31 +402,37 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
         }
     }
 }
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct InstructionsReq {
     #[serde(rename = "type")]
     pub instruction_type: InstructionsType,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct StatementReq {
     // TODO: Change name?
     pub opts: Statements,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct WitnessReq {
     pub proof: Proofs,
 }
 
 // TODO: Refactor the base names of the structs?
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct WitnessJWTRes {
     pub jwt: String,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct WitnessLDRes {
+    #[ts(type = "object")]
     pub credential: Credential,
 }
 
@@ -433,7 +441,8 @@ pub struct WitnessLDRes {
 pub type VerifyJWTReq = WitnessJWTRes;
 pub type VerifyLDReq = WitnessLDRes;
 
-#[derive(Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct VerifyRes {
     pub success: bool,
 }

@@ -1,7 +1,7 @@
 use crate::{
-    content::nft_ownership_verification::NftOwnershipVerification as Ctnt,
-    proof::nft_ownership_verification::NftOwnershipVerification as Prf,
-    statement::nft_ownership_verification::NftOwnershipVerification as Stmt,
+    content::nft_ownership_verification::NftOwnershipVerificationContent as Ctnt,
+    proof::nft_ownership_verification::NftOwnershipVerificationProof as Prf,
+    statement::nft_ownership_verification::NftOwnershipVerificationStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         enums::subject::{Pkh, Subjects},
@@ -14,9 +14,11 @@ use chrono::{DateTime, Duration, Utc};
 use reqwest::Client;
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use url::Url;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, TS)]
+#[ts(export)]
 #[serde(untagged)]
 // NOTE: If adding other providers change `untagged` to something else.
 // NOTE: The above change would be a breaking change.
@@ -51,7 +53,8 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnershipVerificationFlow {
 
 // TODO: Make Alchemy variant be configurable by chain + per-chain configs.
 // NOTE: For now, this is just a wrapper around the alchemy API.
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
 pub struct Alchemy {
     api_key: String,
     challenge_delimiter: String,

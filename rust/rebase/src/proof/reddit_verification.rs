@@ -1,6 +1,6 @@
 use crate::{
-    content::reddit_verification::RedditVerification as Ctnt,
-    statement::reddit_verification::RedditVerification as Stmt,
+    content::reddit_verification::RedditVerificationContent as Ctnt,
+    statement::reddit_verification::RedditVerificationStatement as Stmt,
     types::{defs::Proof, error::ProofError},
 };
 

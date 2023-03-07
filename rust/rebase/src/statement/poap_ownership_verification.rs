@@ -6,10 +6,11 @@ use crate::types::{
 use chrono::DateTime;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "statement")]
-pub struct PoapOwnershipVerification {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct PoapOwnershipVerificationStatement {
     // NOTE: This should ideally be a u64
     // i64 is being used because it comes out
     // correctly in the JSON Schema
@@ -23,7 +24,7 @@ pub struct PoapOwnershipVerification {
     pub subject: Subjects,
 }
 
-impl Statement for PoapOwnershipVerification {
+impl Statement for PoapOwnershipVerificationStatement {
     fn generate_statement(&self) -> Result<String, StatementError> {
         DateTime::parse_from_rfc3339(&self.issued_at)
             .map_err(|e| StatementError::Statement(format!("failed to parse issued_at: {}", e)))?;

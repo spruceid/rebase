@@ -4,9 +4,11 @@ use crate::types::{defs::Subject, error::SubjectError};
 use async_trait::async_trait;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
 #[serde(rename = "subject")]
+#[ts(export, rename = "Subjects")]
 pub enum Subjects {
     #[serde(rename = "pkh")]
     Pkh(Pkh),
@@ -14,8 +16,9 @@ pub enum Subjects {
     Web(Web),
 }
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
 #[serde(rename = "pkh")]
+#[ts(export, rename = "Pkh")]
 pub enum Pkh {
     #[serde(rename = "eip155")]
     Eip155(Eip155),
@@ -23,8 +26,9 @@ pub enum Pkh {
     Solana(Solana),
 }
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
 #[serde(rename = "web")]
+#[ts(export, rename = "Web")]
 pub enum Web {
     #[serde(rename = "ed25519")]
     Ed25519(Ed25519),

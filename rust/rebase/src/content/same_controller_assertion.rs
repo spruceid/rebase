@@ -7,10 +7,11 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
+use ts_rs::TS;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize)]
-#[serde(rename = "same")]
-pub struct SameControllerAssertion {
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub struct SameControllerAssertionContent {
     pub id1: Subjects,
     pub id2: Subjects,
     pub statement: String,
@@ -18,7 +19,7 @@ pub struct SameControllerAssertion {
     pub signature2: String,
 }
 
-impl Content for SameControllerAssertion {
+impl Content for SameControllerAssertionContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
