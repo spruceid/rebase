@@ -63,13 +63,18 @@ const ICONS = {
     soundcloud: SoundCloudIcon,
 };
 
-export const titleCase = (s) => {
-    if(s === 'github'){
-        return 'GitHub';
-    } else if (s == 'soundcloud'){
-        return 'SoundCloud';
-    } else {
-        return s.charAt(0).toUpperCase() + s.slice(1);
+export const titleCase = (s: CredentialType): string => {
+    switch (s) {
+        case "github":
+            return 'GitHub';
+        case "soundcloud":
+            return 'SoundCloud';
+        case "nft_ownership":
+            return "NFT Ownership";
+        case "poap_ownership": 
+            return "POAP Ownership";
+        default: 
+            return s.charAt(0).toUpperCase() + s.slice(1);
     }
 }
 
@@ -87,6 +92,25 @@ function witness_info(t: CredentialType): WitnessInfo {
     let statement_label = "Enter Account Handle";
     let statement_placeholder =  `Enter your ${titleCase(t)} handle`;
     switch (t) {
+        case "poap_ownership": 
+            return {
+                statement: "Please enter the event id of the POAP you wish to attest ownership of",
+                statement_label: "Enter the POAP's event ID",
+                statement_placeholder: `Enter the event ID`,
+                witness: "Present your signed attestation to the witness",
+                witness_label: "The witness will verify you own an POAP from the event you supplied",
+                witness_placeholder: "N/A",
+            }
+        case "nft_ownership": 
+            return {
+                statement: "Please enter the contract address of the NFT collection, for example, the ENS contract is 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85",
+                statement_label: "Enter the NFT collection's contract address",
+                statement_placeholder: `Enter the contract address`,
+                witness: "Present your signed attestation to the witness",
+                witness_label: "The witness will verify you own an NFT from the contract you supplied",
+                witness_placeholder: "N/A",
+            }
+        
         case "github":
             return {
                 statement,
@@ -140,6 +164,21 @@ export const instructions = async (t: CredentialType): Promise<Instructions> => 
     let {statement, statement_label, statement_placeholder, witness, witness_label, witness_placeholder} = witness_info(t);
     switch (t) {
         // case "discord":
+        case "nft_ownership":
+        case "poap_ownership":
+            return {
+                icon: ICONS[t],
+                title: `${titleCase(t)} Verification Workflow`,
+                subtitle: `This process is used verify your key's ${titleCase(t)}.`,
+                statement,
+                statement_label,
+                statement_placeholder,
+                signature: `Sign the message presented to you attesting to your ${titleCase(t)}.`,
+                signature_label: `Signature Prompt`,
+                witness,
+                witness_label,
+                witness_placeholder            
+            }
         case "github":
         case "twitter":
         case "reddit":

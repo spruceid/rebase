@@ -19,6 +19,7 @@
         toQuery,
     } from "src/util";
     import Ajv from "ajv";
+    import addFormats from "ajv-formats";
     import { onDestroy, onMount } from "svelte";
     import { useNavigate } from "svelte-navigator";
     import {
@@ -31,6 +32,11 @@
     import WitnessFormSignature from "./WitnessFormSignature.svelte";
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
+    import { Writable, writable } from "svelte/store";
+
+    // TODO: Make this a drop-down and include polygon?
+    const NFT_NETWORK = "eth-mainnet";
+    const DNS_PREFIX = "rebase_sig=";
 
     let _lookUp = null;
     lookUp.subscribe((x) => (_lookUp = x));
@@ -39,10 +45,10 @@
 
     const navigate = useNavigate();
     const ajv = new Ajv();
+    addFormats(ajv);
 
     let statement_schema = null,
         witness_schema = null;
-    const dnsPrefix = "rebase_sig=";
 
     let verified: boolean = false;
     let loading: boolean = false;
@@ -71,22 +77,40 @@
     export let type: CredentialType;
     export let instructions: Instructions;
 
-    $: statement = "";
-    $: signature = "";
-    $: delimiter = "";
-    $: handle = "";
-    $: proof = "";
+    let statement: Writable<string> = writable("");
+    let _statement: string = "";
+    statement.subscribe((x) => (_statement = x));
+
+    let signature: Writable<string> = writable("");
+    let _signature: string = "";
+    signature.subscribe((x) => (_signature = x));
+
+    let delimiter: Writable<string> = writable("");
+    let _delimiter: string = "";
+    delimiter.subscribe((x) => (_delimiter = x));
+
+    let handle: Writable<string> = writable("");
+    let _handle: string = "";
+    handle.subscribe((x) => (_handle = x));
+
+    let proof: Writable<string> = writable("");
+    let _proof: string = "";
+    proof.subscribe((x) => (_proof = x));
+
+    let issuedAt: Writable<string> = writable("");
+    let _issuedAt: string = "";
+    issuedAt.subscribe((x) => (_issuedAt = x));
 
     const onChangeValue = (name, value) => {
         switch (name) {
             case "handle":
-                handle = value;
+                handle.set(value);
                 break;
             case "signature":
-                signature = value;
+                signature.set(value);
                 break;
             case "proof":
-                proof = value;
+                proof.set(value);
                 break;
             case "verified":
                 verified = value;
@@ -99,13 +123,15 @@
             case "discord":
             case "github":
             case "twitter":
-                return `${statement}${delimiter}${signature}`;
+                return `${_statement}${_delimiter}${_signature}`;
             case "dns":
-                return `${dnsPrefix}${signature}`;
+                return `${DNS_PREFIX}${_signature}`;
             case "soundcloud":
             case "reddit":
-                return `${signature}`;
+                return `${_signature}`;
             case "email":
+            case "nft_ownership":
+            case "poap_ownership":
                 return;
         }
     };
@@ -119,12 +145,17 @@
         } else {
             witnessState.set("signer");
         }
+
         try {
+            console.log("Here?");
             let res = await client.instructions(JSON.stringify({ type }));
             let instruction_res = JSON.parse(res);
+            console.log("Here??");
             statement_schema = instruction_res?.statement_schema;
             witness_schema = instruction_res?.witness_schema;
-        } catch (err) {
+            issuedAt.set(new Date().toISOString());
+        } catch (e) {
+            console.error(e);
             alert.set({
                 message: "Failed to retrieve instructions from witness service",
                 variant: "error",
@@ -177,23 +208,41 @@
 
         switch (type) {
             case "dns":
-                opts[type]["domain"] = handle;
-                opts[type]["prefix"] = dnsPrefix;
+                opts[type]["domain"] = _handle;
+                opts[type]["prefix"] = DNS_PREFIX;
                 opts[type]["subject"] = getSubject(current);
                 break;
             case "github":
             case "twitter":
             case "reddit":
-                opts[type]["handle"] = handle;
+                opts[type]["handle"] = _handle;
                 opts[type]["subject"] = getSubject(current);
                 break;
             case "soundcloud":
                 opts[type]["permalink"] =
-                    handle.split("/")[handle.split("/").length - 1];
+                    _handle.split("/")[_handle.split("/").length - 1];
                 opts[type]["subject"] = getSubject(current);
                 break;
             case "email":
-                opts[type]["email"] = handle;
+                opts[type]["email"] = _handle;
+                opts[type]["subject"] = getSubject(current);
+                break;
+            case "nft_ownership":
+                opts[type]["contract_address"] = _handle;
+                opts[type]["network"] = NFT_NETWORK;
+                opts[type]["issued_at"] = _issuedAt;
+                opts[type]["subject"] = getSubject(current);
+                break;
+            case "poap_ownership":
+                let next_id = parseInt(_handle);
+                if (isNaN(next_id) || !next_id) {
+                    throw new Error(
+                        "Invalid event id, expected a number greater than 0"
+                    );
+                }
+
+                opts[type]["event_id"] = next_id;
+                opts[type]["issued_at"] = _issuedAt;
                 opts[type]["subject"] = getSubject(current);
                 break;
             default:
@@ -221,8 +270,8 @@
                 throw new Error(badRespErr + " missing delimiter");
             }
 
-            statement = body.statement;
-            delimiter = body.delimiter;
+            statement.set(body.statement);
+            delimiter.set(body.delimiter);
         } catch (e) {
             if (e.message === badRespErr) {
                 throw e;
@@ -234,6 +283,7 @@
 
     const getCredential = async (): Promise<void> => {
         let opts = {};
+        opts[type] = {};
 
         let current = retrieveSigner(_signerMap, _lookUp);
         if (!current) {
@@ -242,43 +292,58 @@
 
         switch (type) {
             case "dns":
-                opts["dns"] = {};
-                opts["dns"]["domain"] = handle;
-                opts["dns"]["prefix"] = dnsPrefix;
-                opts["dns"]["subject"] = getSubject(current);
+                opts[type]["domain"] = _handle;
+                opts[type]["prefix"] = DNS_PREFIX;
+                opts[type]["subject"] = getSubject(current);
                 break;
             case "reddit":
-                opts["reddit"] = {};
-                opts["reddit"]["handle"] = handle;
-                opts["reddit"]["subject"] = getSubject(current);
+                opts[type]["handle"] = _handle;
+                opts[type]["subject"] = getSubject(current);
                 break;
             case "soundcloud":
-                opts["soundcloud"] = {};
-                opts["soundcloud"]["permalink"] =
-                    handle.split("/")[handle.split("/").length - 1];
-                opts["soundcloud"]["subject"] = getSubject(current);
+                opts[type]["permalink"] =
+                    _handle.split("/")[_handle.split("/").length - 1];
+                opts[type]["subject"] = getSubject(current);
                 break;
             case "github":
-                opts["github"] = {};
-                opts["github"]["statement"] = {};
-                opts["github"]["statement"]["handle"] = handle;
-                opts["github"]["statement"]["subject"] = getSubject(current);
-                opts["github"]["gist_id"] = proof.split("/").pop();
+                opts[type]["statement"] = {};
+                opts[type]["statement"]["handle"] = _handle;
+                opts[type]["statement"]["subject"] = getSubject(current);
+                opts[type]["gist_id"] = _proof.split("/").pop();
                 break;
             case "twitter":
-                opts["twitter"] = {};
-                opts["twitter"]["statement"] = {};
-                opts["twitter"]["statement"]["handle"] = handle;
-                opts["twitter"]["statement"]["subject"] = getSubject(current);
-                opts["twitter"]["tweet_url"] = proof.split("?")[0];
+                opts[type]["statement"] = {};
+                opts[type]["statement"]["handle"] = _handle;
+                opts[type]["statement"]["subject"] = getSubject(current);
+                opts[type]["tweet_url"] = _proof.split("?")[0];
                 break;
             case "email":
-                opts["email"] = {};
-                opts["email"]["statement"] = {};
-                opts["email"]["statement"]["email"] = handle;
-                opts["email"]["statement"]["subject"] = getSubject(current);
-                opts["email"]["challenge"] = proof.trim();
-                opts["email"]["signature"] = signature;
+                opts[type]["statement"] = {};
+                opts[type]["statement"]["email"] = _handle;
+                opts[type]["statement"]["subject"] = getSubject(current);
+                opts[type]["challenge"] = _proof.trim();
+                opts[type]["signature"] = _signature;
+                break;
+            case "nft_ownership":
+                opts[type]["statement"] = {};
+                opts[type]["statement"]["contract_address"] = _handle;
+                opts[type]["statement"]["network"] = NFT_NETWORK;
+                opts[type]["statement"]["issued_at"] = _issuedAt;
+                opts[type]["statement"]["subject"] = getSubject(current);
+                opts[type]["signature"] = _signature;
+                break;
+            case "poap_ownership":
+                let next_id = parseInt(_handle);
+                if (isNaN(next_id) || !next_id) {
+                    throw new Error(
+                        "Invalid event id, expected a number greater than 0"
+                    );
+                }
+                opts[type]["statement"] = {};
+                opts[type]["statement"]["event_id"] = next_id;
+                opts[type]["statement"]["issued_at"] = _issuedAt;
+                opts[type]["statement"]["subject"] = getSubject(current);
+                opts[type]["signature"] = _signature;
                 break;
             default:
                 throw new Error(`${type} flow is currently unsupported`);
@@ -294,9 +359,10 @@
 
         try {
             let b = JSON.stringify({ proof: opts });
-            let res = await client.jwt(b);
 
+            let res = await client.jwt(b);
             let { jwt } = JSON.parse(res);
+
             setNew(jwt);
         } catch (e) {
             console.error(e);
@@ -312,70 +378,91 @@
     title={instructions.title}
     subtitle={instructions.subtitle}
 />
-{#if state === "signer"}
+
+{#if _lookUp && (type === "nft_ownership" || type === "poap_ownership") && _lookUp?.signerType !== "ethereum"}
     <div class="w-full">
         <div class="flex px-4 text-center">
             <div class="w-full">
-                <h4>Please connect a signer to link</h4>
-                <SignerConnect
-                    primary
-                    class="menu w-full min-w-42 mt-[8px] rounded-xl"
-                    signerCallback={handleNewSigner}
+                <p>Currently this flow only supports Ethereum subjects.</p>
+                <div
+                    class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end"
                 >
-                    Connect signer
-                </SignerConnect>
+                    <Button
+                        class="w-fit  my-[16px]"
+                        onClick={() => navigate("/account#obtained")}
+                        text="Manage Credentials"
+                        action
+                    />
+                </div>
             </div>
         </div>
     </div>
-    <div
-        class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end"
-    >
-        <Button
-            class="w-2/5"
-            disabled={!_lookUp}
-            onClick={advance}
-            text="Next"
-            action
+{:else}
+    {#if state === "signer"}
+        <div class="w-full">
+            <div class="flex px-4 text-center">
+                <div class="w-full">
+                    <h4>Please connect a signer to link</h4>
+                    <SignerConnect
+                        primary
+                        class="menu w-full min-w-42 mt-[8px] rounded-xl"
+                        signerCallback={handleNewSigner}
+                    >
+                        Connect signer
+                    </SignerConnect>
+                </div>
+            </div>
+        </div>
+        <div
+            class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end"
+        >
+            <Button
+                class="w-2/5"
+                disabled={!_lookUp}
+                onClick={advance}
+                text="Next"
+                action
+            />
+        </div>
+    {/if}
+    {#if state === "statement"}
+        <WitnessFormStatement
+            {instructions}
+            {loading}
+            handle={_handle}
+            {onChangeValue}
+            {navigate}
+            {getStatement}
+            {advance}
         />
-    </div>
-{/if}
-{#if state === "statement"}
-    <WitnessFormStatement
-        {instructions}
-        {loading}
-        {handle}
-        {onChangeValue}
-        {navigate}
-        {getStatement}
-        {advance}
-    />
-{/if}
-{#if state === "signature"}
-    <WitnessFormSignature
-        {instructions}
-        {loading}
-        {statement}
-        {signature}
-        {onChangeValue}
-        {sign}
-        {back}
-        {advance}
-    />
-{/if}
-{#if state === "witness"}
-    <WitnessFormWitness
-        {instructions}
-        {loading}
-        {verified}
-        {type}
-        {proof}
-        {onChangeValue}
-        {getCredential}
-        {post}
-        {back}
-        {advance}
-    />
-{/if}
-{#if state === "complete"}
-    <WitnessFormComplete {navigate} />
+    {/if}
+    {#if state === "signature"}
+        <WitnessFormSignature
+            {instructions}
+            {loading}
+            statement={_statement}
+            signature={_signature}
+            {onChangeValue}
+            {sign}
+            {back}
+            {advance}
+        />
+    {/if}
+    {#if state === "witness"}
+        <WitnessFormWitness
+            {instructions}
+            {loading}
+            {verified}
+            {type}
+            proof={_proof}
+            {onChangeValue}
+            {getCredential}
+            {post}
+            {back}
+            {advance}
+        />
+    {/if}
+    {#if state === "complete"}
+        <WitnessFormComplete {navigate} />
+    {/if}
 {/if}

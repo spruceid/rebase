@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
 #[serde(rename = "statement")]
 pub struct PoapOwnership {
-    pub event_id: u64,
+    pub event_id: i64,
     pub issued_at: String,
     pub subject: Subjects,
 }

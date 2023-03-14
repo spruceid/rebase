@@ -7,6 +7,8 @@ export { default as EthereumIcon } from './EthereumIcon.svelte';
 export { default as DiscordIcon } from './DiscordIcon.svelte';
 export { default as SolanaIcon } from './SolanaIcon.svelte';
 export { default as CloseIcon } from './CloseIcon.svelte';
+export { default as ImageIcon } from './ImageIcon.svelte';
+export { default as RibbonIcon } from './RibbonIcon.svelte';
 export { default as DownloadIcon } from './DownloadIcon.svelte';
 export { default as ClipboardIcon } from './ClipboardIcon.svelte';
 export { default as DeleteIcon } from './DeleteIcon.svelte';

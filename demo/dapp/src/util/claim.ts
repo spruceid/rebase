@@ -1,4 +1,5 @@
-import type { DiscordIcon, EmailIcon, EthereumIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon, RedditIcon, SoundCloudIcon } from 'src/components/icons';
+// TODO: Add NFT / POAP icons.
+import type { DiscordIcon, EmailIcon, EthereumIcon, ImageIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon, RedditIcon, RibbonIcon, SoundCloudIcon } from 'src/components/icons';
 import { parseJWT } from './jwt';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
@@ -7,6 +8,8 @@ export type CredentialType = "discord"
     | "email"
     | "twitter" 
     | "github" 
+    | "nft_ownership"
+    | "poap_ownership"
     | "reddit" 
     | "same" 
     | "soundcloud";
@@ -18,6 +21,8 @@ export type ClaimIcon = typeof TwitterIcon
     | typeof GitHubIcon
     | typeof SolanaIcon
     | typeof GlobeIcon
+    | typeof ImageIcon
+    | typeof RibbonIcon
     | typeof RedditIcon
     | typeof SoundCloudIcon;
 
@@ -109,6 +114,56 @@ export const credentialToDisplay = (jwt: string): CredentialDisplay => {
                 address,
             }
         }
+        case "NftOwnershipVerification": {
+            let did = vc?.credentialSubject?.id;
+            if (!did) {
+                throw new Error("No credentialSubject.id found");
+            }
+
+            let address = did.split(":")[did.split(":").length - 1]
+            let contract = vc?.credentialSubject?.owns_asset_from;
+            if (!contract) {
+                throw new Error("No credentialSubject.owns_asset_from found");
+            }
+            let timeOf = vc?.evidence?.timestamp;
+            if (!timeOf) {
+                throw new Error("No evidence.timestamp found");
+            }
+
+            let handle = `NFT from contract ${contract} owned at ${timeOf}`;
+
+            return {
+                type: "basic_public",
+                address,
+                handle,
+            };
+    }
+    case "PoapOwnershipVerification": {
+        let did = vc?.credentialSubject?.id;
+        if (!did) {
+            throw new Error("No credentialSubject.id found");
+        }
+
+        let address = did.split(":")[did.split(":").length - 1]
+        let event_id = vc?.evidence?.event_id;
+        if (!event_id) {
+            throw new Error("No credentialSubject.event_id found");
+        }
+
+        let timeOf = vc?.evidence?.timestamp;
+        if (!timeOf) {
+            throw new Error("No evidence.timestamp found");
+        }
+
+        let handle = `POAP from event ${event_id} owned at ${timeOf}`;
+
+        return {
+          type: "basic_public",
+          address,
+          handle,
+        };
+
+    }
         default:
             throw new Error(`Unsupported credential type: ${t[1]}`)
     }

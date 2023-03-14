@@ -1,5 +1,5 @@
 import { writable, Writable } from "svelte/store";
-import { GlobeIcon, KeyIcon, TwitterIcon, EmailIcon, GitHubIcon, RedditIcon, SoundCloudIcon } from 'src/components/icons';
+import { GlobeIcon, KeyIcon, TwitterIcon, EmailIcon, GitHubIcon, RedditIcon, SoundCloudIcon, ImageIcon, RibbonIcon } from 'src/components/icons';
 import type { Claim } from "./claim";
 import { connectedCount, connectSigner, disconnectSigner, retrieveSignerEntry, getAllConnected, Signer,  SignerType, SignerMap, newSignerMap, SignerQuery, signWith, retrieveSigner, ProviderType, toQuery } from "./signer";
 import type { Subject, Workflow } from "./witness";
@@ -100,15 +100,23 @@ function defaultClaims(): Claim[] {
             title: "SoundCloud",
             type: "public",
             available: true,
+        },
+        {
+            credentials: [],
+            credential_type: "nft_ownership",
+            icon: ImageIcon,
+            title: "NFT Ownership",
+            type: "public",
+            available: true,
+        },
+        {
+            credentials: [],
+            credential_type: "poap_ownership",
+            icon: RibbonIcon,
+            title: "POAP Ownership",
+            type: "public",
+            available: true,
         }
-        // {
-        //     credentials: [],
-        //     credential_type: "discord",
-        //     icon: DiscordIcon,
-        //     title: "Discord",
-        //     type: "public",
-        //     available: false,
-        // },
     ]
 }
 

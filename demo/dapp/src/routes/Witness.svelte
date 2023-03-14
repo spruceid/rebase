@@ -1,38 +1,39 @@
 <script lang="ts">
-    import type { CredentialType } from "../util";
-    import { instructions } from "../util";
+    import type { CredentialType, Instructions } from "../util";
+    import { instructions, alert } from "../util";
     import { onMount } from "svelte";
     import { WitnessForm, BasePage, SameForm } from "src/components";
+    import { writable, type Writable } from "svelte/store";
 
     export let type: CredentialType;
 
-    $: inst = null;
-    $: errMsg = "";
-    $: loading = true;
+    let inst: Writable<Instructions> = writable(null);
+    let _inst: Instructions = null;
+    inst.subscribe((x) => (_inst = x));
 
     onMount(async () => {
         try {
             if (type !== "same") {
-                inst = await instructions(type);
+                let i = await instructions(type);
+                inst.set(i as Instructions);
             }
-            loading = false;
         } catch (e) {
-            errMsg = `${e.message}`;
+            alert.set({
+                message: e?.message ?? `${e}`,
+                variant: "error",
+            });
         }
     });
 </script>
 
 <BasePage>
     <div class="min-h-[577px] h-full flex flex-wrap">
-        {#if loading}
-            <p class="inner-center">Building workflow...</p>
-        {:else if errMsg}
-            <p class="inner-center">Error encountered: ${errMsg}</p>
-        {:else if type === "same"}
-            <!-- <SelfSignedForm /> -->
+        {#if type === "same"}
             <SameForm />
+        {:else if !_inst}
+            <p class="inner-center">Building workflow...</p>
         {:else}
-            <WitnessForm {type} instructions={inst} />
+            <WitnessForm {type} instructions={_inst} />
         {/if}
     </div>
 </BasePage>
