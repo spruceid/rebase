@@ -24,8 +24,11 @@
 
     import { scale } from "svelte/transition";
     import { Link, useNavigate } from "svelte-navigator";
+    import { Writable, writable } from "svelte/store";
 
-    $: connectNext = false;
+    let connectNext: Writable<boolean> = writable(false);
+    let _connectNext: boolean = false;
+    connectNext.subscribe((x) => (_connectNext = x));
 
     let _lookUp = null;
     let _signer = null;
@@ -65,28 +68,6 @@
                 });
         }
     };
-
-    // TODO: Use this when supporting multiple providers
-    // Adds section to dropdown below
-    /* $: signerType = null;
-
-    const conn = async (providerType: ProviderType) => {
-        if (!providerType) {
-            alert.set({
-                message: "Provider Type must be set.",
-                variant: "error",
-            });
-        } else if (!signerType) {
-            alert.set({
-                message: "Signer Type must be set.",
-                variant: "error",
-            });
-        } else {
-            await connect(signerType, providerType);
-            signerType = null;
-        }
-    };
-    */
 </script>
 
 <div
@@ -125,7 +106,7 @@
                 out:scale={{ duration: 75, start: 0.95 }}
                 class="origin-top-right absolute right-4 w-48 py-0 mt-1 bg-dark-1 rounded-xl shadow-md"
             >
-                {#if _lookUp && !connectNext}
+                {#if _lookUp && !_connectNext}
                     <Button
                         class="w-full bg-dark-1 text-white py-4"
                         onClick={() => {
@@ -145,11 +126,11 @@
                     <div class="px-4 py-3 text-sm text-white text-center">
                         <div>Select Signer Type To Connect</div>
                     </div>
-                    {#if connectNext}
+                    {#if _connectNext}
                         <Button
                             class="w-full bg-dark-1 text-white py-4"
                             onClick={() => {
-                                connectNext = false;
+                                connectNext.set(false);
                             }}
                             text="Cancel New Connection"
                         />
@@ -163,7 +144,7 @@
                                 loading = true;
                                 await conn(t);
                                 loading = false;
-                                connectNext = false;
+                                connectNext.set(false);
                             }}
                             text={capitalizeFirstLetter(t)}
                         />

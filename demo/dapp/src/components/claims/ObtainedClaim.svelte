@@ -30,7 +30,7 @@
                         <div
                             class="w-4/5 whitespace-nowrap overflow-hidden text-ellipsis"
                         >
-                            Handle: {credentialToDisplay(credential).handle}
+                            {credentialToDisplay(credential).handle}
                         </div>
                     {:else if credentialToDisplay(credential).type === "basic_blockchain"}
                         Address: {credentialToDisplay(credential).address}

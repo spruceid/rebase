@@ -73,7 +73,7 @@ struct PoapResEntry {
 
 #[derive(Deserialize, Serialize)]
 struct PoapEventEntry {
-    id: u64,
+    id: i64,
     fancy_id: String,
     name: String,
     event_url: String,

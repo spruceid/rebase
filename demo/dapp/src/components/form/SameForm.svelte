@@ -16,6 +16,7 @@
         disconnect,
         toQuery,
         signerMapAppend,
+        Subject,
     } from "src/util";
     import {
         Button,
@@ -40,13 +41,33 @@
 
     const navigate = useNavigate();
 
-    $: lookUp1 = null;
-    $: lookUp2 = null;
-    $: key1 = null;
-    $: key2 = null;
-    $: statement = "";
-    $: sig1 = "";
-    $: sig2 = "";
+    let lookUp1: Writable<Signer> = writable(null);
+    let _lookUp1: Signer = null;
+    lookUp1.subscribe((x) => (_lookUp1 = x));
+
+    let lookUp2: Writable<Signer> = writable(null);
+    let _lookUp2: Signer = null;
+    lookUp2.subscribe((x) => (_lookUp2 = x));
+
+    let key1: Writable<Subject> = writable(null);
+    let _key1 = null;
+    key1.subscribe((x) => (_key1 = x));
+
+    let key2: Writable<Subject> = writable(null);
+    let _key2 = null;
+    key2.subscribe((x) => (_key2 = x));
+
+    let statement: Writable<string> = writable("");
+    let _statement: string = "";
+    statement.subscribe((x) => (_statement = x));
+
+    let sig1: Writable<string> = writable("");
+    let _sig1: string = "";
+    sig1.subscribe((x) => (_sig1 = x));
+
+    let sig2: Writable<string> = writable("");
+    let _sig2: string = "";
+    sig2.subscribe((x) => (_sig2 = x));
 
     let statement_schema = null,
         witness_schema = null;
@@ -56,7 +77,7 @@
     onMount(async () => {
         state.set("connect");
         if (_lookUp) {
-            lookUp1 = _lookUp;
+            lookUp1.set(_lookUp);
         }
 
         let res = await client.instructions(JSON.stringify({ type: "same" }));
@@ -67,16 +88,16 @@
 
     onDestroy(() => {
         state.set("connect");
-        if (lookUp2) {
-            disconnect(lookUp2);
+        if (_lookUp2) {
+            disconnect(_lookUp2);
         }
-        lookUp1 = null;
-        lookUp2 = null;
-        key1 = null;
-        key2 = null;
-        statement = "";
-        sig1 = "";
-        sig2 = "";
+        lookUp1.set(null);
+        lookUp2.set(null);
+        key1.set(null);
+        key2.set(null);
+        statement.set("");
+        sig1.set("");
+        sig2.set("");
     });
 
     type State = "connect" | "sign" | "witness";
@@ -98,12 +119,12 @@
     }
 
     async function getStatement(): Promise<void> {
-        if (!lookUp1 || !lookUp2) {
+        if (!_lookUp1 || !_lookUp2) {
             throw new Error(`Need both signers set to generate statement`);
         }
 
-        let s1 = retrieveSignerEntry(_signerMap, lookUp1);
-        let s2 = retrieveSignerEntry(_signerMap, lookUp2);
+        let s1 = retrieveSignerEntry(_signerMap, _lookUp1);
+        let s2 = retrieveSignerEntry(_signerMap, _lookUp2);
 
         if (!s1 || !s1?.signer || !s2 || !s2?.signer) {
             throw new Error(
@@ -111,14 +132,14 @@
             );
         }
 
-        key1 = getSubject(s1.signer);
-        key2 = getSubject(s2.signer);
+        key1.set(getSubject(s1.signer));
+        key2.set(getSubject(s2.signer));
 
         let o = {
             opts: {
                 same: {
-                    id1: key1,
-                    id2: key2,
+                    id1: _key1,
+                    id2: _key2,
                 },
             },
         };
@@ -140,7 +161,7 @@
                 throw new Error(noStatementErr);
             }
 
-            statement = body.statement;
+            statement.set(body.statement);
         } catch (e) {
             if (e.message === noStatementErr) {
                 throw new Error(e.message);
@@ -166,7 +187,7 @@
     };
 
     const getCredential = async (): Promise<void> => {
-        if (!key1 || !key2 || !sig1 || !sig2) {
+        if (!_key1 || !_key2 || !_sig1 || !_sig2) {
             throw new Error(
                 "Needs two keys, a statement, and two signatures to create credential"
             );
@@ -175,11 +196,11 @@
         const proof = {
             same: {
                 statement: {
-                    id1: key1,
-                    id2: key2,
+                    id1: _key1,
+                    id2: _key2,
                 },
-                signature1: sig1,
-                signature2: sig2,
+                signature1: _sig1,
+                signature2: _sig2,
             },
         };
 
@@ -196,7 +217,6 @@
             let res = await client.jwt(b);
 
             let { jwt } = JSON.parse(res);
-
             setNew(jwt);
         } catch (e) {
             throw new Error(
@@ -210,9 +230,9 @@
             return;
         }
 
-        lookUp1 = signer;
+        lookUp1.set(signer);
 
-        if (lookUp2 && compareQueries(lookUp1, lookUp2)) {
+        if (_lookUp2 && compareQueries(_lookUp1, _lookUp2)) {
             throw new Error("Cannot connect the same signer twice");
         }
 
@@ -226,9 +246,9 @@
             throw new Error("Cannot connect the same signer twice");
         }
 
-        lookUp2 = signer;
+        lookUp2.set(signer);
 
-        if (lookUp1 && compareQueries(lookUp1, lookUp2)) {
+        if (_lookUp1 && compareQueries(_lookUp1, _lookUp2)) {
             throw new Error("Cannot connect the same signer twice");
         }
 
@@ -265,9 +285,9 @@
 
     function sigSetter(n: number, val: string): void {
         if (n === 1) {
-            sig1 = val;
+            sig1.set(val);
         } else if (n === 2) {
-            sig2 = val;
+            sig2.set(val);
         } else {
             throw new Error(`Can only set signature for 1 or 2, got ${n}`);
         }
@@ -294,7 +314,7 @@
         labelFor="form-step-q-1-i-1"
     >
         <div class="w-full">
-            {#if !lookUp1}
+            {#if !_lookUp1}
                 <div class="flex px-4 text-center">
                     <div class="w-full">
                         <b>Set first signer</b>
@@ -312,7 +332,7 @@
                     <div class="w-full">
                         <b
                             >First signer is {displaySignerType(
-                                lookUp1.signerType
+                                _lookUp1.signerType
                             )}:</b
                         >
                     </div>
@@ -322,12 +342,12 @@
                         <Button
                             class="max-w-42 sm:max-w-full my-[8px]"
                             onClick={() => {}}
-                            text={displaySignerId(lookUp1)}
+                            text={displaySignerId(_lookUp1)}
                             primary
                         />
                     </div>
                 </div>
-                {#if !lookUp2}
+                {#if !_lookUp2}
                     <div class="flex px-4 text-center">
                         <div class="w-full">
                             <b>Set second signer</b>
@@ -345,7 +365,7 @@
                         <div class="w-full">
                             <b
                                 >Second signer is {displaySignerType(
-                                    lookUp2.signerType
+                                    _lookUp2.signerType
                                 )}:</b
                             >
                         </div>
@@ -355,7 +375,7 @@
                             <Button
                                 class="max-w-42 sm:max-w-full my-[8px]"
                                 onClick={() => {}}
-                                text={displaySignerId(lookUp2)}
+                                text={displaySignerId(_lookUp2)}
                                 primary
                             />
                         </div>
@@ -375,7 +395,7 @@
         />
         <Button
             class="w-2/5"
-            disabled={!lookUp1 || !lookUp2}
+            disabled={!_lookUp1 || !_lookUp2}
             onClick={async () => {
                 try {
                     state.set(advance(_state));
@@ -424,11 +444,11 @@
                 <h2 class="w-full text-center text-lg">
                     <b>Sign the first statement</b>
                 </h2>
-                {#if !sig1}
+                {#if !_sig1}
                     <StatementSigner
-                        lookUp={lookUp1}
+                        lookUp={_lookUp1}
                         sigSetter={makeSigSetter(1)}
-                        {statement}
+                        statement={_statement}
                     />
                 {:else}
                     <div class="flex px-4 text-center">
@@ -438,7 +458,7 @@
                                 class="max-w-42 sm:max-w-full my-[8px]"
                                 onClick={() => {}}
                                 text={`Signed with: ${displaySignerId(
-                                    lookUp1
+                                    _lookUp1
                                 )}`}
                                 primary
                             />
@@ -448,11 +468,11 @@
                 <h2 class="w-full text-center text-lg">
                     <b>Sign the second statement</b>
                 </h2>
-                {#if !sig2}
+                {#if !_sig2}
                     <StatementSigner
-                        lookUp={lookUp2}
+                        lookUp={_lookUp2}
                         sigSetter={makeSigSetter(2)}
-                        {statement}
+                        statement={_statement}
                     />
                 {:else}
                     <div class="flex px-4 text-center">
@@ -462,7 +482,7 @@
                                 class="max-w-42 sm:max-w-full my-[8px]"
                                 onClick={() => {}}
                                 text={`Signed with: ${displaySignerId(
-                                    lookUp2
+                                    _lookUp2
                                 )}`}
                                 primary
                             />
@@ -482,12 +502,12 @@
             />
             <Button
                 class="w-2/5"
-                disabled={!sig1 || !sig2}
+                disabled={!_sig1 || !_sig2}
                 onClick={async () => {
                     try {
                         await getCredential();
                         state.set(advance(_state));
-                        disconnect(lookUp2);
+                        disconnect(_lookUp2);
                     } catch (e) {
                         alert.set({
                             variant: "error",

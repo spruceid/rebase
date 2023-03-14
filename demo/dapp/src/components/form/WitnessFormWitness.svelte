@@ -15,6 +15,14 @@
     export let post: Function;
     export let back: Function;
     export let advance: Function;
+
+    const needsCopyArea = (t: CredentialType): boolean => {
+        return t !== "email" && t !== "nft_ownership" && t !== "poap_ownership";
+    };
+
+    const needsInput = (t: CredentialType): boolean => {
+        return t === "twitter" || t === "github" || t === "email";
+    };
 </script>
 
 <WitnessFormStepper
@@ -25,10 +33,10 @@
     labelFor={`form-step-q-${step}-i-1`}
 >
     <div id={`form-step-q-${step}-i-1`}>
-        {#if type !== "email"}
+        {#if needsCopyArea(type)}
             <CopyTextArea value={post()} />
         {/if}
-        {#if type === "twitter" || type === "github" || type === "discord" || type === "email"}
+        {#if needsInput(type)}
             <div class="w-full">
                 <input
                     class="form-text-input w-full"

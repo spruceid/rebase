@@ -1,32 +1,16 @@
 <script lang="ts">
-    import { claims, Claim } from "utils";
-    import { AvailableClaim } from "components";
+    import { claims, Claim } from "src/util";
+    import { AvailableClaim } from "src/components";
 
-    let bcClaims: Array<Claim> = [];
-    let pbClaims: Array<Claim> = [];
-
-    claims.subscribe((x) => {
-        pbClaims = x.filter((claim) => claim.type === "public");
-        bcClaims = x.filter((claim) => claim.type === "blockchain");
-    });
+    let _claims: Array<Claim> = [];
+    claims.subscribe((x) => (_claims = x));
 </script>
 
 <div class="w-full h-96">
-    <h3 class="py-4 px-4">Social Media Credentials</h3>
+    <h3 class="py-4 px-4">Available Credentials</h3>
     <div class="overflow-auto px-4">
-        {#each pbClaims as claim}
+        {#each _claims as claim}
             <AvailableClaim {claim} />
         {/each}
     </div>
 </div>
-
-{#if bcClaims?.length > 0}
-    <div class="w-full">
-        <h3 class="py-4 px-4">Blockchain Accounts</h3>
-        <div class="max-h-40 overflow-auto px-4">
-            {#each bcClaims as claim}
-                <AvailableClaim {claim} />
-            {/each}
-        </div>
-    </div>
-{/if}
