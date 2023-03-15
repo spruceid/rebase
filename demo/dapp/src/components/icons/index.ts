@@ -1,3 +1,4 @@
+export { default as CheckmarkIcon } from './CheckmarkIcon.svelte';
 export { default as GitHubIcon } from './GitHubIcon.svelte';
 export { default as GlobeIcon } from './GlobeIcon.svelte';
 export { default as KeyIcon } from './KeyIcon.svelte';
