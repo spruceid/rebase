@@ -1,6 +1,13 @@
 <script lang="ts">
-    import { Claim, credentialToDisplay } from "utils";
-    import { IconButton, DownloadIcon, DeleteIcon, IconLink } from "components";
+    import { Claim, credentialToDisplay, client, alert } from "src/util";
+    import {
+        Button,
+        IconButton,
+        DownloadIcon,
+        DeleteIcon,
+        CheckmarkIcon,
+        IconLink,
+    } from "src/components";
 
     export let claim: Claim;
     export let removeClaim: Function;
@@ -8,6 +15,23 @@
     export const makeDownloadable = (jwt: string): string => {
         let encoded = encodeURIComponent(jwt);
         return `data:application/json;charset=utf-8,${encoded}`;
+    };
+
+    export const verify = async (jwt: string) => {
+        try {
+            let res = await client.verify_jwt(JSON.stringify({ jwt }));
+            console.log(res);
+            alert.set({
+                message: "Credential verified!",
+                variant: "success",
+            });
+        } catch (e) {
+            console.error(e);
+            alert.set({
+                variant: "error",
+                message: "Failed in verification",
+            });
+        }
     };
 </script>
 
@@ -56,6 +80,17 @@
                                 class="block w-4"
                                 onClick={() => removeClaim(claim, credential)}
                                 icon={DeleteIcon}
+                                color="#b3b3b3"
+                            />
+                        </div>
+                        <div class="w-2" />
+                        <div
+                            class="obtained-claim-action border border-gray-250 w-8 h-8 rounded-full flex flex-wrap align-center justify-center"
+                        >
+                            <IconButton
+                                class="block w-4"
+                                onClick={() => verify(credential)}
+                                icon={CheckmarkIcon}
                                 color="#b3b3b3"
                             />
                         </div>
