@@ -1,11 +1,12 @@
 mod utils;
 
+use js_sys::Promise;
 use rebase_witness_sdk::{
     client::{Client as RebaseClient, Endpoints},
     types::{InstructionsReq, StatementReq, VerifyJWTReq, VerifyLDReq, WitnessReq},
 };
-// use serde_json::from_str;
-use js_sys::Promise;
+use serde::{Deserialize, Serialize};
+use serde_json::from_str;
 use std::sync::Arc;
 use url::Url;
 use wasm_bindgen::prelude::*;
@@ -34,39 +35,55 @@ pub struct Client {
 }
 
 #[wasm_bindgen]
+#[derive(Deserialize, Serialize)]
+pub struct Config {
+    instructions: String,
+    statement: String,
+    jwt: Option<String>,
+    ld: Option<String>,
+    verify_jwt: Option<String>,
+    verify_ld: Option<String>,
+}
+
+impl Config {
+    fn is_valid(&self) -> Result<(), String> {
+        if self.jwt.is_none() && self.ld.is_none() {
+            Err("At least one of JWT or LD urls must be set".to_string())
+        } else {
+            Ok(())
+        }
+    }
+}
+
+#[wasm_bindgen]
 impl Client {
     #[wasm_bindgen(constructor)]
-    pub fn new(
-        // TODO: Change this to an options struct
-        instructions: String,
-        statement: String,
-        jwt: Option<String>,
-        ld: Option<String>,
-        verify_jwt: Option<String>,
-        verify_ld: Option<String>,
-    ) -> Result<Client, String> {
-        let jwt: Option<Url> = match jwt {
+    pub fn new(config: &str) -> Result<Client, String> {
+        let config: Config = from_str(config).map_err(|e| e.to_string())?;
+        config.is_valid()?;
+
+        let jwt: Option<Url> = match config.jwt {
             Some(s) => Some(Url::parse(&s).map_err(|e| e.to_string())?),
             None => None,
         };
 
-        let verify_jwt: Option<Url> = match verify_jwt {
+        let verify_jwt: Option<Url> = match config.verify_jwt {
             Some(s) => Some(Url::parse(&s).map_err(|e| e.to_string())?),
             None => None,
         };
 
-        let ld: Option<Url> = match ld {
+        let ld: Option<Url> = match config.ld {
             Some(s) => Some(Url::parse(&s).map_err(|e| e.to_string())?),
             None => None,
         };
 
-        let verify_ld: Option<Url> = match verify_ld {
+        let verify_ld: Option<Url> = match config.verify_ld {
             Some(s) => Some(Url::parse(&s).map_err(|e| e.to_string())?),
             None => None,
         };
 
-        let statement = Url::parse(&statement).map_err(|e| e.to_string())?;
-        let instructions = Url::parse(&instructions).map_err(|e| e.to_string())?;
+        let statement = Url::parse(&config.statement).map_err(|e| e.to_string())?;
+        let instructions = Url::parse(&config.instructions).map_err(|e| e.to_string())?;
         Ok(Client {
             client: Arc::new(
                 RebaseClient::new(Endpoints {

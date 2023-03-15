@@ -3,11 +3,15 @@ import type { CredentialType } from "./claim";
 import { Client } from "@rebase-xyz/rebase-client";
 
 const witnessUrl = process.env.WITNESS_URL;
-const statementUrl = `${witnessUrl}/statement`;
-const instructionsUrl = `${witnessUrl}/instructions`;
-const jwtUrl = `${witnessUrl}/witness`;
 
-export const client = new Client(instructionsUrl, statementUrl, jwtUrl);
+const clientConfig = {
+    instructions: `${witnessUrl}/instructions`,
+    statement: `${witnessUrl}/statement`,
+    jwt: `${witnessUrl}/witness`,
+    verify_jwt: `${witnessUrl}/verify`
+};
+
+export const client = new Client(JSON.stringify(clientConfig));
 
 export function needsDelimiter(c: CredentialType): boolean {
     switch (c) {
