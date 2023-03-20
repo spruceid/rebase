@@ -3,6 +3,7 @@
  * boolean indicating if the request uses that HTTP method,
  * header, host or referrer.
  */
+
 const Method = (method) => (req) => req.method.toLowerCase() === method.toLowerCase();
 const Connect = Method("connect");
 const Delete = Method("delete");
@@ -167,8 +168,39 @@ function handleOptions(request) {
   }
 }
 
-// TODO: move all other non-secrect code to a config object along with this.
-const sendGridChallengeDelimiter = ":::";
+// TODO: Make a type for this config obj?
+// TODO: Change to use the Flow VC's type for keys in future.
+// To disable a flow, change the value of the flow in configDefaults to a falsey value.
+const configDefaults = {
+  // TODO: Generalize this to NFTs?
+  alchemy: {
+    max_elapsed_minutes: 15,
+    challenge_delimiter: "\n\n"
+  },
+  github: {
+    user_agent: "Spruce Systems",
+    delimiter: "\n\n"
+  }, 
+  poap: {
+    max_elapsed_minutes: 15,
+    challenge_delimiter: "\n\n"
+  },
+  // TODO: Generalize this to e-mail?
+  sendgrid: {
+    challenge_delimiter: ":::",
+    from_addr: "hello@rebaseexample.com",
+    from_name: "Spruce",
+    subject_name: "Rebase Credentialing",
+    max_elapsed_minutes: 15,
+  },
+  soundcloud: {
+    limit: 100,
+    max_offset: 9000,
+  },
+  twitter: {
+    delimiter: "\n\n"
+  }
+}
 
 function witnessOpts() {  
   let o = {};
@@ -176,72 +208,61 @@ function witnessOpts() {
   o.reddit = {};
   o.same = {};
 
-  if (GITHUB_USER_AGENT) {
-    o.github = {
-      user_agent: GITHUB_USER_AGENT,
-      delimiter: "\n\n"
+  if (configDefaults.github) {
+    o.github = configDefaults.github;
+  }
+
+  if (configDefaults.soundcloud && SOUNDCLOUD_CLIENT_ID) {
+    let {limit, max_offset} = configDefaults.soundcloud;
+    o.soundcloud = {
+      client_id: SOUNDCLOUD_CLIENT_ID,
+      limit,
+      max_offset,
     }
   }
 
-  if (SOUNDCLOUD_CLIENT_ID) {
-    let limit = parseInt(SOUNDCLOUD_LIMIT);
-    let offset = parseInt(SOUNDCLOUD_MAX_OFFSET);
-    if (!isNaN(limit) && !isNaN(offset)) {
-      o.soundcloud = {
-        client_id: SOUNDCLOUD_CLIENT_ID,
-        limit,
-        max_offset: offset,
-      }
-    }
-  }
-
-  if (TWITTER_BEARER_TOKEN) {
+  if (configDefaults.twitter && TWITTER_BEARER_TOKEN) {
     o.twitter = {
       api_key: TWITTER_BEARER_TOKEN,
-      delimiter: "\n\n"
+      delimiter: configDefaults.twitter.delimiter,
     }
   }
 
-  let useSendGrid = SENDGRID_BEARER_TOKEN 
-    && SENDGRID_FROM_ADDRESS 
-    && SENDGRID_FROM_NAME
-    && SENDGRID_SUBJECT_NAME
-    && SENDGRID_MAX_ELAPSED_MINS
-    && !isNaN(parseInt(SENDGRID_MAX_ELAPSED_MINS));
 
-  if (useSendGrid) {
+  if (configDefaults.sendgrid && SENDGRID_BEARER_TOKEN) {
+    let {
+      challenge_delimiter,
+      from_addr,
+      from_name,
+      max_elapsed_minutes,
+      subject_name
+    } = configDefaults.sendgrid;
+
     o.email = {
       api_key: SENDGRID_BEARER_TOKEN,
-      challenge_delimiter: sendGridChallengeDelimiter,
-      from_addr: SENDGRID_FROM_ADDRESS,
-      from_name: SENDGRID_FROM_NAME,
-      max_elapsed_minutes: parseInt(SENDGRID_MAX_ELAPSED_MINS),
-      subject_name: SENDGRID_SUBJECT_NAME,
+      challenge_delimiter,
+      from_addr,
+      from_name,
+      max_elapsed_minutes,
+      subject_name,
     }
   }
 
-  let useAlchemy = ALCHEMY_API_KEY 
-    && ALCHEMY_MAX_ELAPSED_MINS 
-    && !isNaN(parseInt(ALCHEMY_MAX_ELAPSED_MINS));
-  if (useAlchemy) {
+  if (configDefaults.alchemy && ALCHEMY_API_KEY) {
+    let {challenge_delimiter, max_elapsed_minutes} = configDefaults.alchemy;
     o.nft_ownership = {
       api_key: ALCHEMY_API_KEY,
-      // TODO: Put in conf obj:
-      challenge_delimiter: "\n\n",
-      max_elapsed_minutes: parseInt(ALCHEMY_MAX_ELAPSED_MINS)
+      challenge_delimiter,
+      max_elapsed_minutes,
     }
   }
 
-  let usePoap = POAP_API_KEY 
-    && POAP_MAX_ELAPSED_MINS 
-    && !isNaN(parseInt(POAP_MAX_ELAPSED_MINS));
-
-  if (usePoap) {
+  if (configDefaults.poap && POAP_API_KEY) {
+    let {challenge_delimiter, max_elapsed_minutes} = configDefaults.poap;
     o.poap_ownership = {
       api_key: POAP_API_KEY,
-      // TODO: Put in conf obj:
-      challenge_delimiter: "\n\n",
-      max_elapsed_minutes: parseInt(POAP_MAX_ELAPSED_MINS),
+      challenge_delimiter,
+      max_elapsed_minutes,
     };
   }
 

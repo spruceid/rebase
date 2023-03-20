@@ -139,7 +139,7 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasic {
         let challenge_vec: Vec<&str> = proof.challenge.split(&self.challenge_delimiter).collect();
         if challenge_vec.len() != 2 {
             return Err(FlowError::Validation(
-                "Challenge in unexpected formatt".to_string(),
+                "Challenge in unexpected format".to_string(),
             ));
         }
 

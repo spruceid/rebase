@@ -1,7 +1,7 @@
 use crate::{
     content::nft_ownership::NftOwnership as Ctnt,
-    proof::nft_ownership::AlchemyProof as Prf,
-    statement::nft_ownership::AlchemyStatement as Stmt,
+    proof::nft_ownership::NftOwnershipProof as Prf,
+    statement::nft_ownership::NftOwnershipStatement as Stmt,
     types::{
         defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
         enums::subject::{Pkh, Subjects},

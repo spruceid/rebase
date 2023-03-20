@@ -7,17 +7,16 @@ use chrono::DateTime;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-// TODO: Change this to an enum of possible chains / details.
 #[derive(Clone, Deserialize, JsonSchema, Serialize)]
 #[serde(rename = "statement")]
-pub struct AlchemyStatement {
+pub struct NftOwnershipStatement {
     pub contract_address: String,
     pub subject: Subjects,
     pub network: AlchemyNetworks,
     pub issued_at: String,
 }
 
-impl Statement for AlchemyStatement {
+impl Statement for NftOwnershipStatement {
     fn generate_statement(&self) -> Result<String, StatementError> {
         DateTime::parse_from_rfc3339(&self.issued_at)
             .map_err(|e| StatementError::Statement(format!("failed to parse issued_at: {}", e)))?;

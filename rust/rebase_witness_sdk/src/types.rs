@@ -14,13 +14,13 @@ use rebase::{
         soundcloud::SoundCloudFlow, twitter::TwitterFlow,
     },
     proof::{
-        email::Email as EmailProof, github::GitHub as GitHubProof, nft_ownership::AlchemyProof,
-        poap_ownership::PoapOwnership as PoapOwnershipProof, same::Same as SameProof,
-        twitter::Twitter as TwitterProof,
+        email::Email as EmailProof, github::GitHub as GitHubProof,
+        nft_ownership::NftOwnershipProof, poap_ownership::PoapOwnership as PoapOwnershipProof,
+        same::Same as SameProof, twitter::Twitter as TwitterProof,
     },
     statement::{
         dns::Dns as DnsStmt, email::Email as EmailStmt, github::GitHub as GitHubStmt,
-        nft_ownership::AlchemyStatement, poap_ownership::PoapOwnership as PoapOwnershipStmt,
+        nft_ownership::NftOwnershipStatement, poap_ownership::PoapOwnership as PoapOwnershipStmt,
         reddit::Reddit as RedditStmt, same::Same as SameStmt,
         soundcloud::SoundCloud as SoundCloudStmt, twitter::Twitter as TwitterStmt,
     },
@@ -140,10 +140,8 @@ pub enum Statements {
     Email(EmailStmt),
     #[serde(rename = "github")]
     GitHub(GitHubStmt),
-    // NOTE: If adding non-alchemy providers, this will need to change
-    // to an enum.
     #[serde(rename = "nft_ownership")]
-    NftOwnership(AlchemyStatement),
+    NftOwnership(NftOwnershipStatement),
     #[serde(rename = "poap_ownership")]
     PoapOwnership(PoapOwnershipStmt),
     #[serde(rename = "reddit")]
@@ -181,10 +179,8 @@ pub enum Proofs {
     Email(EmailProof),
     #[serde(rename = "github")]
     GitHub(GitHubProof),
-    // NOTE: If adding non-alchemy providers, this will need to change
-    // to an enum.
     #[serde(rename = "nft_ownership")]
-    NftOwnership(AlchemyProof),
+    NftOwnership(NftOwnershipProof),
     #[serde(rename = "poap_ownership")]
     PoapOwnership(PoapOwnershipProof),
     #[serde(rename = "reddit")]
