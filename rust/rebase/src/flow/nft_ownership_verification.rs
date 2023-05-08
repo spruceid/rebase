@@ -56,13 +56,13 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnershipVerificationFlow {
 #[derive(Clone, Deserialize, Serialize, TS)]
 #[ts(export)]
 pub struct Alchemy {
-    api_key: String,
-    challenge_delimiter: String,
+    pub api_key: String,
+    pub challenge_delimiter: String,
     // The amount of time that can pass before the witness
     // wants a new flow initiated. In demo, set to 15 mins.
     // This is checked for a negative value or 0 and errs if one is found
     // Alternative is casting u64 to i64 and risking UB.
-    max_elapsed_minutes: i64,
+    pub max_elapsed_minutes: i64,
 }
 
 pub struct AlchemyPageResult {

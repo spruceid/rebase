@@ -1,0 +1,12 @@
+.DS_Store
+/node_modules
+test_wrangler.toml
+prod_wrangler.toml
+wrangler.toml
+
+**/*.rs.bk
+wasm-pack.log
+
+build/
+/target
+/dist

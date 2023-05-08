@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node,macos,linux,emacs,vim
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,macos,linux,emacs,vim
 
+# Wrangler
+wrangler.toml
+
 # Rust
 target
 

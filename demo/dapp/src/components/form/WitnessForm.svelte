@@ -146,10 +146,8 @@
         }
 
         try {
-            console.log("Here?");
             let res = await client.instructions(JSON.stringify({ type }));
             let instruction_res = JSON.parse(res);
-            console.log("Here??");
             statement_schema = instruction_res?.statement_schema;
             witness_schema = instruction_res?.witness_schema;
             issuedAt.set(new Date().toISOString());

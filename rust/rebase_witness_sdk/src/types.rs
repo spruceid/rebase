@@ -1,5 +1,5 @@
 pub use rebase::issuer;
-use rebase::{
+pub use rebase::{
     content::{
         dns_verification::DnsVerificationContent, email_verification::EmailVerificationContent,
         github_verification::GitHubVerificationContent,
@@ -9,17 +9,19 @@ use rebase::{
         same_controller_assertion::SameControllerAssertionContent,
         soundcloud_verification::SoundCloudVerificationContent,
         twitter_verification::TwitterVerificationContent,
+        witnessed_basic_profile::WitnessedBasicProfileContent,
     },
     flow::{
         dns_verification::DnsVerificationFlow,
         email_verification::SendGridBasicFlow as EmailVerificationFlow,
         github_verification::GitHubVerificationFlow,
-        nft_ownership_verification::NftOwnershipVerificationFlow,
+        nft_ownership_verification::{Alchemy, NftOwnershipVerificationFlow},
         poap_ownership_verification::PoapOwnershipVerificationFlow,
         reddit_verification::RedditVerificationFlow,
         same_controller_assertion::SameControllerAssertionFlow,
         soundcloud_verification::SoundCloudVerificationFlow,
         twitter_verification::TwitterVerificationFlow,
+        witnessed_basic_profile::WitnessedBasicProfileFlow,
     },
     proof::{
         email_verification::EmailVerificationProof, github_verification::GitHubVerificationProof,
@@ -27,6 +29,7 @@ use rebase::{
         poap_ownership_verification::PoapOwnershipVerificationProof,
         same_controller_assertion::SameControllerAssertionProof,
         twitter_verification::TwitterVerificationProof,
+        witnessed_basic_profile::WitnessedBasicProfileProof,
     },
     statement::{
         dns_verification::DnsVerificationStatement, email_verification::EmailVerificationStatement,
@@ -37,6 +40,7 @@ use rebase::{
         same_controller_assertion::SameControllerAssertionStatement,
         soundcloud_verification::SoundCloudVerificationStatement,
         twitter_verification::TwitterVerificationStatement,
+        witnessed_basic_profile::WitnessedBasicProfileStatement,
     },
     types::{
         defs::{
@@ -64,6 +68,7 @@ pub enum InstructionsType {
     SameControllerAssertion,
     SoundCloudVerification,
     TwitterVerification,
+    WitnessedBasicProfile,
 }
 
 #[derive(Deserialize, Serialize, TS)]
@@ -78,6 +83,7 @@ pub enum Contents {
     SameControllerAssertion(SameControllerAssertionContent),
     SoundCloudVerification(SoundCloudVerificationContent),
     TwitterVerification(TwitterVerificationContent),
+    WitnessedBasicProfile(WitnessedBasicProfileContent),
 }
 
 #[async_trait(?Send)]
@@ -93,6 +99,7 @@ impl Content for Contents {
             Contents::SameControllerAssertion(x) => x.context(),
             Contents::SoundCloudVerification(x) => x.context(),
             Contents::TwitterVerification(x) => x.context(),
+            Contents::WitnessedBasicProfile(x) => x.context(),
         }
     }
 
@@ -107,6 +114,7 @@ impl Content for Contents {
             Contents::SameControllerAssertion(x) => x.evidence(),
             Contents::SoundCloudVerification(x) => x.evidence(),
             Contents::TwitterVerification(x) => x.evidence(),
+            Contents::WitnessedBasicProfile(x) => x.evidence(),
         }
     }
 
@@ -121,6 +129,7 @@ impl Content for Contents {
             Contents::SameControllerAssertion(x) => x.subject(),
             Contents::SoundCloudVerification(x) => x.subject(),
             Contents::TwitterVerification(x) => x.subject(),
+            Contents::WitnessedBasicProfile(x) => x.subject(),
         }
     }
 
@@ -135,6 +144,7 @@ impl Content for Contents {
             Contents::SameControllerAssertion(x) => x.types(),
             Contents::SoundCloudVerification(x) => x.types(),
             Contents::TwitterVerification(x) => x.types(),
+            Contents::WitnessedBasicProfile(x) => x.types(),
         }
     }
 }
@@ -154,6 +164,7 @@ pub enum Statements {
     SameControllerAssertion(SameControllerAssertionStatement),
     SoundCloudVerification(SoundCloudVerificationStatement),
     TwitterVerification(TwitterVerificationStatement),
+    WitnessedBasicProfile(WitnessedBasicProfileStatement),
 }
 
 impl Statement for Statements {
@@ -168,6 +179,7 @@ impl Statement for Statements {
             Statements::SameControllerAssertion(x) => x.generate_statement(),
             Statements::SoundCloudVerification(x) => x.generate_statement(),
             Statements::TwitterVerification(x) => x.generate_statement(),
+            Statements::WitnessedBasicProfile(x) => x.generate_statement(),
         }
     }
 }
@@ -187,6 +199,7 @@ pub enum Proofs {
     SameControllerAssertion(SameControllerAssertionProof),
     SoundCloudVerification(SoundCloudVerificationStatement),
     TwitterVerification(TwitterVerificationProof),
+    WitnessedBasicProfile(WitnessedBasicProfileProof),
 }
 
 impl Statement for Proofs {
@@ -201,6 +214,7 @@ impl Statement for Proofs {
             Proofs::SameControllerAssertion(x) => x.generate_statement(),
             Proofs::SoundCloudVerification(x) => x.generate_statement(),
             Proofs::TwitterVerification(x) => x.generate_statement(),
+            Proofs::WitnessedBasicProfile(x) => x.generate_statement(),
         }
     }
 }
@@ -235,6 +249,9 @@ impl Proof<Contents> for Proofs {
             Proofs::TwitterVerification(x) => Ok(Contents::TwitterVerification(
                 x.to_content(statement, signature)?,
             )),
+            Proofs::WitnessedBasicProfile(x) => Ok(Contents::WitnessedBasicProfile(
+                x.to_content(statement, signature)?,
+            )),
         }
     }
 }
@@ -242,17 +259,18 @@ impl Proof<Contents> for Proofs {
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct WitnessFlow {
-    dns_verification: Option<DnsVerificationFlow>,
-    email_verification: Option<EmailVerificationFlow>,
+    pub dns_verification: Option<DnsVerificationFlow>,
+    pub email_verification: Option<EmailVerificationFlow>,
     #[serde(rename = "GitHubVerification")]
-    github_verification: Option<GitHubVerificationFlow>,
-    nft_ownership_verification: Option<NftOwnershipVerificationFlow>,
-    poap_ownership_verification: Option<PoapOwnershipVerificationFlow>,
-    reddit_verification: Option<RedditVerificationFlow>,
-    same_controller_assertion: Option<SameControllerAssertionFlow>,
+    pub github_verification: Option<GitHubVerificationFlow>,
+    pub nft_ownership_verification: Option<NftOwnershipVerificationFlow>,
+    pub poap_ownership_verification: Option<PoapOwnershipVerificationFlow>,
+    pub reddit_verification: Option<RedditVerificationFlow>,
+    pub same_controller_assertion: Option<SameControllerAssertionFlow>,
     #[serde(rename = "SoundCloudVerification")]
-    soundcloud_verification: Option<SoundCloudVerificationFlow>,
-    twitter_verification: Option<TwitterVerificationFlow>,
+    pub soundcloud_verification: Option<SoundCloudVerificationFlow>,
+    pub twitter_verification: Option<TwitterVerificationFlow>,
+    pub witnessed_basic_profile: Option<WitnessedBasicProfileFlow>,
 }
 
 #[async_trait(?Send)]
@@ -318,6 +336,12 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
                     "no twitter flow configured".to_owned(),
+                )),
+            },
+            Statements::WitnessedBasicProfile(s) => match &self.witnessed_basic_profile {
+                Some(x) => Ok(x.statement(s, issuer).await?),
+                None => Err(FlowError::Validation(
+                    "no witness basic profile flow configured".to_owned(),
                 )),
             },
         }
@@ -397,6 +421,14 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                 )),
                 None => Err(FlowError::Validation(
                     "no twitter flow configured".to_owned(),
+                )),
+            },
+            Proofs::WitnessedBasicProfile(p) => match &self.witnessed_basic_profile {
+                Some(x) => Ok(Contents::WitnessedBasicProfile(
+                    x.validate_proof(p, issuer).await?,
+                )),
+                None => Err(FlowError::Validation(
+                    "no witnessed basic profile flow configured".to_owned(),
                 )),
             },
         }
@@ -500,6 +532,12 @@ impl WitnessFlow {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no twitter flow configured".to_owned(),
+                )),
+            },
+            InstructionsType::WitnessedBasicProfile => match &self.witnessed_basic_profile {
+                Some(x) => x.instructions(),
+                _ => Err(FlowError::Validation(
+                    "no witnessed basic profile flow configured".to_owned(),
                 )),
             },
         }

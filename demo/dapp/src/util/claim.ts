@@ -11,7 +11,8 @@ export type CredentialType = "DnsVerification"
     | "RedditVerification" 
     | "SameControllerAssertion" 
     | "SoundCloudVerification"
-    | "TwitterVerification";
+    | "TwitterVerification"
+    | "WitnessedBasicProfile";
 
 export type ClaimIcon = typeof TwitterIcon 
     | typeof EthereumIcon 
@@ -162,6 +163,22 @@ export const credentialToDisplay = (jwt: string): CredentialDisplay => {
           handle,
         };
 
+    }
+    case "WitnessedBasicProfile": {
+        let did = vc?.credentialSubject?.id;
+        if (!did) {
+            throw new Error("No credentialSubject.id found");
+        }
+        let address = did.split(":")[did.split(":").length - 1]
+        let username = vc?.credentialSubject?.username;
+        if (!username) {
+            throw new Error("No credentialSubject.username found")
+        }
+        return {
+          type: "basic_public",
+          address,
+          handle: username,
+        };
     }
         default:
             throw new Error(`Unsupported credential type: ${t[1]}`)

@@ -24,14 +24,14 @@ use url::Url;
 #[derive(Clone, Deserialize, Serialize, TS)]
 #[ts(export)]
 pub struct SendGridBasicFlow {
-    api_key: String,
-    challenge_delimiter: String,
-    from_addr: String,
-    from_name: String,
+    pub api_key: String,
+    pub challenge_delimiter: String,
+    pub from_addr: String,
+    pub from_name: String,
     // This is checked for a negative value or 0 and errs if one is found
     // Alternative is casting u64 to i64 and risking UB.
-    max_elapsed_minutes: i64,
-    subject_name: String,
+    pub max_elapsed_minutes: i64,
+    pub subject_name: String,
 }
 
 impl SendGridBasicFlow {
