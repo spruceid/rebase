@@ -116,6 +116,14 @@ function defaultClaims(): Claim[] {
             title: "POAP Ownership",
             type: "public",
             available: true,
+        },
+        {
+            credentials: [],
+            credential_type: "WitnessedBasicProfile",
+            icon: GlobeIcon,
+            title: "Basic Profile",
+            type: "public",
+            available: true,
         }
     ]
 }

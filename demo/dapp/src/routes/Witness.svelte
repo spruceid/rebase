@@ -2,7 +2,12 @@
     import type { CredentialType, Instructions } from "../util";
     import { instructions, alert } from "../util";
     import { onMount } from "svelte";
-    import { WitnessForm, BasePage, SameForm } from "src/components";
+    import {
+        WitnessForm,
+        BasePage,
+        SameForm,
+        WitnessedSelfIssue,
+    } from "src/components";
     import { writable, type Writable } from "svelte/store";
 
     export let type: CredentialType;
@@ -13,7 +18,10 @@
 
     onMount(async () => {
         try {
-            if (type !== "SameControllerAssertion") {
+            if (
+                type !== "SameControllerAssertion" &&
+                type !== "WitnessedBasicProfile"
+            ) {
                 let i = await instructions(type);
                 inst.set(i as Instructions);
             }
@@ -30,6 +38,8 @@
     <div class="min-h-[577px] h-full flex flex-wrap">
         {#if type === "SameControllerAssertion"}
             <SameForm />
+        {:else if type === "WitnessedBasicProfile"}
+            <WitnessedSelfIssue />
         {:else if !_inst}
             <p class="inner-center">Building workflow...</p>
         {:else}

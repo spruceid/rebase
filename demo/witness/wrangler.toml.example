@@ -1,6 +1,0 @@
-name = "rebasedemo"
-type = "rust"
-account_id = ""
-workers_dev = true
-route = "rebasedemo"
-zone_id = ""

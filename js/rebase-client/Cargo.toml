@@ -1,6 +1,6 @@
 [package]
 name = "rebase-client"
-version = "0.8.0"
+version = "0.8.1"
 authors = ["K Rhoda <kelsey.rhoda@spruceid.com>"]
 edition = "2018"
 

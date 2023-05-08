@@ -4,3 +4,4 @@ export { default as WitnessFormStepper } from './WitnessFormStepper.svelte';
 export { default as SameForm } from './SameForm.svelte'; 
 export { default as WitnessForm } from "./WitnessForm.svelte";
 export * from "./selfsigned/index";
+export * from "./witnessedselfissue/index";

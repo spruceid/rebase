@@ -3,18 +3,21 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
 use ts_rs::TS;
+use url::Url;
+
 #[derive(Deserialize, Serialize, TS)]
 #[ts(export)]
-pub struct BasicProfileContent {
-    pub alias: String,
+pub struct WitnessedBasicProfileContent {
     pub description: String,
-    // TODO: Type as URL?
-    pub website: String,
     pub image: String,
-    pub subject_id: String,
+    pub id: String,
+    pub username: String,
+    #[ts(type = "string")]
+    pub website: Url,
+    pub signature: String,
 }
 
-impl Content for BasicProfileContent {
+impl Content for WitnessedBasicProfileContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
@@ -25,18 +28,19 @@ impl Content for BasicProfileContent {
     fn types(&self) -> Result<Vec<String>, ContentError> {
         Ok(vec![
             "VerifiableCredential".to_string(),
-            "BasicProfile".to_string(),
+            "WitnessedBasicProfile".to_string(),
         ])
     }
 
     fn subject(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!({
-            "id": self.subject_id,
-            "type": ["BasicProfile"],
-            "alias": self.alias,
             "description": self.description,
+            "id": self.id,
             "image": self.image,
-            "website": self.website,
+            "type": ["WitnessedBasicProfile"],
+            "username": self.username,
+            "website": self.website.to_string(),
+            "signature": self.signature
         }))
     }
 
