@@ -7,4 +7,4 @@ pub mod reddit_verification;
 pub mod same_controller_assertion;
 pub mod soundcloud_verification;
 pub mod twitter_verification;
-pub mod witnessed_basic_profile;
+pub mod witnessed_self_issued;

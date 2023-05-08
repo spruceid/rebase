@@ -86,7 +86,9 @@
         // TODO: JSON Schema validation here!
         const badRespErr =
             "Badly formatted witness service response in statement";
-        let res = await client.statement(JSON.stringify({ opts }));
+        let res = await client.statement(
+            JSON.stringify({ opts: { WitnessedSelfIssued: opts } })
+        );
 
         let body = JSON.parse(res);
         if (!body.statement) {
@@ -97,9 +99,11 @@
         let signature = await sign(statement);
 
         let proof = {
-            WitnessedBasicProfile: {
-                signature,
-                statement: opts.WitnessedBasicProfile,
+            WitnessedSelfIssued: {
+                WitnessedBasicProfile: {
+                    signature,
+                    statement: opts.WitnessedBasicProfile,
+                },
             },
         };
 

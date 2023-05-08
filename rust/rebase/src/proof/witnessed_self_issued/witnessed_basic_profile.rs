@@ -1,6 +1,6 @@
 use crate::{
-    content::witnessed_basic_profile::WitnessedBasicProfileContent,
-    statement::witnessed_basic_profile::WitnessedBasicProfileStatement,
+    content::witnessed_self_issued::witnessed_basic_profile::WitnessedBasicProfileContent,
+    statement::witnessed_self_issued::witnessed_basic_profile::WitnessedBasicProfileStatement,
     types::{
         defs::{Proof, Statement, Subject},
         error::StatementError,
