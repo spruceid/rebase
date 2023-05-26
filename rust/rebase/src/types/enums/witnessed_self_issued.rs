@@ -7,12 +7,14 @@ use std::collections::HashMap;
 use ts_rs::TS;
 
 pub trait WitnesssedSelfIssued {
-    fn to_content(&self) -> Result<(WitnessedSelfIssuedTypes, Map<String, Value>), StatementError>;
+    fn to_statement(
+        &self,
+    ) -> Result<(WitnessedSelfIssuedTypes, Map<String, Value>), StatementError>;
 }
 
 impl<T: WitnesssedSelfIssued> Statement for T {
     fn generate_statement(&self) -> Result<String, StatementError> {
-        let (t, content) = self.to_content()?;
+        let (t, content) = self.to_statement()?;
         t.validate(&content)?;
         let mut v: Vec<String> = Vec::new();
         for k in content.keys() {
@@ -30,6 +32,12 @@ impl<T: WitnesssedSelfIssued> Statement for T {
             }
         }
         v.sort();
+        // NOTE: If supporting languages beyond english, add checks for language code
+        // and generate the statement header here!
+        v.insert(
+            0,
+            "Sign a copy of your data to turn it into a Verifiable Credential:\n".to_string(),
+        );
 
         Ok(v.join("\n"))
     }
@@ -38,26 +46,63 @@ impl<T: WitnesssedSelfIssued> Statement for T {
 #[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
 #[ts(export)]
 pub enum WitnessedSelfIssuedTypes {
+    WitnessedBasicImage,
     WitnessedBasicPost,
     WitnessedBasicProfile,
+    WitnessedBasicTag,
+    WitnessedBookReview,
+    WitnessedDappPreferences,
+    WitnessedFollow,
+    WitnessedLike,
+    WitnessedProgressBookLink,
 }
 
 impl WitnessedSelfIssuedTypes {
     // Returns a map of keys in the content, along with a boolean for if they are optional.
     pub fn to_key_map(&self) -> HashMap<String, bool> {
         match &self {
+            WitnessedSelfIssuedTypes::WitnessedBasicImage => {
+                HashMap::from([("id".to_string(), true), ("src".to_string(), true)])
+            }
             WitnessedSelfIssuedTypes::WitnessedBasicPost => HashMap::from([
                 ("body".to_string(), true),
                 ("id".to_string(), true),
-                ("title".to_string(), false),
+                // TODO: Determine if title should be optional.
+                ("title".to_string(), true),
                 ("reply_to".to_string(), false),
             ]),
             WitnessedSelfIssuedTypes::WitnessedBasicProfile => HashMap::from([
-                ("description".to_string(), true),
+                ("description".to_string(), false),
                 ("id".to_string(), true),
-                ("image".to_string(), true),
+                ("image".to_string(), false),
                 ("username".to_string(), true),
-                ("website".to_string(), true),
+                ("website".to_string(), false),
+            ]),
+            WitnessedSelfIssuedTypes::WitnessedBasicTag => HashMap::from([
+                ("id".to_string(), true),
+                ("users".to_string(), true),
+                ("post".to_string(), true),
+            ]),
+            WitnessedSelfIssuedTypes::WitnessedBookReview => HashMap::from([
+                ("id".to_string(), true),
+                ("link".to_string(), true),
+                ("rating".to_string(), true),
+                ("review".to_string(), true),
+                ("title".to_string(), true),
+            ]),
+            WitnessedSelfIssuedTypes::WitnessedDappPreferences => {
+                HashMap::from([("id".to_string(), true), ("dark_mode".to_string(), true)])
+            }
+            WitnessedSelfIssuedTypes::WitnessedFollow => {
+                HashMap::from([("id".to_string(), true), ("target".to_string(), true)])
+            }
+            WitnessedSelfIssuedTypes::WitnessedLike => {
+                HashMap::from([("id".to_string(), true), ("target".to_string(), true)])
+            }
+            WitnessedSelfIssuedTypes::WitnessedProgressBookLink => HashMap::from([
+                ("id".to_string(), true),
+                ("link".to_string(), true),
+                ("progress".to_string(), true),
             ]),
         }
     }

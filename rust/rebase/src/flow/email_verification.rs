@@ -20,7 +20,6 @@ use serde_json::json;
 use ts_rs::TS;
 use url::Url;
 
-// TODO: When revamping for publication, add challenge-parsing delimiter to config handle all on this side.
 #[derive(Clone, Deserialize, Serialize, TS)]
 #[ts(export)]
 pub struct SendGridBasicFlow {

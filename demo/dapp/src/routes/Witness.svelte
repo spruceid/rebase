@@ -17,6 +17,7 @@
     inst.subscribe((x) => (_inst = x));
 
     onMount(async () => {
+        console.log("TYPE:", type);
         try {
             if (
                 type !== "SameControllerAssertion" &&

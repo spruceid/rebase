@@ -9,7 +9,8 @@ pub use rebase::{
         same_controller_assertion::SameControllerAssertionContent,
         soundcloud_verification::SoundCloudVerificationContent,
         twitter_verification::TwitterVerificationContent,
-        witnessed_basic_profile::WitnessedBasicProfileContent,
+        witnessed_self_issued::content::WitnessedSelfIssuedContent,
+
     },
     flow::{
         dns_verification::DnsVerificationFlow,
@@ -21,7 +22,8 @@ pub use rebase::{
         same_controller_assertion::SameControllerAssertionFlow,
         soundcloud_verification::SoundCloudVerificationFlow,
         twitter_verification::TwitterVerificationFlow,
-        witnessed_basic_profile::WitnessedBasicProfileFlow,
+        witnessed_self_issued::WitnessedSelfIssuedFlow,
+
     },
     proof::{
         email_verification::EmailVerificationProof, github_verification::GitHubVerificationProof,
@@ -29,7 +31,8 @@ pub use rebase::{
         poap_ownership_verification::PoapOwnershipVerificationProof,
         same_controller_assertion::SameControllerAssertionProof,
         twitter_verification::TwitterVerificationProof,
-        witnessed_basic_profile::WitnessedBasicProfileProof,
+        witnessed_self_issued::proof::WitnessedSelfIssuedProof,
+
     },
     statement::{
         dns_verification::DnsVerificationStatement, email_verification::EmailVerificationStatement,
@@ -40,7 +43,8 @@ pub use rebase::{
         same_controller_assertion::SameControllerAssertionStatement,
         soundcloud_verification::SoundCloudVerificationStatement,
         twitter_verification::TwitterVerificationStatement,
-        witnessed_basic_profile::WitnessedBasicProfileStatement,
+        witnessed_self_issued::statement::WitnessedSelfIssuedStatement,
+
     },
     types::{
         defs::{
@@ -68,7 +72,7 @@ pub enum InstructionsType {
     SameControllerAssertion,
     SoundCloudVerification,
     TwitterVerification,
-    WitnessedBasicProfile,
+    WitnessedSelfIssued,
 }
 
 #[derive(Deserialize, Serialize, TS)]
@@ -83,7 +87,7 @@ pub enum Contents {
     SameControllerAssertion(SameControllerAssertionContent),
     SoundCloudVerification(SoundCloudVerificationContent),
     TwitterVerification(TwitterVerificationContent),
-    WitnessedBasicProfile(WitnessedBasicProfileContent),
+    WitnessedSelfIssued(WitnessedSelfIssuedContent),
 }
 
 #[async_trait(?Send)]
@@ -99,7 +103,7 @@ impl Content for Contents {
             Contents::SameControllerAssertion(x) => x.context(),
             Contents::SoundCloudVerification(x) => x.context(),
             Contents::TwitterVerification(x) => x.context(),
-            Contents::WitnessedBasicProfile(x) => x.context(),
+            Contents::WitnessedSelfIssued(x) => x.context(),
         }
     }
 
@@ -114,7 +118,7 @@ impl Content for Contents {
             Contents::SameControllerAssertion(x) => x.evidence(),
             Contents::SoundCloudVerification(x) => x.evidence(),
             Contents::TwitterVerification(x) => x.evidence(),
-            Contents::WitnessedBasicProfile(x) => x.evidence(),
+            Contents::WitnessedSelfIssued(x) => x.evidence(),
         }
     }
 
@@ -129,7 +133,7 @@ impl Content for Contents {
             Contents::SameControllerAssertion(x) => x.subject(),
             Contents::SoundCloudVerification(x) => x.subject(),
             Contents::TwitterVerification(x) => x.subject(),
-            Contents::WitnessedBasicProfile(x) => x.subject(),
+            Contents::WitnessedSelfIssued(x) => x.subject(),
         }
     }
 
@@ -144,7 +148,7 @@ impl Content for Contents {
             Contents::SameControllerAssertion(x) => x.types(),
             Contents::SoundCloudVerification(x) => x.types(),
             Contents::TwitterVerification(x) => x.types(),
-            Contents::WitnessedBasicProfile(x) => x.types(),
+            Contents::WitnessedSelfIssued(x) => x.types(),
         }
     }
 }
@@ -164,7 +168,7 @@ pub enum Statements {
     SameControllerAssertion(SameControllerAssertionStatement),
     SoundCloudVerification(SoundCloudVerificationStatement),
     TwitterVerification(TwitterVerificationStatement),
-    WitnessedBasicProfile(WitnessedBasicProfileStatement),
+    WitnessedSelfIssued(WitnessedSelfIssuedStatement),
 }
 
 impl Statement for Statements {
@@ -179,7 +183,7 @@ impl Statement for Statements {
             Statements::SameControllerAssertion(x) => x.generate_statement(),
             Statements::SoundCloudVerification(x) => x.generate_statement(),
             Statements::TwitterVerification(x) => x.generate_statement(),
-            Statements::WitnessedBasicProfile(x) => x.generate_statement(),
+            Statements::WitnessedSelfIssued(x) => x.generate_statement(),
         }
     }
 }
@@ -199,7 +203,7 @@ pub enum Proofs {
     SameControllerAssertion(SameControllerAssertionProof),
     SoundCloudVerification(SoundCloudVerificationStatement),
     TwitterVerification(TwitterVerificationProof),
-    WitnessedBasicProfile(WitnessedBasicProfileProof),
+    WitnessedSelfIssued(WitnessedSelfIssuedProof),
 }
 
 impl Statement for Proofs {
@@ -214,7 +218,7 @@ impl Statement for Proofs {
             Proofs::SameControllerAssertion(x) => x.generate_statement(),
             Proofs::SoundCloudVerification(x) => x.generate_statement(),
             Proofs::TwitterVerification(x) => x.generate_statement(),
-            Proofs::WitnessedBasicProfile(x) => x.generate_statement(),
+            Proofs::WitnessedSelfIssued(x) => x.generate_statement(),
         }
     }
 }
@@ -249,7 +253,7 @@ impl Proof<Contents> for Proofs {
             Proofs::TwitterVerification(x) => Ok(Contents::TwitterVerification(
                 x.to_content(statement, signature)?,
             )),
-            Proofs::WitnessedBasicProfile(x) => Ok(Contents::WitnessedBasicProfile(
+            Proofs::WitnessedSelfIssued(x) => Ok(Contents::WitnessedSelfIssued(
                 x.to_content(statement, signature)?,
             )),
         }
@@ -270,7 +274,7 @@ pub struct WitnessFlow {
     #[serde(rename = "SoundCloudVerification")]
     pub soundcloud_verification: Option<SoundCloudVerificationFlow>,
     pub twitter_verification: Option<TwitterVerificationFlow>,
-    pub witnessed_basic_profile: Option<WitnessedBasicProfileFlow>,
+    pub witnessed_self_issued: Option<WitnessedSelfIssuedFlow>,
 }
 
 #[async_trait(?Send)]
@@ -338,10 +342,10 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                     "no twitter flow configured".to_owned(),
                 )),
             },
-            Statements::WitnessedBasicProfile(s) => match &self.witnessed_basic_profile {
+            Statements::WitnessedSelfIssued(s) => match &self.witnessed_self_issued {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
-                    "no witness basic profile flow configured".to_owned(),
+                    "no witnessed self issued flow configured".to_owned(),
                 )),
             },
         }
@@ -423,12 +427,12 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                     "no twitter flow configured".to_owned(),
                 )),
             },
-            Proofs::WitnessedBasicProfile(p) => match &self.witnessed_basic_profile {
-                Some(x) => Ok(Contents::WitnessedBasicProfile(
+            Proofs::WitnessedSelfIssued(p) => match &self.witnessed_self_issued {
+                Some(x) => Ok(Contents::WitnessedSelfIssued(
                     x.validate_proof(p, issuer).await?,
                 )),
                 None => Err(FlowError::Validation(
-                    "no witnessed basic profile flow configured".to_owned(),
+                    "no witnessed self issued flow configured".to_owned(),
                 )),
             },
         }
@@ -534,10 +538,10 @@ impl WitnessFlow {
                     "no twitter flow configured".to_owned(),
                 )),
             },
-            InstructionsType::WitnessedBasicProfile => match &self.witnessed_basic_profile {
+            InstructionsType::WitnessedSelfIssued => match &self.witnessed_self_issued {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
-                    "no witnessed basic profile flow configured".to_owned(),
+                    "no witnessed self issued flow configured".to_owned(),
                 )),
             },
         }

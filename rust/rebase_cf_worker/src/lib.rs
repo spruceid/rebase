@@ -3,7 +3,7 @@ use rebase_witness_sdk::types::{
     GitHubVerificationFlow, InstructionsReq, NftOwnershipVerificationFlow,
     PoapOwnershipVerificationFlow, RedditVerificationFlow, SameControllerAssertionFlow,
     SoundCloudVerificationFlow, StatementReq, TwitterVerificationFlow, VerifyJWTReq, VerifyLDReq,
-    WitnessFlow, WitnessReq, WitnessedBasicProfileFlow,
+    WitnessFlow, WitnessReq, WitnessedSelfIssuedFlow,
 };
 use serde_json::json;
 use worker::*;
@@ -36,7 +36,7 @@ fn new_flow(env: &Env) -> WitnessFlow {
         same_controller_assertion: Some(SameControllerAssertionFlow {}),
         soundcloud_verification: None,
         twitter_verification: None,
-        witnessed_basic_profile: Some(WitnessedBasicProfileFlow {}),
+        witnessed_self_issued: Some(WitnessedSelfIssuedFlow {}),
     };
 
     match env.secret("SENDGRID_BEARER_TOKEN") {

@@ -115,15 +115,13 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
 
         // TODO: Investigate!
         // Can POAPs be attached to non EIP155 DIDs?
-        match stmt.subject {
-            Subjects::Pkh(Pkh::Eip155(_)) => {}
-            _ => {
-                return Err(FlowError::Validation(
-                    "Currently only supports Ethereum Addresses for POAP Ownership flow"
-                        .to_string(),
-                ))
-            }
+        if let Subjects::Pkh(Pkh::Eip155(_)) = stmt.subject {
+        } else {
+            return Err(FlowError::Validation(
+                "Currently only supports Ethereum Addresses for POAP Ownership flow".to_string(),
+            ));
         }
+
         let s = stmt.generate_statement()?;
 
         // The witness takes the statement which is bound to a specific time by the "issued_at"
