@@ -10,6 +10,7 @@ pub use rebase::{
         soundcloud_verification::SoundCloudVerificationContent,
         twitter_verification::TwitterVerificationContent,
         witnessed_self_issued::content::WitnessedSelfIssuedContent,
+
     },
     flow::{
         dns_verification::DnsVerificationFlow,
@@ -22,6 +23,7 @@ pub use rebase::{
         soundcloud_verification::SoundCloudVerificationFlow,
         twitter_verification::TwitterVerificationFlow,
         witnessed_self_issued::WitnessedSelfIssuedFlow,
+
     },
     proof::{
         email_verification::EmailVerificationProof, github_verification::GitHubVerificationProof,
@@ -30,6 +32,7 @@ pub use rebase::{
         same_controller_assertion::SameControllerAssertionProof,
         twitter_verification::TwitterVerificationProof,
         witnessed_self_issued::proof::WitnessedSelfIssuedProof,
+
     },
     statement::{
         dns_verification::DnsVerificationStatement, email_verification::EmailVerificationStatement,
@@ -41,6 +44,7 @@ pub use rebase::{
         soundcloud_verification::SoundCloudVerificationStatement,
         twitter_verification::TwitterVerificationStatement,
         witnessed_self_issued::statement::WitnessedSelfIssuedStatement,
+
     },
     types::{
         defs::{

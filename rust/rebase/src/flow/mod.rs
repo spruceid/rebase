@@ -8,3 +8,4 @@ pub mod same_controller_assertion;
 pub mod soundcloud_verification;
 pub mod twitter_verification;
 pub mod witnessed_self_issued;
+
