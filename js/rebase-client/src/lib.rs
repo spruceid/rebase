@@ -30,7 +30,7 @@ macro_rules! jserr {
 }
 
 #[wasm_bindgen]
-pub struct Client {
+pub struct WasmClient {
     client: Arc<RebaseClient>,
 }
 
@@ -56,9 +56,9 @@ impl Config {
 }
 
 #[wasm_bindgen]
-impl Client {
+impl WasmClient {
     #[wasm_bindgen(constructor)]
-    pub fn new(config: &str) -> Result<Client, String> {
+    pub fn new(config: &str) -> Result<WasmClient, String> {
         let config: Config = from_str(config).map_err(|e| e.to_string())?;
         config.is_valid()?;
 
@@ -84,7 +84,7 @@ impl Client {
 
         let statement = Url::parse(&config.statement).map_err(|e| e.to_string())?;
         let instructions = Url::parse(&config.instructions).map_err(|e| e.to_string())?;
-        Ok(Client {
+        Ok(WasmClient {
             client: Arc::new(
                 RebaseClient::new(Endpoints {
                     jwt,

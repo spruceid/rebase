@@ -2,7 +2,8 @@ import { writable, Writable } from "svelte/store";
 import { GlobeIcon, KeyIcon, TwitterIcon, EmailIcon, GitHubIcon, RedditIcon, SoundCloudIcon, ImageIcon, RibbonIcon } from 'src/components/icons';
 import type { Claim } from "./claim";
 import { connectedCount, connectSigner, disconnectSigner, retrieveSignerEntry, getAllConnected, Signer,  SignerType, SignerMap, newSignerMap, SignerQuery, signWith, retrieveSigner, ProviderType, toQuery } from "./signer";
-import type { Subject, Workflow } from "./witness";
+import type { Workflow } from "./witness";
+import { Types } from "@rebase-xyz/rebase-client";
 
 // TODO: Break into UI file?
 export type AccountState = "available" | "obtained";
@@ -119,7 +120,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "WitnessedBasicProfile",
+            credential_type: "WitnessedSelfIssued",
             icon: GlobeIcon,
             title: "Basic Profile",
             type: "public",
@@ -130,7 +131,7 @@ function defaultClaims(): Claim[] {
 
 export let claims: Writable<Array<Claim>> = writable(defaultClaims());
 
-export const getSubject = (signer: Signer): Subject => {
+export const getSubject = (signer: Signer): Types.Subjects => {
     if (!signer) {
         throw new Error("Please connect your wallet");
     }

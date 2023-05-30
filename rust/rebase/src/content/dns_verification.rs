@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use ts_rs::TS;
 
 #[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
 pub struct DnsVerificationContent {
     pub domain: String,
     pub subject: Subjects,

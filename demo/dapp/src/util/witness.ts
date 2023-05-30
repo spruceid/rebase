@@ -1,19 +1,19 @@
 import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, EmailIcon, RedditIcon, SoundCloudIcon } from "src/components/icons";
-import type { CredentialType } from "./claim";
-import { Client } from "@rebase-xyz/rebase-client";
+import { WasmClient } from "@rebase-xyz/rebase-client/wasm";
+import { Client, Types } from "@rebase-xyz/rebase-client";
 
 const witnessUrl = process.env.WITNESS_URL;
 
-const clientConfig = {
+const clientConfig: Types.Endpoints = {
     instructions: `${witnessUrl}/instructions`,
     statement: `${witnessUrl}/statement`,
     jwt: `${witnessUrl}/witness`,
     verify_jwt: `${witnessUrl}/verify`
 };
 
-export const client = new Client(JSON.stringify(clientConfig));
+export const client = new Client(new WasmClient(JSON.stringify(clientConfig)));
 
-export function needsDelimiter(c: CredentialType): boolean {
+export function needsDelimiter(c: Types.InstructionsType): boolean {
     switch (c) {
         case "GitHubVerification": 
         case "TwitterVerification":
@@ -37,10 +37,6 @@ export interface Solana {
     }
 }
 
-export interface Subject {
-    pkh?: PKHType,
-    web?: string;
-}
 export type Workflow = "signer" | "statement" | "signature" | "witness" | "complete"
 
 export type Instructions = {
@@ -58,16 +54,16 @@ export type Instructions = {
 }
 
 const ICONS = {
-    twitter: TwitterIcon,
-    dns: GlobeIcon,
-    email: EmailIcon,
-    github: GitHubIcon,
-    discord: DiscordIcon,
-    reddit: RedditIcon,
-    soundcloud: SoundCloudIcon,
+    TwitterVerification: TwitterIcon,
+    DnsVerification: GlobeIcon,
+    EmailVerification: EmailIcon,
+    GitHubVerification: GitHubIcon,
+    RedditVerification: RedditIcon,
+    SoundCloudVerification: SoundCloudIcon,
+    WitnessedSelfIssued: GlobeIcon,
 };
 
-export const titleCase = (s: CredentialType): string => {
+export const titleCase = (s: Types.InstructionsType): string => {
     switch (s) {
         case "DnsVerification":
             return "DNS";
@@ -99,7 +95,7 @@ interface WitnessInfo {
     witness_placeholder: string,
 }
 
-function witness_info(t: CredentialType): WitnessInfo {
+function witness_info(t: Types.InstructionsType): WitnessInfo {
     let statement = `Enter your ${titleCase(t)} account handle to verify and include it in a message signed via your wallet.`;
     let statement_label = "Enter Account Handle";
     let statement_placeholder =  `Enter your ${titleCase(t)} handle`;
@@ -170,10 +166,24 @@ function witness_info(t: CredentialType): WitnessInfo {
     }
 }
 
-export const instructions = async (t: CredentialType): Promise<Instructions> => {
+export const instructions = async (t: Types.InstructionsType): Promise<Instructions> => {
     let {statement, statement_label, statement_placeholder, witness, witness_label, witness_placeholder} = witness_info(t);
     switch (t) {
-        // case "discord":
+        case "WitnessedSelfIssued": {
+            return {
+                icon: ICONS[t],
+                title: `Witnessed Self-Issued Attestation Workflow`,
+                subtitle: `This process is used to self-issue attestations as verifiable credentials.`,
+                statement,
+                statement_label: "",
+                statement_placeholder,
+                signature: `Sign the message presented to you contiaing your attestion.`,
+                signature_label: `Signature Prompt`,
+                witness,
+                witness_label,
+                witness_placeholder            
+            }
+        }
         case "NftOwnershipVerification":
         case "PoapOwnershipVerification":
             return {

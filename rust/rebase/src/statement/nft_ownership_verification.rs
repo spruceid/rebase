@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 #[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
 pub struct NftOwnershipVerificationStatement {
     pub contract_address: String,
     pub subject: Subjects,

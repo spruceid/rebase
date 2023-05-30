@@ -39,7 +39,7 @@
     <div class="min-h-[577px] h-full flex flex-wrap">
         {#if type === "SameControllerAssertion"}
             <SameForm />
-        {:else if type === "WitnessedBasicProfile"}
+        {:else if type === "WitnessedSelfIssued"}
             <WitnessedSelfIssue />
         {:else if !_inst}
             <p class="inner-center">Building workflow...</p>
