@@ -14,9 +14,10 @@
         getSubject,
     } from "src/util";
     import { Button, SignerConnect } from "src/components";
-    import { Writable, writable } from "svelte/store";
+    import { writable } from "svelte/store";
     import { useNavigate } from "svelte-navigator";
     import FormSlot from "./FormSlot.svelte";
+    import { Types } from "@rebase-xyz/rebase-client";
     // TODO: Add JSON Schema validation
 
     let navigate = useNavigate();
@@ -53,7 +54,7 @@
         let next: Array<Claim> = [];
         for (let i = 0, n = _claims.length; i < n; i++) {
             let claim = _claims[i];
-            if (claim.credential_type === "WitnessedBasicProfile") {
+            if (claim.credential_type === "WitnessedSelfIssued") {
                 claim.credentials.push(credential);
             }
             next.push(claim);
@@ -67,15 +68,12 @@
     };
 
     async function f() {
-        let opts = {
-            WitnessedBasicProfile: {},
-        };
         let current = retrieveSigner(_signerMap, _lookUp);
         if (!current) {
             throw new Error("No default signer set");
         }
 
-        opts.WitnessedBasicProfile = {
+        let stmt: Types.WitnessedBasicProfileStatement = {
             description: _description,
             image: _image,
             username: _username,
@@ -83,40 +81,46 @@
             subject: getSubject(current),
         };
 
-        // TODO: JSON Schema validation here!
-        const badRespErr =
-            "Badly formatted witness service response in statement";
-        let res = await client.statement(
-            JSON.stringify({ opts: { WitnessedSelfIssued: opts } })
-        );
-
-        let body = JSON.parse(res);
-        if (!body.statement) {
-            throw new Error(badRespErr + " missing statement");
-        }
-
-        let statement = body.statement;
-        let signature = await sign(statement);
-
-        let proof = {
-            WitnessedSelfIssued: {
-                WitnessedBasicProfile: {
-                    signature,
-                    statement: opts.WitnessedBasicProfile,
+        let req: Types.StatementReq = {
+            opts: {
+                WitnessedSelfIssued: {
+                    WitnessedBasicProfile: stmt,
                 },
             },
         };
 
         // TODO: JSON Schema validation here!
-        let b = JSON.stringify({ proof });
-        res = await client.jwt(b);
-        let p = JSON.parse(res);
+        const badRespErr =
+            "Badly formatted witness service response in statement";
+        let res = await client.statement(req);
+
+        let statement = res?.statement;
+        if (!statement) {
+            throw new Error(badRespErr + " missing statement");
+        }
+        let signature = await sign(statement);
+
+        let proofReq: Types.WitnessReq = {
+            proof: {
+                WitnessedSelfIssued: {
+                    WitnessedBasicProfile: {
+                        signature,
+                        statement: stmt,
+                    },
+                },
+            },
+        };
+
+        // TODO: JSON Schema validation here!
+        let proofRes = await client.jwt(proofReq);
 
         // TODO: Check for missing JWT.
-        if (!p.jwt) {
-            throw new Error(p?.error ?? "No JWT found in response");
+        if (!proofRes.jwt) {
+            throw new Error(
+                (proofRes as any)?.error ?? "No JWT found in response"
+            );
         }
-        setNew(p.jwt);
+        setNew(proofRes.jwt);
         complete.set(true);
     }
 

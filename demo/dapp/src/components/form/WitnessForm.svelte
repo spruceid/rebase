@@ -1,6 +1,5 @@
 <script lang="ts">
     import {
-        CredentialType,
         Instructions,
         Workflow,
         Claim,
@@ -33,6 +32,7 @@
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
     import { Writable, writable } from "svelte/store";
+    import { Types } from "@rebase-xyz/rebase-client";
 
     // TODO: Make this a drop-down and include polygon?
     const NFT_NETWORK = "eth-mainnet";
@@ -74,7 +74,7 @@
         claims.set(next);
     };
 
-    export let type: CredentialType;
+    export let type: Types.InstructionsType;
     export let instructions: Instructions;
 
     let statement: Writable<string> = writable("");
@@ -146,8 +146,7 @@
         }
 
         try {
-            let res = await client.instructions(JSON.stringify({ type }));
-            let instruction_res = JSON.parse(res);
+            let instruction_res = await client.instructions(type);
             statement_schema = instruction_res?.statement_schema;
             witness_schema = instruction_res?.witness_schema;
             issuedAt.set(new Date().toISOString());
@@ -256,19 +255,20 @@
 
         const badRespErr = "Badly formatted witness service response";
         try {
-            let res = await client.statement(JSON.stringify({ opts }));
+            let req: Types.StatementReq = {
+                opts: opts as Types.Statements,
+            };
+            let res = await client.statement(req);
 
-            let body = JSON.parse(res);
-            if (!body.statement) {
+            if (!res.statement) {
                 throw new Error(badRespErr + " missing statement");
             }
-
-            if (needsDelimiter(type) && !body.delimiter) {
+            if (needsDelimiter(type) && !res.delimiter) {
                 throw new Error(badRespErr + " missing delimiter");
             }
 
-            statement.set(body.statement);
-            delimiter.set(body.delimiter);
+            statement.set(res.statement);
+            delimiter.set(res.delimiter);
         } catch (e) {
             if (e.message === badRespErr) {
                 throw e;
@@ -355,10 +355,11 @@
         }
 
         try {
-            let b = JSON.stringify({ proof: opts });
-
-            let res = await client.jwt(b);
-            let { jwt } = JSON.parse(res);
+            let req: Types.WitnessReq = {
+                proof: opts as Types.Proofs,
+            };
+            let res = await client.jwt(req);
+            let { jwt } = res;
 
             setNew(jwt);
         } catch (e) {

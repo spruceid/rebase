@@ -16,7 +16,6 @@
         disconnect,
         toQuery,
         signerMapAppend,
-        Subject,
     } from "src/util";
     import {
         Button,
@@ -31,6 +30,7 @@
     import { Writable, writable } from "svelte/store";
     import { useNavigate } from "svelte-navigator";
     import Ajv from "ajv";
+    import { Types } from "@rebase-xyz/rebase-client";
 
     let _lookUp = null;
     lookUp.subscribe((x) => (_lookUp = x));
@@ -49,11 +49,11 @@
     let _lookUp2: Signer = null;
     lookUp2.subscribe((x) => (_lookUp2 = x));
 
-    let key1: Writable<Subject> = writable(null);
+    let key1: Writable<Types.Subjects> = writable(null);
     let _key1 = null;
     key1.subscribe((x) => (_key1 = x));
 
-    let key2: Writable<Subject> = writable(null);
+    let key2: Writable<Types.Subjects> = writable(null);
     let _key2 = null;
     key2.subscribe((x) => (_key2 = x));
 
@@ -80,12 +80,9 @@
             lookUp1.set(_lookUp);
         }
 
-        let res = await client.instructions(
-            JSON.stringify({ type: "SameControllerAssertion" })
-        );
-        let instruction_res = JSON.parse(res);
-        statement_schema = instruction_res?.statement_schema;
-        witness_schema = instruction_res?.witness_schema;
+        let res = await client.instructions("SameControllerAssertion");
+        statement_schema = res.statement_schema;
+        witness_schema = res.witness_schema;
     });
 
     onDestroy(() => {
@@ -136,13 +133,13 @@
 
         key1.set(getSubject(s1.signer));
         key2.set(getSubject(s2.signer));
-
-        let o = {
+        let stmt: Types.SameControllerAssertionStatement = {
+            id1: _key1,
+            id2: _key2,
+        };
+        let o: Types.StatementReq = {
             opts: {
-                SameControllerAssertion: {
-                    id1: _key1,
-                    id2: _key2,
-                },
+                SameControllerAssertion: stmt,
             },
         };
 
@@ -150,20 +147,14 @@
             throw new Error("No JSON Schema found for Statement Request");
         }
 
-        if (!ajv.validate(statement_schema, o.opts.SameControllerAssertion)) {
+        if (!ajv.validate(statement_schema, stmt)) {
             throw new Error("Validation of Statement Request failed");
         }
 
         const noStatementErr = "Did not find statement in response";
         try {
-            let b = JSON.stringify(o);
-            let res = await client.statement(b);
-            let body = JSON.parse(res);
-            if (!body.statement) {
-                throw new Error(noStatementErr);
-            }
-
-            statement.set(body.statement);
+            let res = await client.statement(o);
+            statement.set(res.statement);
         } catch (e) {
             if (e.message === noStatementErr) {
                 throw new Error(e.message);
@@ -195,12 +186,14 @@
             );
         }
 
+        const stmt: Types.SameControllerAssertionStatement = {
+            id1: _key1,
+            id2: _key2,
+        };
+
         const proof = {
             SameControllerAssertion: {
-                statement: {
-                    id1: _key1,
-                    id2: _key2,
-                },
+                statement: stmt,
                 signature1: _sig1,
                 signature2: _sig2,
             },
@@ -215,10 +208,8 @@
         }
 
         try {
-            let b = JSON.stringify({ proof });
-            let res = await client.jwt(b);
-
-            let { jwt } = JSON.parse(res);
+            let res = await client.jwt({ proof });
+            let { jwt } = res;
             setNew(jwt);
         } catch (e) {
             throw new Error(
@@ -387,7 +378,7 @@
         </div>
     </WitnessFormStepper>
     <div
-        class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center  content-end"
+        class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center content-end"
     >
         <Button
             class="w-2/5"
@@ -425,7 +416,7 @@
             <div>Loading....</div>
         </WitnessFormStepper>
         <div
-            class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center  content-end"
+            class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center content-end"
         >
             <Button
                 class="w-2/5"
@@ -494,7 +485,7 @@
             </div>
         </WitnessFormStepper>
         <div
-            class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center  content-end"
+            class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center content-end"
         >
             <Button
                 class="w-2/5"
