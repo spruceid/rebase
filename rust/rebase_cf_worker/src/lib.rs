@@ -2,8 +2,8 @@ use rebase_witness_sdk::types::{
     issuer::ed25519::DidWebJwk, Alchemy, DnsVerificationFlow, EmailVerificationFlow,
     GitHubVerificationFlow, InstructionsReq, NftOwnershipVerificationFlow,
     PoapOwnershipVerificationFlow, RedditVerificationFlow, SameControllerAssertionFlow,
-    SoundCloudVerificationFlow, StatementReq, TwitterVerificationFlow, VerifyJWTReq, VerifyLDReq,
-    WitnessFlow, WitnessReq, WitnessedSelfIssuedFlow,
+    SoundCloudVerificationFlow, StatementReq, TwitterVerificationFlow, VCWrapper, WitnessFlow,
+    WitnessReq, WitnessedSelfIssuedFlow,
 };
 use serde_json::json;
 use worker::*;
@@ -192,25 +192,8 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         .options("/verify", |_req, _ctx| preflight_response())
         .post_async("/verify", |mut req, ctx| async move {
             if let Ok(t) = req.text().await {
-                if let Ok(b) = serde_json::from_str::<VerifyJWTReq>(&t) {
-                    if ctx
-                        .data
-                        .0
-                        .handle_verify_jwt_req(&b, &ctx.data.1)
-                        .await
-                        .is_ok()
-                    {
-                        return Ok(Response::from_json(&json!({"success": true}))?
-                            .with_headers(post_resp_headers()?));
-                    };
-                } else if let Ok(b) = serde_json::from_str::<VerifyLDReq>(&t) {
-                    if ctx
-                        .data
-                        .0
-                        .handle_verify_credential_req(&b, &ctx.data.1)
-                        .await
-                        .is_ok()
-                    {
+                if let Ok(b) = serde_json::from_str::<VCWrapper>(&t) {
+                    if ctx.data.0.handle_verify(&b, &ctx.data.1).await.is_ok() {
                         return Ok(Response::from_json(&json!({"success": true}))?
                             .with_headers(post_resp_headers()?));
                     };

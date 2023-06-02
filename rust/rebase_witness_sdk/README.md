@@ -66,9 +66,9 @@ with `rebase::statement::dns::Dns` aliased to `DnsStmt` and so forth.
 
 The result of this is that given an instance of `Statements`, one can simply pass that instance to `WitnessFlow.statement` and get the expected result (presuming the flow is implemented in WitnessFlow).
 
-This pattern is matched for `Contents` and `Proofs`, as well as instructions (via `InstructionsType`).
+This pattern is matched for `Contents` and `Proofs`, as well as instructions (via `FlowType`).
 
-To support a new flow, a struct `impl`ing the flow has to be added (wrapped in an `Option`) to the `WitnessFlow` struct, then an entry added to each of the enums mentioned above (`InstructionsType`, `Statements`, `Contents`, and `Proofs`).
+To support a new flow, a struct `impl`ing the flow has to be added (wrapped in an `Option`) to the `WitnessFlow` struct, then an entry added to each of the enums mentioned above (`FlowType`, `Statements`, `Contents`, and `Proofs`).
 
 Then adding support in the `WitnessFlow`'s `impl` of `Flow` for each step. A very complex macro could probably decrease this work, but it isn't particularly sizable as is.
 
@@ -80,7 +80,7 @@ The shape of the requests and responses that the `WitnessFlow` can handle are al
 #[derive(Deserialize, Serialize)]
 pub struct InstructionsReq {
     #[serde(rename = "type")]
-    pub instruction_type: InstructionsType,
+    pub instruction_type: FlowType,
 }
 
 #[derive(Deserialize, Serialize)]

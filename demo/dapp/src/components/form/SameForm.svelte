@@ -208,7 +208,7 @@
         }
 
         try {
-            let res = await client.jwt({ proof });
+            let res = await client.witness_jwt({ proof });
             let { jwt } = res;
             setNew(jwt);
         } catch (e) {

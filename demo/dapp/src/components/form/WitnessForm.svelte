@@ -74,7 +74,7 @@
         claims.set(next);
     };
 
-    export let type: Types.InstructionsType;
+    export let type: Types.FlowType;
     export let instructions: Instructions;
 
     let statement: Writable<string> = writable("");
@@ -358,7 +358,7 @@
             let req: Types.WitnessReq = {
                 proof: opts as Types.Proofs,
             };
-            let res = await client.jwt(req);
+            let res = await client.witness_jwt(req);
             let { jwt } = res;
 
             setNew(jwt);

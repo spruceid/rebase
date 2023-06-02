@@ -1,33 +1,20 @@
 use crate::types::error::*;
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
-use did_web::DIDWeb;
+pub use did_web::DIDWeb;
 use schemars::schema::RootSchema;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use ssi::{
-    jsonld::ContextLoader as JSONLDContextLoader,
+pub use ssi::{
+    did_resolve::DIDResolver,
+    jsonld::ContextLoader,
     ldp::Proof as LDProof,
-    one_or_many::OneOrMany as SSIOneOrMany,
-    vc::{
-        Credential as SSICred, Evidence as SSIEvidence, LinkedDataProofOptions as LDPOpts,
-        URI as VCURI,
-    },
+    one_or_many::OneOrMany,
+    vc::{get_verification_method, Credential, Evidence, LinkedDataProofOptions, URI},
 };
 use ts_rs::TS;
 use uuid::Uuid;
-
-pub type Credential = SSICred;
-pub type ContextLoader = JSONLDContextLoader;
-pub type LinkedDataProofOptions = LDPOpts;
-pub type URI = VCURI;
-pub type OneOrMany<T> = SSIOneOrMany<T>;
-pub type Evidence = SSIEvidence;
-
-pub fn new_resolver() -> DIDWeb {
-    DIDWeb
-}
 
 #[async_trait(?Send)]
 pub trait Subject
@@ -38,6 +25,7 @@ where
 
     fn display_id(&self) -> Result<String, SubjectError>;
 
+    // TODO: Remove this when we use get_verification_method instead
     fn verification_method(&self) -> Result<String, SubjectError>;
 
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError>;

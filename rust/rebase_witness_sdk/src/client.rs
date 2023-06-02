@@ -1,6 +1,5 @@
 use crate::types::{
-    InstructionsReq, StatementReq, VerifyJWTReq, VerifyLDReq, VerifyRes, WitnessJWTRes,
-    WitnessLDRes, WitnessReq,
+    CredentialWrapper, InstructionsReq, JWTWrapper, StatementReq, VCWrapper, VerifyRes, WitnessReq,
 };
 use rebase::types::defs::FlowResponse;
 use reqwest::Client as HttpClient;
@@ -26,17 +25,15 @@ pub enum ClientError {
 #[ts(export)]
 pub struct Endpoints {
     #[ts(type = "string", optional)]
-    pub jwt: Option<Url>,
+    pub witness_jwt: Option<Url>,
     #[ts(type = "string", optional)]
-    pub ld: Option<Url>,
+    pub witness_ld: Option<Url>,
     #[ts(type = "string")]
     pub statement: Url,
     #[ts(type = "string")]
     pub instructions: Url,
     #[ts(type = "string", optional)]
-    pub verify_jwt: Option<Url>,
-    #[ts(type = "string", optional)]
-    pub verify_ld: Option<Url>,
+    pub verify: Option<Url>,
 }
 
 #[derive(Clone)]
@@ -52,7 +49,7 @@ struct WitnessErr {
 
 impl Client {
     pub fn new(endpoints: Endpoints) -> Result<Client, ClientError> {
-        if endpoints.jwt.is_none() && endpoints.ld.is_none() {
+        if endpoints.witness_jwt.is_none() && endpoints.witness_ld.is_none() {
             return Err(ClientError::Config("No witness url found".to_string()));
         };
 
@@ -101,8 +98,8 @@ impl Client {
         }
     }
 
-    pub async fn jwt(&self, req: WitnessReq) -> Result<WitnessJWTRes, ClientError> {
-        match &self.endpoints.jwt {
+    pub async fn witness_jwt(&self, req: WitnessReq) -> Result<JWTWrapper, ClientError> {
+        match &self.endpoints.witness_jwt {
             Some(endpoint) => {
                 let client = HttpClient::new();
 
@@ -115,7 +112,7 @@ impl Client {
 
                 match res.json::<serde_json::Value>().await {
                     Err(e) => Err(ClientError::JWT(e.to_string())),
-                    Ok(val) => match serde_json::from_value::<WitnessJWTRes>(val.clone()) {
+                    Ok(val) => match serde_json::from_value::<JWTWrapper>(val.clone()) {
                         Ok(r) => Ok(r),
                         Err(p) => match serde_json::from_value::<WitnessErr>(val) {
                             Err(_) => Err(ClientError::JWT(p.to_string())),
@@ -128,8 +125,8 @@ impl Client {
         }
     }
 
-    pub async fn ld(&self, req: WitnessReq) -> Result<WitnessLDRes, ClientError> {
-        match &self.endpoints.ld {
+    pub async fn witness_ld(&self, req: WitnessReq) -> Result<CredentialWrapper, ClientError> {
+        match &self.endpoints.witness_ld {
             Some(endpoint) => {
                 let client = HttpClient::new();
 
@@ -142,7 +139,7 @@ impl Client {
 
                 match res.json::<serde_json::Value>().await {
                     Err(e) => Err(ClientError::Ld(e.to_string())),
-                    Ok(val) => match serde_json::from_value::<WitnessLDRes>(val.clone()) {
+                    Ok(val) => match serde_json::from_value::<CredentialWrapper>(val.clone()) {
                         Ok(r) => Ok(r),
                         Err(p) => match serde_json::from_value::<WitnessErr>(val) {
                             Err(_) => Err(ClientError::Ld(p.to_string())),
@@ -155,39 +152,8 @@ impl Client {
         }
     }
 
-    // TODO: Unify these when making the request a single enum.
-    pub async fn verify_jwt(&self, req: VerifyJWTReq) -> Result<VerifyRes, ClientError> {
-        match &self.endpoints.verify_jwt {
-            Some(endpoint) => {
-                let client = HttpClient::new();
-
-                let res = client
-                    .post(endpoint.clone())
-                    .json(&req)
-                    .send()
-                    .await
-                    .map_err(|e| ClientError::Ld(e.to_string()))?;
-
-                match res.json::<serde_json::Value>().await {
-                    Err(e) => Err(ClientError::JWT(e.to_string())),
-                    Ok(val) => match serde_json::from_value::<VerifyRes>(val.clone()) {
-                        Ok(r) => Ok(r),
-                        Err(p) => match serde_json::from_value::<WitnessErr>(val) {
-                            Err(_) => Err(ClientError::JWT(p.to_string())),
-                            Ok(w) => Err(ClientError::JWT(w.error)),
-                        },
-                    },
-                }
-            }
-            None => Err(ClientError::Ld(
-                "No configured verify JWT endpoint".to_string(),
-            )),
-        }
-    }
-
-    // TODO: Unify these when making the request a single type enum.
-    pub async fn verify_ld(&self, req: VerifyLDReq) -> Result<VerifyRes, ClientError> {
-        match &self.endpoints.verify_ld {
+    pub async fn verify(&self, req: VCWrapper) -> Result<VerifyRes, ClientError> {
+        match &self.endpoints.verify {
             Some(endpoint) => {
                 let client = HttpClient::new();
 

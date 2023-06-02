@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CredentialType, Instructions } from "../util";
+    import type { Instructions } from "../util";
     import { instructions, alert } from "../util";
     import { onMount } from "svelte";
     import {
@@ -9,8 +9,9 @@
         WitnessedSelfIssue,
     } from "src/components";
     import { writable, type Writable } from "svelte/store";
+    import { Types } from "@rebase-xyz/rebase-client";
 
-    export let type: CredentialType;
+    export let type: Types.FlowType;
 
     let inst: Writable<Instructions> = writable(null);
     let _inst: Instructions = null;
@@ -21,7 +22,7 @@
         try {
             if (
                 type !== "SameControllerAssertion" &&
-                type !== "WitnessedBasicProfile"
+                type !== "WitnessedSelfIssued"
             ) {
                 let i = await instructions(type);
                 inst.set(i as Instructions);

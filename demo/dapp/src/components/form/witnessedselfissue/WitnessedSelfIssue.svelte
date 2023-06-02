@@ -112,7 +112,7 @@
         };
 
         // TODO: JSON Schema validation here!
-        let proofRes = await client.jwt(proofReq);
+        let proofRes = await client.witness_jwt(proofReq);
 
         // TODO: Check for missing JWT.
         if (!proofRes.jwt) {
