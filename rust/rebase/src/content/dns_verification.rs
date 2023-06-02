@@ -22,7 +22,8 @@ impl Content for DnsVerificationContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
-            "https://spec.rebase.xyz/contexts/v1"
+            "https://spec.rebase.xyz/contexts/v1",
+            "https://schema.org/"
         ]))
     }
 

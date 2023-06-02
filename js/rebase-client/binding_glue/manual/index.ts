@@ -32,7 +32,6 @@ export class Client {
         return JSON.parse(res) as Types.JWTWrapper;
     }
 
-
     async witness_ld(req: Types.WitnessReq): Promise<Types.CredentialWrapper> {
         let res = await this.client.witness_ld(JSON.stringify(req));
         return JSON.parse(res) as Types.CredentialWrapper;
