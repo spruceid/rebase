@@ -1,5 +1,5 @@
 use rebase_witness_sdk::types::{
-    issuer::ed25519::DidWebJwk, Alchemy, DnsVerificationFlow, EmailVerificationFlow,
+    handle_verify, issuer::ed25519::DidWebJwk, Alchemy, DnsVerificationFlow, EmailVerificationFlow,
     GitHubVerificationFlow, InstructionsReq, NftOwnershipVerificationFlow,
     PoapOwnershipVerificationFlow, RedditVerificationFlow, SameControllerAssertionFlow,
     SoundCloudVerificationFlow, StatementReq, TwitterVerificationFlow, VCWrapper, WitnessFlow,
@@ -190,10 +190,10 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         })
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/verify", |_req, _ctx| preflight_response())
-        .post_async("/verify", |mut req, ctx| async move {
+        .post_async("/verify", |mut req, _ctx| async move {
             if let Ok(t) = req.text().await {
                 if let Ok(b) = serde_json::from_str::<VCWrapper>(&t) {
-                    if ctx.data.0.handle_verify(&b, &ctx.data.1).await.is_ok() {
+                    if handle_verify(&b).await.is_ok() {
                         return Ok(Response::from_json(&json!({"success": true}))?
                             .with_headers(post_resp_headers()?));
                     };
