@@ -10,12 +10,11 @@ use url::Url;
 fn new_client(base_url: &str) -> Result<Client, String> {
     // TODO: Update to use a worker that supports LD routes.
     let endpoints = Endpoints {
-        jwt: Some(Url::parse(&format!("{}/witness", base_url)).unwrap()),
-        ld: None,
+        witness_jwt: Some(Url::parse(&format!("{}/witness", base_url)).unwrap()),
+        witness_ld: None,
         statement: Url::parse(&format!("{}/statement", base_url)).unwrap(),
         instructions: Url::parse(&format!("{}/instructions", base_url)).unwrap(),
-        verify_jwt: None,
-        verify_ld: None,
+        verify: None,
     };
 
     Client::new(endpoints).map_err(|e| e.to_string())
@@ -63,7 +62,7 @@ async fn main() {
         proof: Proofs::DnsVerification(inner.clone()),
     };
 
-    client.jwt(req).await.unwrap();
+    client.witness_jwt(req).await.unwrap();
 
     println!("DNS credential issued");
 
@@ -91,7 +90,7 @@ async fn main() {
         proof: Proofs::GitHubVerification(proof),
     };
 
-    client.jwt(req).await.unwrap();
+    client.witness_jwt(req).await.unwrap();
 
     println!("GitHub credential issued");
 
@@ -114,7 +113,7 @@ async fn main() {
         proof: Proofs::RedditVerification(inner),
     };
 
-    client.jwt(req).await.unwrap();
+    client.witness_jwt(req).await.unwrap();
 
     println!("Reddit credential issued");
 
@@ -137,7 +136,7 @@ async fn main() {
         proof: Proofs::SoundCloudVerification(inner),
     };
 
-    client.jwt(req).await.unwrap();
+    client.witness_jwt(req).await.unwrap();
 
     println!("SoundCloud credential issued");
 
@@ -166,7 +165,7 @@ async fn main() {
         proof: Proofs::TwitterVerification(proof),
     };
 
-    client.jwt(req).await.unwrap();
+    client.witness_jwt(req).await.unwrap();
 
     println!("Twitter credential issued");
 
@@ -198,7 +197,7 @@ async fn main() {
         proof: Proofs::SameControllerAssertion(proof),
     };
 
-    client.jwt(req).await.unwrap();
+    client.witness_jwt(req).await.unwrap();
 
     println!("Self Signed Credential issued");
     println!("All Ethereum Live Posts tested!");
@@ -229,7 +228,7 @@ async fn main() {
         proof: Proofs::GitHubVerification(proof),
     };
 
-    client.jwt(req).await.unwrap();
+    client.witness_jwt(req).await.unwrap();
 
     println!("GitHub credential issued");
     println!("Testing Twitter...");
@@ -257,7 +256,7 @@ async fn main() {
         proof: Proofs::TwitterVerification(proof),
     };
 
-    client.jwt(req).await.unwrap();
+    client.witness_jwt(req).await.unwrap();
 
     println!("Twitter credential issued");
 
@@ -288,7 +287,7 @@ async fn main() {
         proof: Proofs::SameControllerAssertion(proof),
     };
 
-    client.jwt(req).await.unwrap();
+    client.witness_jwt(req).await.unwrap();
 
     println!("Self Signed Credential issued");
 

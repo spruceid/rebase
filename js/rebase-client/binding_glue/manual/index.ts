@@ -12,8 +12,7 @@ export class Client {
         this.client = client;
     }
 
-    // async instructions(type: Types.InstructionsType): Promise<Types.Instructions> {
-    async instructions(type: Types.InstructionsType): Promise<Types.Instructions> {
+    async instructions(type: Types.FlowType): Promise<Types.Instructions> {
         let req: Types.InstructionsReq = {
             type,
         };
@@ -23,20 +22,24 @@ export class Client {
         return res as Types.Instructions;
     }
 
-    // async statement(req: Types.StatementReq): Promise<Types.FlowResponse> {
     async statement(req: Types.StatementReq): Promise<Types.FlowResponse> {
         let res = await this.client.statement(JSON.stringify(req));
         return JSON.parse(res) as Types.FlowResponse;
     }
 
-    async jwt(req: Types.WitnessReq): Promise<Types.WitnessJWTRes> {
-        let res = await this.client.jwt(JSON.stringify(req));
-        return JSON.parse(res) as Types.WitnessJWTRes;
+    async witness_jwt(req: Types.WitnessReq): Promise<Types.JWTWrapper> {
+        let res = await this.client.witness_jwt(JSON.stringify(req));
+        return JSON.parse(res) as Types.JWTWrapper;
     }
 
-    // TODO: Regen the bindings, the use Types.VerificationReq
-    async verify(req: Types.WitnessJWTRes): Promise<Types.VerifyRes> {
-        let res = await this.client.verify_jwt(JSON.stringify(req));
+
+    async witness_ld(req: Types.WitnessReq): Promise<Types.CredentialWrapper> {
+        let res = await this.client.witness_ld(JSON.stringify(req));
+        return JSON.parse(res) as Types.CredentialWrapper;
+    }
+
+    async verify(req: Types.VCWrapper): Promise<Types.VerifyRes> {
+        let res = await this.client.verify(JSON.stringify(req));
         return JSON.parse(res) as Types.VerifyRes;
     }
 }

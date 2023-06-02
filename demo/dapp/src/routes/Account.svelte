@@ -5,7 +5,7 @@
         BasePage,
         ToggleButton,
         Button,
-    } from "components";
+    } from "src/components";
     import { AccountState } from "utils";
     import { useNavigate } from "svelte-navigator";
     import { onMount } from "svelte";

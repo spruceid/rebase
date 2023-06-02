@@ -1,7 +1,6 @@
 <script lang="ts">
     import { Claim, credentialToDisplay, client, alert } from "src/util";
     import {
-        Button,
         IconButton,
         DownloadIcon,
         DeleteIcon,
@@ -19,7 +18,7 @@
 
     export const verify = async (jwt: string) => {
         try {
-            let res = await client.verify_jwt(JSON.stringify({ jwt }));
+            let res = await client.verify({ jwt });
             console.log(res);
             alert.set({
                 message: "Credential verified!",
@@ -36,7 +35,7 @@
 </script>
 
 {#if claim.credentials.length !== 0}
-    <div class="obtained-claim py-2 w-full flex flex-wrap justify-between ">
+    <div class="obtained-claim py-2 w-full flex flex-wrap justify-between">
         <div class="flex flex-wrap w-full">
             <div class="flex flex-wrap justify-center items-center">
                 <div class="w-8 h-fit">

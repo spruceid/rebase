@@ -1,4 +1,3 @@
-pub use rebase::issuer;
 pub use rebase::{
     content::{
         dns_verification::DnsVerificationContent, email_verification::EmailVerificationContent,
@@ -10,7 +9,6 @@ pub use rebase::{
         soundcloud_verification::SoundCloudVerificationContent,
         twitter_verification::TwitterVerificationContent,
         witnessed_self_issued::content::WitnessedSelfIssuedContent,
-
     },
     flow::{
         dns_verification::DnsVerificationFlow,
@@ -23,8 +21,8 @@ pub use rebase::{
         soundcloud_verification::SoundCloudVerificationFlow,
         twitter_verification::TwitterVerificationFlow,
         witnessed_self_issued::WitnessedSelfIssuedFlow,
-
     },
+    issuer,
     proof::{
         email_verification::EmailVerificationProof, github_verification::GitHubVerificationProof,
         nft_ownership_verification::NftOwnershipVerificationProof,
@@ -32,7 +30,6 @@ pub use rebase::{
         same_controller_assertion::SameControllerAssertionProof,
         twitter_verification::TwitterVerificationProof,
         witnessed_self_issued::proof::WitnessedSelfIssuedProof,
-
     },
     statement::{
         dns_verification::DnsVerificationStatement, email_verification::EmailVerificationStatement,
@@ -44,12 +41,11 @@ pub use rebase::{
         soundcloud_verification::SoundCloudVerificationStatement,
         twitter_verification::TwitterVerificationStatement,
         witnessed_self_issued::statement::WitnessedSelfIssuedStatement,
-
     },
     types::{
         defs::{
-            new_resolver, Content, ContextLoader, Credential, Evidence, Flow, FlowResponse,
-            Instructions, Issuer, LinkedDataProofOptions, OneOrMany, Proof, Statement, URI,
+            Content, ContextLoader, Credential, DIDWeb, Evidence, Flow, FlowResponse, Instructions,
+            Issuer, LinkedDataProofOptions, OneOrMany, Proof, Statement, URI,
         },
         error::{ContentError, FlowError, ProofError, StatementError},
     },
@@ -60,9 +56,15 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ts_rs::TS;
 
+// TODO: Derive resolver instead of using this:
+const REPLACE_ME: &DIDWeb = &DIDWeb;
+
+// NOTE: If there is a way to write a macro where a enum can derive a trait
+// by having each member of the enum impl the trait, this file would become
+// just enum defs. I have searched, yet it elludes me. May you find the way.
 #[derive(Clone, Deserialize, Serialize, TS)]
 #[ts(export)]
-pub enum InstructionsType {
+pub enum FlowType {
     DnsVerification,
     EmailVerification,
     GitHubVerification,
@@ -442,7 +444,7 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
 #[ts(export)]
 pub struct InstructionsReq {
     #[serde(rename = "type")]
-    pub instruction_type: InstructionsType,
+    pub instruction_type: FlowType,
 }
 
 #[derive(Deserialize, Serialize, TS)]
@@ -458,24 +460,26 @@ pub struct WitnessReq {
     pub proof: Proofs,
 }
 
-// TODO: Refactor the base names of the structs?
 #[derive(Clone, Deserialize, Serialize, TS)]
 #[ts(export)]
-pub struct WitnessJWTRes {
+pub struct JWTWrapper {
     pub jwt: String,
 }
 
 #[derive(Clone, Deserialize, Serialize, TS)]
 #[ts(export)]
-pub struct WitnessLDRes {
+pub struct CredentialWrapper {
     #[ts(type = "object")]
     pub credential: Credential,
 }
 
-// TODO: Refactor the base names of the structs?
-// TODO: Make the request an enum and flatten on serailization.
-pub type VerifyJWTReq = WitnessJWTRes;
-pub type VerifyLDReq = WitnessLDRes;
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
+#[serde(untagged)]
+pub enum VCWrapper {
+    Ld(CredentialWrapper),
+    Jwt(JWTWrapper),
+}
 
 #[derive(Clone, Deserialize, Serialize, TS)]
 #[ts(export)]
@@ -484,31 +488,31 @@ pub struct VerifyRes {
 }
 
 impl WitnessFlow {
-    pub fn get_instructions(&self, t: InstructionsType) -> Result<Instructions, FlowError> {
+    pub fn get_instructions(&self, t: FlowType) -> Result<Instructions, FlowError> {
         match t {
-            InstructionsType::DnsVerification => match &self.dns_verification {
+            FlowType::DnsVerification => match &self.dns_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation("no dns flow configured".to_owned())),
             },
-            InstructionsType::EmailVerification => match &self.email_verification {
+            FlowType::EmailVerification => match &self.email_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no email_verification flow configured".to_owned(),
                 )),
             },
-            InstructionsType::GitHubVerification => match &self.github_verification {
+            FlowType::GitHubVerification => match &self.github_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no github flow configured".to_owned(),
                 )),
             },
-            InstructionsType::NftOwnershipVerification => match &self.nft_ownership_verification {
+            FlowType::NftOwnershipVerification => match &self.nft_ownership_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no nft_ownership flow configured".to_owned(),
                 )),
             },
-            InstructionsType::PoapOwnershipVerification => {
+            FlowType::PoapOwnershipVerification => {
                 match &self.poap_ownership_verification {
                     Some(x) => x.instructions(),
                     _ => Err(FlowError::Validation(
@@ -516,29 +520,29 @@ impl WitnessFlow {
                     )),
                 }
             }
-            InstructionsType::RedditVerification => match &self.reddit_verification {
+            FlowType::RedditVerification => match &self.reddit_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no reddit flow configured".to_owned(),
                 )),
             },
-            InstructionsType::SameControllerAssertion => match &self.same_controller_assertion {
+            FlowType::SameControllerAssertion => match &self.same_controller_assertion {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation("no same flow configured".to_owned())),
             },
-            InstructionsType::SoundCloudVerification => match &self.soundcloud_verification {
+            FlowType::SoundCloudVerification => match &self.soundcloud_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no soundcloud flow configured".to_owned(),
                 )),
             },
-            InstructionsType::TwitterVerification => match &self.twitter_verification {
+            FlowType::TwitterVerification => match &self.twitter_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no twitter flow configured".to_owned(),
                 )),
             },
-            InstructionsType::WitnessedSelfIssued => match &self.witnessed_self_issued {
+            FlowType::WitnessedSelfIssued => match &self.witnessed_self_issued {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
                     "no witnessed self issued flow configured".to_owned(),
@@ -578,48 +582,34 @@ impl WitnessFlow {
         Ok(json!(self.statement(&req.opts, issuer).await?))
     }
 
-    // TODO: Unify these two if the request becomes an enum
-    pub async fn handle_verify_credential_req<I: Issuer>(
+    pub async fn handle_verify<I: Issuer>(
         &self,
-        req: &VerifyLDReq,
+        req: &VCWrapper,
         issuer: &I,
     ) -> Result<(), FlowError> {
+        // TODO: Get resolver from Credential.issuer
+        // TODO: Get verification method from did + resolver using ssi::vc::get_verification_method
         let ldpo = LinkedDataProofOptions {
             verification_method: Some(URI::String(issuer.verification_method()?)),
             ..Default::default()
         };
 
-        let res = req
-            .credential
-            .verify(Some(ldpo), &new_resolver(), &mut ContextLoader::default())
-            .await;
-
-        if res.errors.is_empty() {
-            Ok(())
-        } else {
-            let message = res.errors.join(" ");
-            Err(FlowError::BadLookup(message))
-        }
-    }
-
-    // TODO: Unify these two if the request becomes an enum
-    pub async fn handle_verify_jwt_req<I: Issuer>(
-        &self,
-        req: &VerifyJWTReq,
-        issuer: &I,
-    ) -> Result<(), FlowError> {
-        let ldpo = LinkedDataProofOptions {
-            verification_method: Some(URI::String(issuer.verification_method()?)),
-            ..Default::default()
+        let res = match req {
+            VCWrapper::Jwt(r) => {
+                Credential::verify_jwt(
+                    &r.jwt,
+                    Some(ldpo),
+                    REPLACE_ME,
+                    &mut ContextLoader::default(),
+                )
+                .await
+            }
+            VCWrapper::Ld(r) => {
+                r.credential
+                    .verify(Some(ldpo), REPLACE_ME, &mut ContextLoader::default())
+                    .await
+            }
         };
-
-        let res = Credential::verify_jwt(
-            &req.jwt,
-            Some(ldpo),
-            &new_resolver(),
-            &mut ContextLoader::default(),
-        )
-        .await;
 
         if res.errors.is_empty() {
             Ok(())

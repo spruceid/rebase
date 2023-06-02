@@ -7,13 +7,13 @@ const witnessUrl = process.env.WITNESS_URL;
 const clientConfig: Types.Endpoints = {
     instructions: `${witnessUrl}/instructions`,
     statement: `${witnessUrl}/statement`,
-    jwt: `${witnessUrl}/witness`,
-    verify_jwt: `${witnessUrl}/verify`
+    witness_jwt: `${witnessUrl}/witness`,
+    verify: `${witnessUrl}/verify`
 };
 
 export const client = new Client(new WasmClient(JSON.stringify(clientConfig)));
 
-export function needsDelimiter(c: Types.InstructionsType): boolean {
+export function needsDelimiter(c: Types.FlowType): boolean {
     switch (c) {
         case "GitHubVerification": 
         case "TwitterVerification":
@@ -63,7 +63,7 @@ const ICONS = {
     WitnessedSelfIssued: GlobeIcon,
 };
 
-export const titleCase = (s: Types.InstructionsType): string => {
+export const titleCase = (s: Types.FlowType): string => {
     switch (s) {
         case "DnsVerification":
             return "DNS";
@@ -95,7 +95,7 @@ interface WitnessInfo {
     witness_placeholder: string,
 }
 
-function witness_info(t: Types.InstructionsType): WitnessInfo {
+function witness_info(t: Types.FlowType): WitnessInfo {
     let statement = `Enter your ${titleCase(t)} account handle to verify and include it in a message signed via your wallet.`;
     let statement_label = "Enter Account Handle";
     let statement_placeholder =  `Enter your ${titleCase(t)} handle`;
@@ -166,7 +166,7 @@ function witness_info(t: Types.InstructionsType): WitnessInfo {
     }
 }
 
-export const instructions = async (t: Types.InstructionsType): Promise<Instructions> => {
+export const instructions = async (t: Types.FlowType): Promise<Instructions> => {
     let {statement, statement_label, statement_placeholder, witness, witness_label, witness_placeholder} = witness_info(t);
     switch (t) {
         case "WitnessedSelfIssued": {

@@ -179,7 +179,7 @@ export const credentialToDisplay = (jwt: string): CredentialDisplay => {
 export type Claim = {
     // NOTE: we could use object instead of string for credential, but for now, assume a JWT
     credentials: Array<string>,
-    credential_type: Types.InstructionsType,
+    credential_type: Types.FlowType,
     icon: ClaimIcon,
     title: string,
     type: ClaimType,
