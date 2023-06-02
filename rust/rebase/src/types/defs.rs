@@ -1,7 +1,12 @@
 use crate::types::error::*;
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
+use did_ethr::DIDEthr;
+use did_jwk::DIDJWK;
+use did_method_key::DIDKey;
+use did_pkh::DIDPKH;
 pub use did_web::DIDWeb;
+use did_webkey::DIDWebKey;
 use schemars::schema::RootSchema;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -13,8 +18,25 @@ pub use ssi::{
     one_or_many::OneOrMany,
     vc::{get_verification_method, Credential, Evidence, LinkedDataProofOptions, URI},
 };
+pub use ssi_dids::DIDMethods;
 use ts_rs::TS;
 use uuid::Uuid;
+
+pub fn make_resolver() -> DIDMethods<'static> {
+    let mut methods = DIDMethods::default();
+    methods.insert(Box::new(DIDKey));
+    methods.insert(Box::new(DIDEthr));
+    methods.insert(Box::new(DIDWeb));
+    methods.insert(Box::new(DIDWebKey));
+    methods.insert(Box::new(DIDPKH));
+    methods.insert(Box::new(DIDJWK));
+    // NOTE: Requires the below require additionl configuration,
+    // TODO: Enable these!
+    // methods.insert(Box::new(DIDTZ.clone()));
+    // methods.insert(Box::new(DIDONION.clone()));
+    // methods.insert(Box::new(ION.clone()));
+    methods
+}
 
 #[async_trait(?Send)]
 pub trait Subject

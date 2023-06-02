@@ -1,3 +1,4 @@
+use rebase::types::defs::get_verification_method;
 pub use rebase::{
     content::{
         dns_verification::DnsVerificationContent, email_verification::EmailVerificationContent,
@@ -44,8 +45,9 @@ pub use rebase::{
     },
     types::{
         defs::{
-            Content, ContextLoader, Credential, DIDWeb, Evidence, Flow, FlowResponse, Instructions,
-            Issuer, LinkedDataProofOptions, OneOrMany, Proof, Statement, URI,
+            make_resolver, Content, ContextLoader, Credential, DIDMethods, DIDResolver, Evidence,
+            Flow, FlowResponse, Instructions, Issuer, LinkedDataProofOptions, OneOrMany, Proof,
+            Statement, URI,
         },
         error::{ContentError, FlowError, ProofError, StatementError},
     },
@@ -55,9 +57,6 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ts_rs::TS;
-
-// TODO: Derive resolver instead of using this:
-const REPLACE_ME: &DIDWeb = &DIDWeb;
 
 // NOTE: If there is a way to write a macro where a enum can derive a trait
 // by having each member of the enum impl the trait, this file would become
@@ -512,14 +511,12 @@ impl WitnessFlow {
                     "no nft_ownership flow configured".to_owned(),
                 )),
             },
-            FlowType::PoapOwnershipVerification => {
-                match &self.poap_ownership_verification {
-                    Some(x) => x.instructions(),
-                    _ => Err(FlowError::Validation(
-                        "no poap_ownership flow configured".to_owned(),
-                    )),
-                }
-            }
+            FlowType::PoapOwnershipVerification => match &self.poap_ownership_verification {
+                Some(x) => x.instructions(),
+                _ => Err(FlowError::Validation(
+                    "no poap_ownership flow configured".to_owned(),
+                )),
+            },
             FlowType::RedditVerification => match &self.reddit_verification {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
@@ -581,41 +578,66 @@ impl WitnessFlow {
     ) -> Result<serde_json::Value, FlowError> {
         Ok(json!(self.statement(&req.opts, issuer).await?))
     }
+}
 
-    pub async fn handle_verify<I: Issuer>(
-        &self,
-        req: &VCWrapper,
-        issuer: &I,
-    ) -> Result<(), FlowError> {
-        // TODO: Get resolver from Credential.issuer
-        // TODO: Get verification method from did + resolver using ssi::vc::get_verification_method
-        let ldpo = LinkedDataProofOptions {
-            verification_method: Some(URI::String(issuer.verification_method()?)),
-            ..Default::default()
-        };
-
-        let res = match req {
-            VCWrapper::Jwt(r) => {
-                Credential::verify_jwt(
-                    &r.jwt,
-                    Some(ldpo),
-                    REPLACE_ME,
-                    &mut ContextLoader::default(),
-                )
-                .await
+pub async fn handle_verify(req: &VCWrapper) -> Result<(), FlowError> {
+    let issuer = match &req {
+        VCWrapper::Jwt(r) => {
+            let c = Credential::from_jwt_unsigned(&r.jwt)
+                .map_err(|e| FlowError::Validation(e.to_string()))?;
+            if c.issuer.is_none() {
+                return Err(FlowError::Validation(
+                    "No issuer found in the Credential".to_string(),
+                ));
             }
-            VCWrapper::Ld(r) => {
-                r.credential
-                    .verify(Some(ldpo), REPLACE_ME, &mut ContextLoader::default())
-                    .await
-            }
-        };
 
-        if res.errors.is_empty() {
-            Ok(())
-        } else {
-            let message = res.errors.join(" ");
-            Err(FlowError::BadLookup(message))
+            c.issuer.unwrap().get_id()
         }
+        VCWrapper::Ld(r) => {
+            if r.credential.issuer.is_none() {
+                return Err(FlowError::Validation(
+                    "No issuer found in the Credential".to_string(),
+                ));
+            }
+
+            r.credential.issuer.as_ref().unwrap().get_id()
+        }
+    };
+
+    let v_method = get_verification_method(&issuer, &make_resolver()).await;
+    if v_method.is_none() {
+        return Err(FlowError::Validation(
+            "Could not generate verifcation method".to_string(),
+        ));
+    }
+    let vm = v_method.unwrap();
+
+    let ldpo = LinkedDataProofOptions {
+        verification_method: Some(URI::String(vm)),
+        ..Default::default()
+    };
+
+    let res = match req {
+        VCWrapper::Jwt(r) => {
+            Credential::verify_jwt(
+                &r.jwt,
+                Some(ldpo),
+                &make_resolver(),
+                &mut ContextLoader::default(),
+            )
+            .await
+        }
+        VCWrapper::Ld(r) => {
+            r.credential
+                .verify(Some(ldpo), &make_resolver(), &mut ContextLoader::default())
+                .await
+        }
+    };
+
+    if res.errors.is_empty() {
+        Ok(())
+    } else {
+        let message = res.errors.join(" ");
+        Err(FlowError::BadLookup(message))
     }
 }

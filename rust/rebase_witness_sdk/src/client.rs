@@ -1,5 +1,6 @@
 use crate::types::{
-    CredentialWrapper, InstructionsReq, JWTWrapper, StatementReq, VCWrapper, VerifyRes, WitnessReq,
+    handle_verify, CredentialWrapper, InstructionsReq, JWTWrapper, StatementReq, VCWrapper,
+    VerifyRes, WitnessReq,
 };
 use rebase::types::defs::FlowResponse;
 use reqwest::Client as HttpClient;
@@ -153,6 +154,12 @@ impl Client {
     }
 
     pub async fn verify(&self, req: VCWrapper) -> Result<VerifyRes, ClientError> {
+        Ok(VerifyRes {
+            success: matches!(handle_verify(&req).await, Ok(_)),
+        })
+    }
+
+    pub async fn witness_verify(&self, req: VCWrapper) -> Result<VerifyRes, ClientError> {
         match &self.endpoints.verify {
             Some(endpoint) => {
                 let client = HttpClient::new();

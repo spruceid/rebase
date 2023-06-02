@@ -89,6 +89,15 @@ impl WasmClient {
         })
     }
 
+    pub fn witness_verify(&self, req: String) -> Promise {
+        let client = self.client.clone();
+        future_to_promise(async move {
+            let req: VCWrapper = jserr!(serde_json::from_str(&req));
+            let res = jserr!(client.witness_verify(req).await);
+            Ok(jserr!(serde_json::to_string(&res)).into())
+        })
+    }
+
     pub fn verify(&self, req: String) -> Promise {
         let client = self.client.clone();
         future_to_promise(async move {
