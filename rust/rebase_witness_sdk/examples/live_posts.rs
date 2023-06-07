@@ -10,8 +10,8 @@ use url::Url;
 fn new_client(base_url: &str) -> Result<Client, String> {
     // TODO: Update to use a worker that supports LD routes.
     let endpoints = Endpoints {
-        witness_jwt: Some(Url::parse(&format!("{}/witness", base_url)).unwrap()),
-        witness_ld: None,
+        witness_jwt: Some(Url::parse(&format!("{}/witness_jwt", base_url)).unwrap()),
+        witness_ld: Some(Url::parse(&format!("{}/witness_ld", base_url)).unwrap()),
         statement: Url::parse(&format!("{}/statement", base_url)).unwrap(),
         instructions: Url::parse(&format!("{}/instructions", base_url)).unwrap(),
         verify: None,
@@ -62,9 +62,11 @@ async fn main() {
 
     let req = Proofs::DnsVerification(inner.clone());
 
-    client.witness_jwt(req).await.unwrap();
+    client.witness_jwt(req.clone()).await.unwrap();
+    println!("DNS jwt issued");
 
-    println!("DNS credential issued");
+    client.witness_ld(req).await.unwrap();
+    println!("DNS ld issued");
 
     println!("Tesing GitHub...");
     let did = test_eth_did();
@@ -88,9 +90,10 @@ async fn main() {
 
     let req = Proofs::GitHubVerification(proof);
 
-    client.witness_jwt(req).await.unwrap();
-
-    println!("GitHub credential issued");
+    client.witness_jwt(req.clone()).await.unwrap();
+    println!("GitHub jwt issued");
+    client.witness_ld(req).await.unwrap();
+    println!("GitHub ld issued");
 
     println!("Testing Reddit...");
     let did = test_eth_did();
@@ -109,9 +112,10 @@ async fn main() {
 
     let req = Proofs::RedditVerification(inner);
 
-    client.witness_jwt(req).await.unwrap();
-
-    println!("Reddit credential issued");
+    client.witness_jwt(req.clone()).await.unwrap();
+    println!("Reddit jwt issued");
+    client.witness_ld(req).await.unwrap();
+    println!("Reddit ld issued");
 
     println!("Testing SoundCloud...");
     let did = test_eth_did();
@@ -130,9 +134,10 @@ async fn main() {
 
     let req = Proofs::SoundCloudVerification(inner);
 
-    client.witness_jwt(req).await.unwrap();
-
-    println!("SoundCloud credential issued");
+    client.witness_jwt(req.clone()).await.unwrap();
+    println!("SoundCloud jwt issued");
+    client.witness_ld(req).await.unwrap();
+    println!("SoundCloud ld issued");
 
     println!("Testing Twitter...");
 
@@ -143,13 +148,10 @@ async fn main() {
     };
 
     let opts = Statements::TwitterVerification(inner.clone());
-
     let statement = opts.generate_statement().unwrap();
-
     check_statement(&client, opts, &statement).await.unwrap();
 
     println!("Twitter statement valid...");
-
     let proof = proof::twitter_verification::TwitterVerificationProof {
         tweet_url: "https://twitter.com/evalapplyquote/status/1542901885815820288".to_string(),
         statement: inner,
@@ -157,9 +159,10 @@ async fn main() {
 
     let req = Proofs::TwitterVerification(proof);
 
-    client.witness_jwt(req).await.unwrap();
-
-    println!("Twitter credential issued");
+    client.witness_jwt(req.clone()).await.unwrap();
+    println!("Twitter jwt issued");
+    client.witness_ld(req).await.unwrap();
+    println!("Twitter ld issued");
 
     println!("Testing Self Signed...");
 
@@ -187,7 +190,10 @@ async fn main() {
 
     let req = Proofs::SameControllerAssertion(proof);
 
-    client.witness_jwt(req).await.unwrap();
+    client.witness_jwt(req.clone()).await.unwrap();
+    println!("SameControl jwt issued");
+    client.witness_ld(req).await.unwrap();
+    println!("SameControl ld issued");
 
     println!("Self Signed Credential issued");
     println!("All Ethereum Live Posts tested!");
@@ -216,9 +222,11 @@ async fn main() {
 
     let req = Proofs::GitHubVerification(proof);
 
-    client.witness_jwt(req).await.unwrap();
+    client.witness_jwt(req.clone()).await.unwrap();
+    println!("GitHub jwt issued");
+    client.witness_ld(req).await.unwrap();
+    println!("GitHub ld issued");
 
-    println!("GitHub credential issued");
     println!("Testing Twitter...");
 
     let did = test_solana_did();
@@ -242,9 +250,10 @@ async fn main() {
 
     let req = Proofs::TwitterVerification(proof);
 
-    client.witness_jwt(req).await.unwrap();
-
-    println!("Twitter credential issued");
+    client.witness_jwt(req.clone()).await.unwrap();
+    println!("Twitter jwt issued");
+    client.witness_ld(req).await.unwrap();
+    println!("Twitter ld issued");
 
     println!("Testing Self Signed...");
 
@@ -271,9 +280,10 @@ async fn main() {
 
     let req = Proofs::SameControllerAssertion(proof);
 
-    client.witness_jwt(req).await.unwrap();
-
-    println!("Self Signed Credential issued");
+    client.witness_jwt(req.clone()).await.unwrap();
+    println!("Self Signed jwt issued");
+    client.witness_ld(req).await.unwrap();
+    println!("Self Signed ld issued");
 
     println!("All Live Posts tested!");
 }
