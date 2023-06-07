@@ -1,121 +1,30 @@
 # Rebase
 
-Rebase offers an extensible, opinionated, trait-based approach to building credentialing systems on top of the foundation of [ssi](https://github.com/spruceid/ssi).
+Rebase is a library for building credentialing witnesses and clients to interact with them. Rebase is built on top of [SSI](https://github.com/spruceid/ssi) and uses [DID](https://www.w3.org/TR/did-core/)s and [Verifiable Credentials (VCs)](https://www.w3.org/TR/vc-data-model/) to create portable, specified credentials. Rebase provides abstractions for working with witnessed cryptographic signature-based attestations, linking cryptographic keys to traditional profiles and identities, and working with delegations to improve the experience for developers and users of applications with user-owned data models, along with other libraries available from [Spruce](https://github.com/spurceid).
 
-The most comprehensive documentation of the foundational Rebase library and it's associated SDKs are found [at this site](https://www.spruceid.dev/rebase/rebase). A higher-level, more abstract overview is given here.
+Here's a short overview of the core Rebase library:
 
-Rebase is a library that enables users and projects to easily issue their own Verifiable Credentials (VCs). It supports two types of credential flows: self-signed credentials and witnessed credentials, examples of each of these can be found [here](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/credentials-and-how-they-are-made). 
+Often, the [Witness SDK](../rebase_witness_sdk/) will be what is wanted for building clients / witnesses on the server-side, and the [Client SDK](../../js/rebase-client/) be what is wanted for interacting with witnesses from the browser.
 
-Rebase provides points of extension to add new credentialing flows of either type and new cryptographic subjects/issuers. All subjects, issuers, and credentialing flows can be mixed and matched. 
+## Architecture
 
-The goal of Rebase is to provide these tools for both client and server side usage. For this reason, WASM is a first class use-case. 
+This is a diagram of the credentialing flow that Rebase enables and with each step color-coded to show the module responsible for handling that portion of the credentialing flow:
 
-The output of Rebase libraries are [Verifiable Credentials](https://www.w3.org/TR/vc-data-model/), both [Linked Data Proof](https://www.w3.org/standards/semanticweb/data) and [JWT](https://www.rfc-editor.org/rfc/rfc7519.html) formats are supported. Rebase uses [Decentralized Identifiers (DIDs)](https://www.w3.org/TR/did-core/) to represent the subjects and issuers of these credentials. 
+![Rebase Flow Diagram](../../RebaseFlowDiag.png)
 
-## Usage
+Each of the color-coded modules correspond to a folder in the `src` folder of this project. The additional three directories in the `src` folder are:
+* `context`: A module used for setting up the context_loader, should be irrelevant to consumers.
+* `test_util`: A module used only for internal testing.
+* `types`: A module including all type and enum definitions to avoid issues with circular dependencies.
 
-If you want a client to interact with an existing witness, or if you want to create your own witness service, take a look at the [Witness SDK](https://github.com/spruceid/rebase/tree/main/rust/rebase_witness_sdk), built on top of this library. 
-## Current Features
+The big idea behind Rebase is abstracting the flow of data from the key type used in VC issuance. Key types are supported at two levels, as `Subject`s and as `Issuer`s. All `Issuer`s must implement `Subject`. Most often, a `Subject` is the public key of a key pair and `Issuer` is the full key pair of a cryptographic key pair.
 
-Current credentials supported:
-* basic_post (self-issued)
-* basic_profile (self-issued)
-* dns
-* email
-* github
-* reddit
-* same (links two Subject instances)
-* soundcloud
-* twitter
-* nft_ownership (NOT PRODUCTION READY)
+The `flow` module is the representation of the data required and the verification checks needed to make a credential. Each flow type (of which include traditional identities like "Twitter", "GitHub", "Email", credentials that link two keys, or credentials that are simply attestations by the Subject) is comprised of an entry in the `statement`, `proof`, `content` and `flow`. The `proof` often includes the `statement`, and the `flow` is in terms of all three others.
 
-Current Witness flows:
-* dns
-* email
-* github
-* reddit
-* same (links two Subject instances)
-* soundcloud
-* twitter
-* nft_ownership (NOT PRODUCTION READY)
-* poap_ownership (NOT PRODUCTION READY)
+Because the `flow` and the `issuer`/`subject` modules only deal with each other abstractly, any time a new `flow` is added, it works will all existing `issuer`s/`subject`s and vice versa. 
 
-Current Subjects:
-* ethereum
-* ed25519
-* solana
+Implementing a new `flow` is as simple as implementing the three underlying traits (`statement`, `proof`, and `content`) and creating a validation of the `proof`, then implementing the `flow` type. Examples can be found of the ten flows currently supported (Attestaion (structures and statements signed by the Subject and witnessed by the Issuer), DNS, Email, GitHub, NFT Ownership, POAP Ownership, Reddit, SameController (links two keys), SoundCloud, and Twitter).
 
-Current Issuers:
-* ed25519 (via did:web)
+The main reason to fork or open PRs to this repo is for the purpose of adding new flows. Hopefully soon we will have a guide on how to do so, but for now there are a lot examples here.
 
-## Rebase Basics
-
-### Motivation
-
-The goal of the Rebase library is to provide tools that enable the calling application to easily create VCs, no matter whether it's a client self-issuing a credential or it's a server-side witness service transforming an assertation into a credential. 
-
-A detailed look into the architecture that supports the two types of Rebase credentialing flows is found [here](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase).
-
-A simple overview of what the content of the credentials represent is described [here](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/the-anatomy-of-a-credential).
-### Overview of Architecture
-
-Rebase's `src` folder is further divided into 8 sub-folders which interact to allow calling applications to issue credentials. These sub-folders are:
-* `content`
-* `flow`
-* `issuer`
-* `proof`
-* `statement`
-* `subject`
-* `test_util`
-* `types`
-
-As one might expect, `test_util` only contains code relevant for the automated test cases. Similarly, `types` contains a list of type definitions without concrete implementations, as well as all error variants used by the rest of the codebase. 
-
-The remaining modules form a dependency chain that looks like:
-
-Self-Issued Credential Code Usage:
-```
-// -> = read: "depends on"
-Content -> Issuer -> Subject
-```
-
-Witnessed Credential Code Usage:
-```
-// -> = read: "depends on"
-Flow -> Proof 
-Flow -> Statement
-Flow -> Issuer
-Proof -> Content -> Issuer -> Subject
-Statement -> Subject
-```
-
-Here are detailed descriptions of each module, going from most primative to most composed:
-
-* [Subject](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/subject)
-* [Issuer](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/issuer)
-* [Content](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/content)
-* [Statement](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/statement)
-* [Proof](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/proof)
-* [Flow](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/flow)
-
- Information on how to implement a self-issued credential flow is found [here](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/implementing-self-issued-credentials), and for a witness flow, check [here](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/overview-of-witness-flows).
-
-An examination of each supported witness flow is found [here](https://www.spruceid.dev/rebase/core-library/a-tour-of-rebase/detailed-descriptions-of-each-witness-flow).
-
-Links to specific witness flow descriptions are found:
-
-* [DNS](https://www.spruceid.dev/rebase/core-library/detailed-descriptions-of-each-witness-flow/dns)
-* [Email](https://www.spruceid.dev/rebase/core-library/detailed-descriptions-of-each-witness-flow/email)
-* [GitHub](https://www.spruceid.dev/rebase/core-library/detailed-descriptions-of-each-witness-flow/github)
-* [Reddit](https://www.spruceid.dev/rebase/core-library/detailed-descriptions-of-each-witness-flow/reddit)
-* [Same](https://www.spruceid.dev/rebase/core-library/detailed-descriptions-of-each-witness-flow/same)
-* [SoundCloud](https://www.spruceid.dev/rebase/core-library/detailed-descriptions-of-each-witness-flow/soundcloud)
-* [Twitter](https://www.spruceid.dev/rebase/core-library/detailed-descriptions-of-each-witness-flow/twitter)
-## Other Resources
-
-[This is primary source of Rebase documentation](https://www.spruceid.dev/rebase/rebase), and should be able to answer questions unaddressed here.
-
-If you want to see examples in action, here's the [credential faucet](https://rebase.pages.dev/), that site's [codebase](https://github.com/spruceid/rebase/tree/main/demo/dapp), and the [codebase](https://github.com/spruceid/rebase/tree/main/demo/witness) of the Cloudflare worker witness service that backs that site.
-
-If you're looking for more information on how to run a witness service or how to create a client for an existing witness service, check out these two libraries ([witness SDK](https://github.com/spruceid/rebase/tree/main/rust/rebase_witness_sdk)), ([JS Client](https://github.com/spruceid/rebase/tree/main/js/rebase-client)). 
- 
+To see usage of this library, please look at the [Rebase Witness SDK](../rebase_witness_sdk) and it's demo project, the [Rebase CloudFlare Worker](../rebase_cf_worker).
