@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
   "name": "@spruceid/rebase-client",
   "version": "0.16.0",
+=======
+  "name": "@rebase-xyz/rebase-client",
+  "version": "0.15.1",
+>>>>>>> 79cb3d3 (Removes backwards compatibility, adds default config to rebase-client)
   "description": "",
   "main": "index.js",
   "scripts": {
