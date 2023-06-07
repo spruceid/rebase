@@ -61,7 +61,7 @@ const ICONS = {
     GitHubVerification: GitHubIcon,
     RedditVerification: RedditIcon,
     SoundCloudVerification: SoundCloudIcon,
-    WitnessedSelfIssued: GlobeIcon,
+    Attestation: GlobeIcon,
 };
 
 export const titleCase = (s: Types.FlowType): string => {
@@ -170,7 +170,7 @@ function witness_info(t: Types.FlowType): WitnessInfo {
 export const instructions = async (t: Types.FlowType): Promise<Instructions> => {
     let {statement, statement_label, statement_placeholder, witness, witness_label, witness_placeholder} = witness_info(t);
     switch (t) {
-        case "WitnessedSelfIssued": {
+        case "Attestation": {
             return {
                 icon: ICONS[t],
                 title: `Witnessed Self-Issued Attestation Workflow`,

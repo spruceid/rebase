@@ -22,17 +22,17 @@ export class Client {
         return res as Types.Instructions;
     }
 
-    async statement(req: Types.StatementReq): Promise<Types.FlowResponse> {
+    async statement(req: Types.Statements): Promise<Types.StatementResponse> {
         let res = await this.client.statement(JSON.stringify(req));
-        return JSON.parse(res) as Types.FlowResponse;
+        return JSON.parse(res) as Types.StatementResponse;
     }
 
-    async witness_jwt(req: Types.WitnessReq): Promise<Types.JWTWrapper> {
+    async witness_jwt(req: Types.Proofs): Promise<Types.JWTWrapper> {
         let res = await this.client.witness_jwt(JSON.stringify(req));
         return JSON.parse(res) as Types.JWTWrapper;
     }
 
-    async witness_ld(req: Types.WitnessReq): Promise<Types.CredentialWrapper> {
+    async witness_ld(req: Types.Proofs): Promise<Types.CredentialWrapper> {
         let res = await this.client.witness_ld(JSON.stringify(req));
         return JSON.parse(res) as Types.CredentialWrapper;
     }

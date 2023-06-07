@@ -3,7 +3,7 @@ use crate::{
     proof::poap_ownership_verification::PoapOwnershipVerificationProof as Prf,
     statement::poap_ownership_verification::PoapOwnershipVerificationStatement as Stmt,
     types::{
-        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
+        defs::{Flow, Instructions, Issuer, Proof, Statement, StatementResponse, Subject},
         enums::subject::{Pkh, Subjects},
         error::FlowError,
     },
@@ -110,7 +110,7 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
         &self,
         stmt: &Stmt,
         issuer: &I,
-    ) -> Result<FlowResponse, FlowError> {
+    ) -> Result<StatementResponse, FlowError> {
         self.sanity_check(&stmt.issued_at)?;
 
         // TODO: Investigate!
@@ -129,7 +129,7 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
         // of the challenge. This ensures that the expected address is the one making this
         // request and this request isn't being replayed from an interaction older than the
         // max_elapsed_minutes.
-        Ok(FlowResponse {
+        Ok(StatementResponse {
             statement: format!(
                 "{}{}{}",
                 s,

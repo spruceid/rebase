@@ -4,7 +4,7 @@ use crate::{
     statement::github_verification::GitHubVerificationStatement as Stmt,
     types::{
         error::FlowError,
-        defs::{Flow, FlowResponse, Issuer, Proof, Statement, Subject, Instructions},
+        defs::{Flow, StatementResponse, Issuer, Proof, Statement, Subject, Instructions},
     },
 };
 
@@ -63,8 +63,8 @@ impl Flow<Ctnt, Stmt, Prf> for GitHubVerificationFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<FlowResponse, FlowError> {
-        Ok(FlowResponse {
+    ) -> Result<StatementResponse, FlowError> {
+        Ok(StatementResponse {
             statement: statement.generate_statement()?,
             delimiter: Some(self.delimiter.to_owned())
         })
@@ -188,8 +188,8 @@ mod tests {
             &self,
             statement: &Stmt,
             _issuer: &I,
-        ) -> Result<FlowResponse, FlowError> {
-            Ok(FlowResponse {
+        ) -> Result<StatementResponse, FlowError> {
+            Ok(StatementResponse {
                 statement: statement.generate_statement()?,
                 delimiter: Some("\n\n".to_string())
             })

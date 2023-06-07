@@ -255,10 +255,7 @@
 
         const badRespErr = "Badly formatted witness service response";
         try {
-            let req: Types.StatementReq = {
-                opts: opts as Types.Statements,
-            };
-            let res = await client.statement(req);
+            let res = await client.statement(opts as Types.Statements);
 
             if (!res.statement) {
                 throw new Error(badRespErr + " missing statement");
@@ -355,15 +352,12 @@
         }
 
         try {
-            let req: Types.WitnessReq = {
-                proof: opts as Types.Proofs,
-            };
             if (useJwt) {
-                let res = await client.witness_jwt(req);
+                let res = await client.witness_jwt(opts as Types.Proofs);
                 let { jwt } = res;
                 setNew(jwt);
             } else {
-                let res = await client.witness_ld(req);
+                let res = await client.witness_ld(opts as Types.Proofs);
                 let { credential } = res;
                 console.log(credential);
             }

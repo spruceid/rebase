@@ -3,7 +3,7 @@ use crate::{
     proof::twitter_verification::TwitterVerificationProof as Prf,
     statement::twitter_verification::TwitterVerificationStatement as Stmt,
     types::{
-        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
+        defs::{Flow, Instructions, Issuer, Proof, Statement, StatementResponse, Subject},
         error::FlowError,
     },
 };
@@ -63,8 +63,8 @@ impl Flow<Ctnt, Stmt, Prf> for TwitterVerificationFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<FlowResponse, FlowError> {
-        Ok(FlowResponse {
+    ) -> Result<StatementResponse, FlowError> {
+        Ok(StatementResponse {
             delimiter: Some(self.delimiter.to_owned()),
             statement: statement.generate_statement()?,
         })
@@ -173,8 +173,8 @@ mod tests {
             &self,
             statement: &Stmt,
             _issuer: &I,
-        ) -> Result<FlowResponse, FlowError> {
-            Ok(FlowResponse {
+        ) -> Result<StatementResponse, FlowError> {
+            Ok(StatementResponse {
                 statement: statement.generate_statement()?,
                 delimiter: Some("\n\n".to_owned()),
             })

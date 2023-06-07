@@ -3,7 +3,7 @@ use crate::{
     proof::same_controller_assertion::SameControllerAssertionProof as Prf,
     statement::same_controller_assertion::SameControllerAssertionStatement as Stmt,
     types::{
-        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
+        defs::{Flow, Instructions, Issuer, Proof, Statement, StatementResponse, Subject},
         error::FlowError,
     },
 };
@@ -32,8 +32,8 @@ impl Flow<Ctnt, Stmt, Prf> for SameControllerAssertionFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<FlowResponse, FlowError> {
-        Ok(FlowResponse {
+    ) -> Result<StatementResponse, FlowError> {
+        Ok(StatementResponse {
             statement: statement.generate_statement()?,
             delimiter: None,
         })

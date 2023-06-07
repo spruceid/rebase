@@ -54,7 +54,7 @@
         let next: Array<Claim> = [];
         for (let i = 0, n = _claims.length; i < n; i++) {
             let claim = _claims[i];
-            if (claim.credential_type === "WitnessedSelfIssued") {
+            if (claim.credential_type === "Attestation") {
                 claim.credentials.push(credential);
             }
             next.push(claim);
@@ -73,7 +73,7 @@
             throw new Error("No default signer set");
         }
 
-        let stmt: Types.WitnessedBasicProfileStatement = {
+        let stmt: Types.BasicProfileAttestationStatement = {
             description: _description,
             image: _image,
             username: _username,
@@ -81,11 +81,9 @@
             subject: getSubject(current),
         };
 
-        let req: Types.StatementReq = {
-            opts: {
-                WitnessedSelfIssued: {
-                    WitnessedBasicProfile: stmt,
-                },
+        let req: Types.Statements = {
+            Attestation: {
+                BasicProfileAttestation: stmt,
             },
         };
 
@@ -100,13 +98,11 @@
         }
         let signature = await sign(statement);
 
-        let proofReq: Types.WitnessReq = {
-            proof: {
-                WitnessedSelfIssued: {
-                    WitnessedBasicProfile: {
-                        signature,
-                        statement: stmt,
-                    },
+        let proofReq: Types.Proofs = {
+            Attestation: {
+                BasicProfileAttestation: {
+                    signature,
+                    statement: stmt,
                 },
             },
         };

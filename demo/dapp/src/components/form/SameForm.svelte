@@ -137,10 +137,8 @@
             id1: _key1,
             id2: _key2,
         };
-        let o: Types.StatementReq = {
-            opts: {
-                SameControllerAssertion: stmt,
-            },
+        let o: Types.Statements = {
+            SameControllerAssertion: stmt,
         };
 
         if (!statement_schema) {
@@ -208,7 +206,7 @@
         }
 
         try {
-            let res = await client.witness_jwt({ proof });
+            let res = await client.witness_jwt(proof);
             let { jwt } = res;
             setNew(jwt);
         } catch (e) {

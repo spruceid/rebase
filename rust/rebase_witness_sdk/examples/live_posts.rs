@@ -2,7 +2,7 @@ use rebase::{proof, statement, test_util::util::*, types::defs::Statement};
 
 use rebase_witness_sdk::{
     client::{Client, Endpoints},
-    types::{Proofs, StatementReq, Statements, WitnessReq},
+    types::{Proofs, Statements},
 };
 use std::env;
 use url::Url;
@@ -20,10 +20,12 @@ fn new_client(base_url: &str) -> Result<Client, String> {
     Client::new(endpoints).map_err(|e| e.to_string())
 }
 
-async fn check_statement(client: &Client, opts: Statements, statement: &str) -> Result<(), String> {
-    let req = StatementReq { opts };
-
-    let res = client.statement(req).await.unwrap();
+async fn check_statement(
+    client: &Client,
+    stmts: Statements,
+    statement: &str,
+) -> Result<(), String> {
+    let res = client.statement(stmts).await.unwrap();
 
     if res.statement != statement {
         return Err(format!(
@@ -58,9 +60,7 @@ async fn main() {
 
     println!("DNS statement valid...");
 
-    let req = WitnessReq {
-        proof: Proofs::DnsVerification(inner.clone()),
-    };
+    let req = Proofs::DnsVerification(inner.clone());
 
     client.witness_jwt(req).await.unwrap();
 
@@ -86,9 +86,7 @@ async fn main() {
         statement: inner,
     };
 
-    let req = WitnessReq {
-        proof: Proofs::GitHubVerification(proof),
-    };
+    let req = Proofs::GitHubVerification(proof);
 
     client.witness_jwt(req).await.unwrap();
 
@@ -109,9 +107,7 @@ async fn main() {
 
     println!("Reddit statement valid...");
 
-    let req = WitnessReq {
-        proof: Proofs::RedditVerification(inner),
-    };
+    let req = Proofs::RedditVerification(inner);
 
     client.witness_jwt(req).await.unwrap();
 
@@ -132,9 +128,7 @@ async fn main() {
 
     println!("SoundCloud statement valid...");
 
-    let req = WitnessReq {
-        proof: Proofs::SoundCloudVerification(inner),
-    };
+    let req = Proofs::SoundCloudVerification(inner);
 
     client.witness_jwt(req).await.unwrap();
 
@@ -161,9 +155,7 @@ async fn main() {
         statement: inner,
     };
 
-    let req = WitnessReq {
-        proof: Proofs::TwitterVerification(proof),
-    };
+    let req = Proofs::TwitterVerification(proof);
 
     client.witness_jwt(req).await.unwrap();
 
@@ -193,9 +185,7 @@ async fn main() {
         signature2: TEST_2KEY_ETH_SIG_2.to_owned(),
     };
 
-    let req = WitnessReq {
-        proof: Proofs::SameControllerAssertion(proof),
-    };
+    let req = Proofs::SameControllerAssertion(proof);
 
     client.witness_jwt(req).await.unwrap();
 
@@ -224,9 +214,7 @@ async fn main() {
         statement: inner,
     };
 
-    let req = WitnessReq {
-        proof: Proofs::GitHubVerification(proof),
-    };
+    let req = Proofs::GitHubVerification(proof);
 
     client.witness_jwt(req).await.unwrap();
 
@@ -252,9 +240,7 @@ async fn main() {
         statement: inner,
     };
 
-    let req = WitnessReq {
-        proof: Proofs::TwitterVerification(proof),
-    };
+    let req = Proofs::TwitterVerification(proof);
 
     client.witness_jwt(req).await.unwrap();
 
@@ -283,9 +269,7 @@ async fn main() {
         signature2: TEST_2KEY_SOLANA_SIG_2.to_owned(),
     };
 
-    let req = WitnessReq {
-        proof: Proofs::SameControllerAssertion(proof),
-    };
+    let req = Proofs::SameControllerAssertion(proof);
 
     client.witness_jwt(req).await.unwrap();
 

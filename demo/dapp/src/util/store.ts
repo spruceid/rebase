@@ -120,7 +120,7 @@ function defaultClaims(): Claim[] {
         },
         {
             credentials: [],
-            credential_type: "WitnessedSelfIssued",
+            credential_type: "Attestation",
             icon: GlobeIcon,
             title: "Basic Profile",
             type: "public",

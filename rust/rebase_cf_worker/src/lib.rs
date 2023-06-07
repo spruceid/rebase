@@ -1,9 +1,9 @@
 use rebase_witness_sdk::types::{
-    handle_verify, issuer::ed25519::DidWebJwk, Alchemy, DnsVerificationFlow, EmailVerificationFlow,
-    GitHubVerificationFlow, InstructionsReq, NftOwnershipVerificationFlow,
-    PoapOwnershipVerificationFlow, RedditVerificationFlow, SameControllerAssertionFlow,
-    SoundCloudVerificationFlow, StatementReq, TwitterVerificationFlow, VCWrapper, WitnessFlow,
-    WitnessReq, WitnessedSelfIssuedFlow,
+    handle_verify, issuer::ed25519::DidWebJwk, Alchemy, AttestationFlow, CompatStatementReq,
+    CompatWitnessReq, DnsVerificationFlow, EmailVerificationFlow, GitHubVerificationFlow,
+    InstructionsReq, NftOwnershipVerificationFlow, PoapOwnershipVerificationFlow,
+    RedditVerificationFlow, SameControllerAssertionFlow, SoundCloudVerificationFlow,
+    TwitterVerificationFlow, VCWrapper, WitnessFlow,
 };
 use serde_json::json;
 use worker::*;
@@ -36,7 +36,7 @@ fn new_flow(env: &Env) -> WitnessFlow {
         same_controller_assertion: Some(SameControllerAssertionFlow {}),
         soundcloud_verification: None,
         twitter_verification: None,
-        witnessed_self_issued: Some(WitnessedSelfIssuedFlow {}),
+        attestation: Some(AttestationFlow {}),
     };
 
     match env.secret("SENDGRID_BEARER_TOKEN") {
@@ -169,7 +169,8 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/statement", |_req, _ctx| preflight_response())
         .post_async("/statement", |mut req, ctx| async move {
-            if let Ok(b) = req.json::<StatementReq>().await {
+            // TODO: REMOVE ONCE PUBLISHED TO REMOVE BACKWARDS COMPAT
+            if let Ok(b) = req.json::<CompatStatementReq>().await {
                 if let Ok(r) = ctx.data.0.handle_statement(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
@@ -181,7 +182,8 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/witness", |_req, _ctx| preflight_response())
         .post_async("/witness", |mut req, ctx| async move {
-            if let Ok(b) = req.json::<WitnessReq>().await {
+            // TODO: REMOVE ONCE PUBLISHED TO REMOVE BACKWARDS COMPAT
+            if let Ok(b) = req.json::<CompatWitnessReq>().await {
                 if let Ok(r) = ctx.data.0.handle_jwt(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
@@ -192,7 +194,8 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/witness_jwt", |_req, _ctx| preflight_response())
         .post_async("/witness_jwt", |mut req, ctx| async move {
-            if let Ok(b) = req.json::<WitnessReq>().await {
+            // TODO: REMOVE ONCE PUBLISHED TO REMOVE BACKWARDS COMPAT
+            if let Ok(b) = req.json::<CompatWitnessReq>().await {
                 if let Ok(r) = ctx.data.0.handle_jwt(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
@@ -203,8 +206,9 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/witness_ld", |_req, _ctx| preflight_response())
         .post_async("/witness_ld", |mut req, ctx| async move {
-            if let Ok(b) = req.json::<WitnessReq>().await {
-                if let Ok(r) = ctx.data.0.handle_credential(&b, &ctx.data.1).await {
+            // TODO: REMOVE ONCE PUBLISHED TO REMOVE BACKWARDS COMPAT
+            if let Ok(b) = req.json::<CompatWitnessReq>().await {
+                if let Ok(r) = ctx.data.0.handle_ld(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
                 };

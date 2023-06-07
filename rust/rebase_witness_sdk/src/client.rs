@@ -1,8 +1,8 @@
 use crate::types::{
-    handle_verify, CredentialWrapper, InstructionsReq, JWTWrapper, StatementReq, VCWrapper,
-    VerifyRes, WitnessReq,
+    handle_verify, CredentialWrapper, InstructionsReq, JWTWrapper, Proofs, Statements, VCWrapper,
+    VerifyRes,
 };
-use rebase::types::defs::FlowResponse;
+use rebase::types::defs::StatementResponse;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -76,10 +76,10 @@ impl Client {
         Ok(res)
     }
 
-    pub async fn statement(&self, req: StatementReq) -> Result<FlowResponse, ClientError> {
+    pub async fn statement(&self, req: Statements) -> Result<StatementResponse, ClientError> {
         let client = HttpClient::new();
 
-        // let res: FlowResponse = client
+        // let res: StatementResponse = client
         let res = client
             .post(self.endpoints.statement.clone())
             .json(&req)
@@ -89,7 +89,7 @@ impl Client {
 
         match res.json::<serde_json::Value>().await {
             Err(e) => Err(ClientError::Statement(e.to_string())),
-            Ok(val) => match serde_json::from_value::<FlowResponse>(val.clone()) {
+            Ok(val) => match serde_json::from_value::<StatementResponse>(val.clone()) {
                 Ok(r) => Ok(r),
                 Err(p) => match serde_json::from_value::<WitnessErr>(val) {
                     Err(_) => Err(ClientError::Statement(p.to_string())),
@@ -99,7 +99,7 @@ impl Client {
         }
     }
 
-    pub async fn witness_jwt(&self, req: WitnessReq) -> Result<JWTWrapper, ClientError> {
+    pub async fn witness_jwt(&self, req: Proofs) -> Result<JWTWrapper, ClientError> {
         match &self.endpoints.witness_jwt {
             Some(endpoint) => {
                 let client = HttpClient::new();
@@ -126,7 +126,7 @@ impl Client {
         }
     }
 
-    pub async fn witness_ld(&self, req: WitnessReq) -> Result<CredentialWrapper, ClientError> {
+    pub async fn witness_ld(&self, req: Proofs) -> Result<CredentialWrapper, ClientError> {
         match &self.endpoints.witness_ld {
             Some(endpoint) => {
                 let client = HttpClient::new();

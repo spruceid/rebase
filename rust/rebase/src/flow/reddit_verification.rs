@@ -2,7 +2,7 @@ use crate::{
     content::reddit_verification::RedditVerificationContent as Ctnt,
     statement::reddit_verification::RedditVerificationStatement as Stmt,
     types::{
-        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
+        defs::{Flow, Instructions, Issuer, Proof, Statement, StatementResponse, Subject},
         error::FlowError,
     },
 };
@@ -53,8 +53,8 @@ impl Flow<Ctnt, Stmt, Stmt> for RedditVerificationFlow {
         &self,
         statement: &Stmt,
         _issuer: &I,
-    ) -> Result<FlowResponse, FlowError> {
-        Ok(FlowResponse {
+    ) -> Result<StatementResponse, FlowError> {
+        Ok(StatementResponse {
             statement: statement.generate_statement()?,
             delimiter: None,
         })
@@ -106,7 +106,7 @@ mod tests {
             MockFlow, MockIssuer, TestKey, TestWitness,
         },
         types::{
-            defs::{FlowResponse, Issuer, Statement, Subject},
+            defs::{Issuer, Statement, StatementResponse, Subject},
             enums::subject::Subjects,
         },
     };
@@ -134,8 +134,8 @@ mod tests {
             &self,
             statement: &Stmt,
             _issuer: &I,
-        ) -> Result<FlowResponse, FlowError> {
-            Ok(FlowResponse {
+        ) -> Result<StatementResponse, FlowError> {
+            Ok(StatementResponse {
                 statement: statement.generate_statement()?,
                 delimiter: None,
             })
