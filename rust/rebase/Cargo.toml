@@ -33,15 +33,13 @@ ts-rs = "6.2"
 url = { version = "2.2", features = ["serde"] }
 uuid = { version = "0.8", features = ["serde", "v4", "stdweb"] }
 did-jwk = "0.1.1"
-# did-jwk = {path = "../../../ssi/did-jwk"}
 did-webkey = "0.2.2"
-# did-webkey = {path = "../../../ssi/did-webkey"}
 did-ethr = "0.2.1"
-# did-ethr = {path = "../../../ssi/did-ethr"}
 did-method-key = "0.2.1"
-# did-method-key = {path = "../../../ssi/did-key"}
 did-pkh = "0.2.1"
-# did-pkh = {path = "../../../ssi/did-pkh"}
+did-tz = "0.2.1"
+did-onion = "0.2.1"
+did-ion = "0.2.0"
 
 [dev-dependencies]
 tokio = {version = "1", features = ["full", "macros"]}

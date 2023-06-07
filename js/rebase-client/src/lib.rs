@@ -44,11 +44,10 @@ fn is_valid(endpoints: &Endpoints) -> Result<(), String> {
 impl WasmClient {
     #[wasm_bindgen(constructor)]
     pub fn new(config: &str) -> Result<WasmClient, String> {
-        let config: Endpoints = from_str(config).map_err(|e| e.to_string())?;
-        is_valid(&config)?;
-
+        let c = from_str::<RebaseClient>(config).map_err(|e| e.to_string())?;
+        is_valid(&c.endpoints)?;
         Ok(WasmClient {
-            client: Arc::new(RebaseClient::new(config).map_err(|e| e.to_string())?),
+            client: Arc::new(c),
         })
     }
 

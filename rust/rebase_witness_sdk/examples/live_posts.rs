@@ -17,7 +17,7 @@ fn new_client(base_url: &str) -> Result<Client, String> {
         verify: None,
     };
 
-    Client::new(endpoints).map_err(|e| e.to_string())
+    Client::new(endpoints, None).map_err(|e| e.to_string())
 }
 
 async fn check_statement(
