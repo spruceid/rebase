@@ -1,12 +1,9 @@
 # Rebase Dapp Demo
 
-This is a thin client for usage with the witness service found in `rebase/demo/witness`, and it should work with any witness created using [the witness SDK](https://github.com/spruceid/rebase/tree/main/rust/rebase_witness_sdk). 
+This is a thin UI around the [Rebase WASM Client](../../js/rebase-client/) for usage with the witness service found in [here](../../rust/rebase_cf_worker/), and it should work with any witness created using [the witness SDK](../../rust/rebase_witness_sdk). 
 
 To run locally:
-* Navigate to this directory 
-* Create a `WITNESS_URL` setting in a `.env` file (using either a publically deployed witness with a setting like `WITNESS_URL="https://rebasedemo.spruceid.workers.dev"`, or by running your own from this [repo](https://github.com/spruceid/rebase/tree/main/demo/witness), where the setting would likely be: `WITNESS_URL="http://localhost:8787"`) 
-
-Then run the following:
+Navigate to this directory and then run the following:
 
 ```
 $ npm i

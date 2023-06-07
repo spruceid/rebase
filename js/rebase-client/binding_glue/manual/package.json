@@ -1,6 +1,6 @@
 {
-  "name": "@rebase-xyz/rebase-client",
-  "version": "0.15.1",
+  "name": "@spruceid/rebase-client",
+  "version": "0.16.0",
   "description": "",
   "main": "index.js",
   "scripts": {

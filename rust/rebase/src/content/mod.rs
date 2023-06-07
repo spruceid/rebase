@@ -1,6 +1,4 @@
 pub mod attestation;
-pub mod basic_post;
-pub mod basic_profile;
 pub mod dns_verification;
 pub mod email_verification;
 pub mod github_verification;
