@@ -177,11 +177,34 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
             };
             Response::error("Bad Request", 400)
         })
+        // TODO: DEPERECATE THIS  "/witness" ROUTE, THIS SUPPORTS PRE 0.13.0 REBASE CLIENTS.
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/witness", |_req, _ctx| preflight_response())
         .post_async("/witness", |mut req, ctx| async move {
             if let Ok(b) = req.json::<WitnessReq>().await {
                 if let Ok(r) = ctx.data.0.handle_jwt(&b, &ctx.data.1).await {
+                    let res = Response::from_json(&r)?;
+                    return Ok(res.with_headers(post_resp_headers()?));
+                };
+            };
+            Response::error("Bad Request", 400)
+        })
+        // TODO: Investigate if there is a wild card pattern instead of repetition
+        .options("/witness_jwt", |_req, _ctx| preflight_response())
+        .post_async("/witness_jwt", |mut req, ctx| async move {
+            if let Ok(b) = req.json::<WitnessReq>().await {
+                if let Ok(r) = ctx.data.0.handle_jwt(&b, &ctx.data.1).await {
+                    let res = Response::from_json(&r)?;
+                    return Ok(res.with_headers(post_resp_headers()?));
+                };
+            };
+            Response::error("Bad Request", 400)
+        })
+        // TODO: Investigate if there is a wild card pattern instead of repetition
+        .options("/witness_ld", |_req, _ctx| preflight_response())
+        .post_async("/witness_ld", |mut req, ctx| async move {
+            if let Ok(b) = req.json::<WitnessReq>().await {
+                if let Ok(r) = ctx.data.0.handle_credential(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
                 };

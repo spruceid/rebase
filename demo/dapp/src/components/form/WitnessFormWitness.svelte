@@ -63,7 +63,7 @@
             onClick={async () => {
                 try {
                     loading = true;
-                    await getCredential();
+                    await getCredential(true);
                     verified = true;
                 } catch (e) {
                     alert.set({
@@ -73,13 +73,32 @@
                 }
                 loading = false;
             }}
-            text="Verify"
+            text="Issue JWT"
+            action
+        />
+        <Button
+            {loading}
+            class="w-full"
+            disabled={verified}
+            onClick={async () => {
+                try {
+                    loading = true;
+                    await getCredential();
+                } catch (e) {
+                    alert.set({
+                        variant: "error",
+                        message: e?.message ? e.message : e,
+                    });
+                }
+                loading = false;
+            }}
+            text="Console Log LD Credential"
             action
         />
     </div>
 </WitnessFormStepper>
 <div
-    class="w-full my-[16px] text-center  flex flex-wrap justify-evenly items-center content-end"
+    class="w-full my-[16px] text-center flex flex-wrap justify-evenly items-center content-end"
 >
     <Button
         class="w-2/5"

@@ -1,7 +1,8 @@
 use rebase::types::defs::get_verification_method;
 pub use rebase::{
     content::{
-        dns_verification::DnsVerificationContent, email_verification::EmailVerificationContent,
+        context::context_loader::context_loader, dns_verification::DnsVerificationContent,
+        email_verification::EmailVerificationContent,
         github_verification::GitHubVerificationContent,
         nft_ownership_verification::NftOwnershipVerificationContent,
         poap_ownership_verification::PoapOwnershipVerificationContent,
@@ -553,7 +554,7 @@ impl WitnessFlow {
         req: &WitnessReq,
         issuer: &I,
     ) -> Result<serde_json::Value, FlowError> {
-        Ok(json!(self.credential(&req.proof, issuer).await?))
+        Ok(json!({ "credential": self.credential(&req.proof, issuer).await? }))
     }
 
     pub async fn handle_jwt<I: Issuer>(
@@ -619,17 +620,12 @@ pub async fn handle_verify(req: &VCWrapper) -> Result<(), FlowError> {
 
     let res = match req {
         VCWrapper::Jwt(r) => {
-            Credential::verify_jwt(
-                &r.jwt,
-                Some(ldpo),
-                &make_resolver(),
-                &mut ContextLoader::default(),
-            )
-            .await
+            Credential::verify_jwt(&r.jwt, Some(ldpo), &make_resolver(), &mut context_loader()?)
+                .await
         }
         VCWrapper::Ld(r) => {
             r.credential
-                .verify(Some(ldpo), &make_resolver(), &mut ContextLoader::default())
+                .verify(Some(ldpo), &make_resolver(), &mut context_loader()?)
                 .await
         }
     };

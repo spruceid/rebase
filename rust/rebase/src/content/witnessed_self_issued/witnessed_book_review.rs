@@ -24,6 +24,7 @@ impl Content for WitnessedBookReviewContent {
         Ok(json!([
             "https://www.w3.org/2018/credentials/v1",
             "https://spec.rebase.xyz/contexts/v1",
+            "https://schema.org/"
         ]))
     }
 

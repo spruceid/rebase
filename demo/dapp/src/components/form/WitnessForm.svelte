@@ -278,7 +278,7 @@
         }
     };
 
-    const getCredential = async (): Promise<void> => {
+    const getCredential = async (useJwt = false): Promise<void> => {
         let opts = {};
         opts[type] = {};
 
@@ -358,10 +358,15 @@
             let req: Types.WitnessReq = {
                 proof: opts as Types.Proofs,
             };
-            let res = await client.witness_jwt(req);
-            let { jwt } = res;
-
-            setNew(jwt);
+            if (useJwt) {
+                let res = await client.witness_jwt(req);
+                let { jwt } = res;
+                setNew(jwt);
+            } else {
+                let res = await client.witness_ld(req);
+                let { credential } = res;
+                console.log(credential);
+            }
         } catch (e) {
             console.error(e);
             throw new Error(

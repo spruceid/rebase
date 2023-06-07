@@ -7,7 +7,8 @@ const witnessUrl = process.env.WITNESS_URL;
 const clientConfig: Types.Endpoints = {
     instructions: `${witnessUrl}/instructions`,
     statement: `${witnessUrl}/statement`,
-    witness_jwt: `${witnessUrl}/witness`,
+    witness_jwt: `${witnessUrl}/witness_jwt`,
+    witness_ld: `${witnessUrl}/witness_ld`,
     verify: `${witnessUrl}/verify`
 };
 

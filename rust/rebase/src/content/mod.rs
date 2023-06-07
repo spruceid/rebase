@@ -1,5 +1,6 @@
 pub mod basic_post;
 pub mod basic_profile;
+pub mod context;
 pub mod dns_verification;
 pub mod email_verification;
 pub mod github_verification;

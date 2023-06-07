@@ -1,6 +1,9 @@
-use crate::types::{
-    defs::{Issuer, Subject},
-    error::{IssuerError, SubjectError},
+use crate::{
+    content::context::context_loader::context_loader,
+    types::{
+        defs::{Issuer, Subject},
+        error::{IssuerError, SubjectError},
+    },
 };
 use async_trait::async_trait;
 use did_web::DIDWeb;
@@ -141,10 +144,14 @@ impl Issuer for DidWebJwk {
             ..Default::default()
         };
 
-        let mut context_loader = ssi::jsonld::ContextLoader::default();
         Ok(Some(OneOrMany::One(
             credential
-                .generate_proof(&self.jwk, &lpdo, &DIDWeb, &mut context_loader)
+                .generate_proof(
+                    &self.jwk,
+                    &lpdo,
+                    &DIDWeb,
+                    &mut context_loader().map_err(|e| IssuerError::Vc(e.to_string()))?,
+                )
                 .await
                 .map_err(|e| IssuerError::Proof(format!("Failed to generate LDP proof: {}", e)))?,
         )))
