@@ -5,6 +5,21 @@ export type {
     Types
 }
 
+const DEFAULT_WITNESS_URL = "https://rebasedemo.spruceid.workers.dev"
+
+// This returns a client config pointed to the Spruce ID witness.
+export const defaultClientConfig = (): Types.ClientConfig => {
+    return {
+        endpoints: { 
+            instructions: `${DEFAULT_WITNESS_URL}/instructions`,
+            statement: `${DEFAULT_WITNESS_URL}/statement`,
+            witness_jwt: `${DEFAULT_WITNESS_URL}/witness_jwt`,
+            witness_ld: `${DEFAULT_WITNESS_URL}/witness_ld`,
+            verify: `${DEFAULT_WITNESS_URL}/verify`
+        }
+    }
+};
+
 export class Client {
     readonly client: WasmClient; 
 

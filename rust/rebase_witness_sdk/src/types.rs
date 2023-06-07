@@ -74,129 +74,6 @@ pub enum FlowType {
     SoundCloudVerification,
     TwitterVerification,
     Attestation,
-    // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-    WitnessedSelfIssued,
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-#[derive(Deserialize, Serialize, TS)]
-#[ts(export)]
-pub enum CompatContents {
-    WitnessedBasicImage(rebase::content::attestation::basic_image_attestation::BasicImageAttestationContent),
-    WitnessedBasicPost(rebase::content::attestation::basic_post_attestation::BasicPostAttestationContent),
-    WitnessedBasicProfile(rebase::content::attestation::basic_profile_attestation::BasicProfileAttestationContent),
-    WitnessedBasicTag(rebase::content::attestation::basic_tag_attestation::BasicTagAttestationContent),
-    WitnessedBookReview(rebase::content::attestation::book_review_attestation::BookReviewAttestationContent),
-    WitnessedDappPreferences(rebase::content::attestation::dapp_preferences_attestation::DappPreferencesAttestationContent),
-    WitnessedFollow(rebase::content::attestation::follow_attestation::FollowAttestationContent),
-    WitnessedLike(rebase::content::attestation::like_attestation::LikeAttestationContent),
-    WitnessedProgressBookLink(rebase::content::attestation::progress_book_link_attestation::ProgressBookLinkAttestationContent),
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-impl CompatContents {
-    pub fn to_attestation(&self) -> AttestationContent {
-        match &self {
-            CompatContents::WitnessedBasicImage(x) => {
-                AttestationContent::BasicImageAttestation(x.clone())
-            }
-            CompatContents::WitnessedBasicPost(x) => {
-                AttestationContent::BasicPostAttestation(x.clone())
-            }
-            CompatContents::WitnessedBasicProfile(x) => {
-                AttestationContent::BasicProfileAttestation(x.clone())
-            }
-            CompatContents::WitnessedBasicTag(x) => {
-                AttestationContent::BasicTagAttestation(x.clone())
-            }
-            CompatContents::WitnessedBookReview(x) => {
-                AttestationContent::BookReviewAttestation(x.clone())
-            }
-            CompatContents::WitnessedDappPreferences(x) => {
-                AttestationContent::DappPreferencesAttestation(x.clone())
-            }
-            CompatContents::WitnessedFollow(x) => AttestationContent::FollowAttestation(x.clone()),
-            CompatContents::WitnessedLike(x) => AttestationContent::LikeAttestation(x.clone()),
-            CompatContents::WitnessedProgressBookLink(x) => {
-                AttestationContent::ProgressBookLinkAttestation(x.clone())
-            }
-        }
-    }
-
-    pub fn from_attestation(attestation: AttestationContent) -> CompatContents {
-        match attestation {
-            AttestationContent::BasicImageAttestation(x) => CompatContents::WitnessedBasicImage(x),
-            AttestationContent::BasicPostAttestation(x) => CompatContents::WitnessedBasicPost(x),
-            AttestationContent::BasicProfileAttestation(x) => {
-                CompatContents::WitnessedBasicProfile(x)
-            }
-            AttestationContent::BasicTagAttestation(x) => CompatContents::WitnessedBasicTag(x),
-            AttestationContent::BookReviewAttestation(x) => CompatContents::WitnessedBookReview(x),
-            AttestationContent::DappPreferencesAttestation(x) => {
-                CompatContents::WitnessedDappPreferences(x)
-            }
-            AttestationContent::FollowAttestation(x) => CompatContents::WitnessedFollow(x),
-            AttestationContent::LikeAttestation(x) => CompatContents::WitnessedLike(x),
-            AttestationContent::ProgressBookLinkAttestation(x) => {
-                CompatContents::WitnessedProgressBookLink(x)
-            }
-        }
-    }
-
-    pub fn compat_types(&self) -> Vec<String> {
-        match &self {
-            CompatContents::WitnessedBasicImage(_) => {
-                vec![
-                    "VerifiableCredential".to_owned(),
-                    "WitnessedBasicImage".to_owned(),
-                ]
-            }
-            CompatContents::WitnessedBasicPost(_) => {
-                vec![
-                    "VerifiableCredential".to_owned(),
-                    "WitnessedBasicPost".to_owned(),
-                ]
-            }
-            CompatContents::WitnessedBasicProfile(_) => {
-                vec![
-                    "VerifiableCredential".to_owned(),
-                    "WitnessedBasicProfile".to_owned(),
-                ]
-            }
-            CompatContents::WitnessedBasicTag(_) => {
-                vec![
-                    "VerifiableCredential".to_owned(),
-                    "WitnessedBasicTag".to_owned(),
-                ]
-            }
-            CompatContents::WitnessedBookReview(_) => {
-                vec![
-                    "VerifiableCredential".to_owned(),
-                    "WitnessedBookReview".to_owned(),
-                ]
-            }
-            CompatContents::WitnessedDappPreferences(_) => {
-                vec![
-                    "VerifiableCredential".to_owned(),
-                    "WitnessedDappPreferences".to_owned(),
-                ]
-            }
-            CompatContents::WitnessedFollow(_) => vec![
-                "VerifiableCredential".to_owned(),
-                "WitnessedFollow".to_owned(),
-            ],
-            CompatContents::WitnessedLike(_) => vec![
-                "VerifiableCredential".to_owned(),
-                "WitnessedLike".to_owned(),
-            ],
-            CompatContents::WitnessedProgressBookLink(_) => {
-                vec![
-                    "VerifiableCredential".to_owned(),
-                    "WitnessedProgressBookLink".to_owned(),
-                ]
-            }
-        }
-    }
 }
 
 #[derive(Deserialize, Serialize, TS)]
@@ -212,8 +89,6 @@ pub enum Contents {
     SoundCloudVerification(SoundCloudVerificationContent),
     TwitterVerification(TwitterVerificationContent),
     Attestation(AttestationContent),
-    // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-    WitnessedSelfIssued(CompatContents),
 }
 
 #[async_trait(?Send)]
@@ -230,8 +105,6 @@ impl Content for Contents {
             Contents::SoundCloudVerification(x) => x.context(),
             Contents::TwitterVerification(x) => x.context(),
             Contents::Attestation(x) => x.context(),
-            // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-            Contents::WitnessedSelfIssued(x) => x.to_attestation().context(),
         }
     }
 
@@ -247,8 +120,6 @@ impl Content for Contents {
             Contents::SoundCloudVerification(x) => x.evidence(),
             Contents::TwitterVerification(x) => x.evidence(),
             Contents::Attestation(x) => x.evidence(),
-            // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-            Contents::WitnessedSelfIssued(x) => x.to_attestation().evidence(),
         }
     }
 
@@ -264,8 +135,6 @@ impl Content for Contents {
             Contents::SoundCloudVerification(x) => x.subject(),
             Contents::TwitterVerification(x) => x.subject(),
             Contents::Attestation(x) => x.subject(),
-            // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-            Contents::WitnessedSelfIssued(x) => x.to_attestation().subject(),
         }
     }
 
@@ -281,56 +150,6 @@ impl Content for Contents {
             Contents::SoundCloudVerification(x) => x.types(),
             Contents::TwitterVerification(x) => x.types(),
             Contents::Attestation(x) => x.types(),
-            // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-            Contents::WitnessedSelfIssued(x) => Ok(x.compat_types()),
-        }
-    }
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-#[derive(Deserialize, Serialize, TS, Clone)]
-#[ts(export)]
-pub enum CompatStatements {
-    WitnessedBasicImage(rebase::statement::attestation::basic_image_attestation::BasicImageAttestationStatement),
-    WitnessedBasicPost(rebase::statement::attestation::basic_post_attestation::BasicPostAttestationStatement),
-    WitnessedBasicProfile(rebase::statement::attestation::basic_profile_attestation::BasicProfileAttestationStatement),
-    WitnessedBasicTag(rebase::statement::attestation::basic_tag_attestation::BasicTagAttestationStatement),
-    WitnessedBookReview(rebase::statement::attestation::book_review_attestation::BookReviewAttestationStatement),
-    WitnessedDappPreferences(rebase::statement::attestation::dapp_preferences_attestation::DappPreferencesAttestationStatement),
-    WitnessedFollow(rebase::statement::attestation::follow_attestation::FollowAttestationStatement),
-    WitnessedLike(rebase::statement::attestation::like_attestation::LikeAttestationStatement),
-    WitnessedProgressBookLink(rebase::statement::attestation::progress_book_link_attestation::ProgressBookLinkAttestationStatement),
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-impl CompatStatements {
-    pub fn to_attestation(&self) -> AttestationStatement {
-        match &self {
-            CompatStatements::WitnessedBasicImage(x) => {
-                AttestationStatement::BasicImageAttestation(x.clone())
-            }
-            CompatStatements::WitnessedBasicPost(x) => {
-                AttestationStatement::BasicPostAttestation(x.clone())
-            }
-            CompatStatements::WitnessedBasicProfile(x) => {
-                AttestationStatement::BasicProfileAttestation(x.clone())
-            }
-            CompatStatements::WitnessedBasicTag(x) => {
-                AttestationStatement::BasicTagAttestation(x.clone())
-            }
-            CompatStatements::WitnessedBookReview(x) => {
-                AttestationStatement::BookReviewAttestation(x.clone())
-            }
-            CompatStatements::WitnessedDappPreferences(x) => {
-                AttestationStatement::DappPreferencesAttestation(x.clone())
-            }
-            CompatStatements::WitnessedFollow(x) => {
-                AttestationStatement::FollowAttestation(x.clone())
-            }
-            CompatStatements::WitnessedLike(x) => AttestationStatement::LikeAttestation(x.clone()),
-            CompatStatements::WitnessedProgressBookLink(x) => {
-                AttestationStatement::ProgressBookLinkAttestation(x.clone())
-            }
         }
     }
 }
@@ -351,8 +170,6 @@ pub enum Statements {
     SoundCloudVerification(SoundCloudVerificationStatement),
     TwitterVerification(TwitterVerificationStatement),
     Attestation(AttestationStatement),
-    // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-    WitnessedSelfIssued(CompatStatements),
 }
 
 impl Statement for Statements {
@@ -368,52 +185,6 @@ impl Statement for Statements {
             Statements::SoundCloudVerification(x) => x.generate_statement(),
             Statements::TwitterVerification(x) => x.generate_statement(),
             Statements::Attestation(x) => x.generate_statement(),
-            // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-            Statements::WitnessedSelfIssued(x) => x.to_attestation().generate_statement(),
-        }
-    }
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-#[derive(Deserialize, Serialize, TS, Clone)]
-#[ts(export)]
-pub enum CompatProofs {
-    WitnessedBasicImage(rebase::proof::attestation::basic_image_attestation::BasicImageAttestationProof),
-    WitnessedBasicPost(rebase::proof::attestation::basic_post_attestation::BasicPostAttestationProof),
-    WitnessedBasicProfile(rebase::proof::attestation::basic_profile_attestation::BasicProfileAttestationProof),
-    WitnessedBasicTag(rebase::proof::attestation::basic_tag_attestation::BasicTagAttestationProof),
-    WitnessedBookReview(rebase::proof::attestation::book_review_attestation::BookReviewAttestationProof),
-    WitnessedDappPreferences(rebase::proof::attestation::dapp_preferences_attestation::DappPreferencesAttestationProof),
-    WitnessedFollow(rebase::proof::attestation::follow_attestation::FollowAttestationProof),
-    WitnessedLike(rebase::proof::attestation::like_attestation::LikeAttestationProof),
-    WitnessedProgressBookLink(rebase::proof::attestation::progress_book_link_attestation::ProgressBookLinkAttestationProof),
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-impl CompatProofs {
-    pub fn to_attestation(&self) -> AttestationProof {
-        match &self {
-            CompatProofs::WitnessedBasicImage(x) => {
-                AttestationProof::BasicImageAttestation(x.clone())
-            }
-            CompatProofs::WitnessedBasicPost(x) => {
-                AttestationProof::BasicPostAttestation(x.clone())
-            }
-            CompatProofs::WitnessedBasicProfile(x) => {
-                AttestationProof::BasicProfileAttestation(x.clone())
-            }
-            CompatProofs::WitnessedBasicTag(x) => AttestationProof::BasicTagAttestation(x.clone()),
-            CompatProofs::WitnessedBookReview(x) => {
-                AttestationProof::BookReviewAttestation(x.clone())
-            }
-            CompatProofs::WitnessedDappPreferences(x) => {
-                AttestationProof::DappPreferencesAttestation(x.clone())
-            }
-            CompatProofs::WitnessedFollow(x) => AttestationProof::FollowAttestation(x.clone()),
-            CompatProofs::WitnessedLike(x) => AttestationProof::LikeAttestation(x.clone()),
-            CompatProofs::WitnessedProgressBookLink(x) => {
-                AttestationProof::ProgressBookLinkAttestation(x.clone())
-            }
         }
     }
 }
@@ -434,8 +205,6 @@ pub enum Proofs {
     SoundCloudVerification(SoundCloudVerificationStatement),
     TwitterVerification(TwitterVerificationProof),
     Attestation(AttestationProof),
-    // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-    WitnessedSelfIssued(CompatProofs),
 }
 
 impl Statement for Proofs {
@@ -451,8 +220,6 @@ impl Statement for Proofs {
             Proofs::SoundCloudVerification(x) => x.generate_statement(),
             Proofs::TwitterVerification(x) => x.generate_statement(),
             Proofs::Attestation(x) => x.generate_statement(),
-            // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-            Proofs::WitnessedSelfIssued(x) => x.to_attestation().generate_statement(),
         }
     }
 }
@@ -490,10 +257,6 @@ impl Proof<Contents> for Proofs {
             Proofs::Attestation(x) => {
                 Ok(Contents::Attestation(x.to_content(statement, signature)?))
             }
-            // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-            Proofs::WitnessedSelfIssued(x) => Ok(Contents::Attestation(
-                x.to_attestation().to_content(statement, signature)?,
-            )),
         }
     }
 }
@@ -586,13 +349,6 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                     "no witnessed self issued flow configured".to_owned(),
                 )),
             },
-            // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-            Statements::WitnessedSelfIssued(s) => match &self.attestation {
-                Some(x) => Ok(x.statement(&s.to_attestation(), issuer).await?),
-                None => Err(FlowError::Validation(
-                    "no witnessed self issued flow configured".to_owned(),
-                )),
-            },
         }
     }
 
@@ -678,17 +434,6 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
                     "no witnessed self issued flow configured".to_owned(),
                 )),
             },
-            // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-            Proofs::WitnessedSelfIssued(p) => match &self.attestation {
-                Some(x) => Ok(Contents::WitnessedSelfIssued(
-                    CompatContents::from_attestation(
-                        x.validate_proof(&p.to_attestation(), issuer).await?,
-                    ),
-                )),
-                None => Err(FlowError::Validation(
-                    "no witnessed self issued flow configured".to_owned(),
-                )),
-            },
         }
     }
 }
@@ -697,58 +442,6 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
 pub struct InstructionsReq {
     #[serde(rename = "type")]
     pub instruction_type: FlowType,
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-#[derive(Clone, Deserialize, Serialize, TS)]
-#[ts(export)]
-pub struct StatementReq {
-    pub opts: Statements,
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-#[derive(Clone, Deserialize, Serialize, TS)]
-#[ts(export)]
-#[serde(untagged)]
-pub enum CompatStatementReq {
-    R(StatementReq),
-    S(Statements),
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-impl CompatStatementReq {
-    pub fn to_statement(&self) -> Statements {
-        match self {
-            CompatStatementReq::R(r) => r.opts.clone(),
-            CompatStatementReq::S(s) => s.clone(),
-        }
-    }
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-#[derive(Clone, Deserialize, Serialize, TS)]
-#[ts(export)]
-pub struct WitnessReq {
-    pub proof: Proofs,
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-#[derive(Clone, Deserialize, Serialize, TS)]
-#[ts(export)]
-#[serde(untagged)]
-pub enum CompatWitnessReq {
-    R(WitnessReq),
-    P(Proofs),
-}
-
-// TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-impl CompatWitnessReq {
-    pub fn to_proofs(&self) -> Proofs {
-        match self {
-            CompatWitnessReq::R(r) => r.proof.clone(),
-            CompatWitnessReq::P(p) => p.clone(),
-        }
-    }
 }
 
 #[derive(Clone, Deserialize, Serialize, TS)]
@@ -837,31 +530,23 @@ impl WitnessFlow {
                     "no witnessed self issued flow configured".to_owned(),
                 )),
             },
-            FlowType::WitnessedSelfIssued => match &self.attestation {
-                Some(x) => x.instructions(),
-                _ => Err(FlowError::Validation(
-                    "no witnessed self issued flow configured".to_owned(),
-                )),
-            },
         }
     }
 
     pub async fn handle_ld<I: Issuer>(
         &self,
-        // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-        proof: &CompatWitnessReq,
+        proof: &Proofs,
         issuer: &I,
     ) -> Result<serde_json::Value, FlowError> {
-        Ok(json!({ "credential": self.credential(&proof.to_proofs(), issuer).await? }))
+        Ok(json!({ "credential": self.credential(proof, issuer).await? }))
     }
 
     pub async fn handle_jwt<I: Issuer>(
         &self,
-        // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-        proof: &CompatWitnessReq,
+        proof: &Proofs,
         issuer: &I,
     ) -> Result<serde_json::Value, FlowError> {
-        Ok(json!({ "jwt": self.jwt(&proof.to_proofs(), issuer).await? }))
+        Ok(json!({ "jwt": self.jwt(proof, issuer).await? }))
     }
 
     pub async fn handle_instructions(
@@ -873,13 +558,10 @@ impl WitnessFlow {
 
     pub async fn handle_statement<I: Issuer>(
         &self,
-        // TODO: REMOVE THIS ONCE ALL DEMOS HAVE BEEN MIGRATED TO PUBLISHED REBASE!
-        statement: &CompatStatementReq,
+        statement: &Statements,
         issuer: &I,
     ) -> Result<serde_json::Value, FlowError> {
-        Ok(json!(
-            self.statement(&statement.to_statement(), issuer).await?
-        ))
+        Ok(json!(self.statement(statement, issuer).await?))
     }
 }
 

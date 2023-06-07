@@ -1,19 +1,20 @@
 import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, EmailIcon, RedditIcon, SoundCloudIcon } from "src/components/icons";
 import { WasmClient } from "@rebase-xyz/rebase-client/wasm";
-import { Client, Types } from "@rebase-xyz/rebase-client";
+import { Client, defaultClientConfig, Types } from "@rebase-xyz/rebase-client";
 
-const witnessUrl = process.env.WITNESS_URL;
+// USE FOR DEBUG:
+// const witnessUrl = process.env.WITNESS_URL;
+// const clientConfig: Types.ClientConfig = { 
+//     endpoints: {
+//         instructions: `${witnessUrl}/instructions`,
+//         statement: `${witnessUrl}/statement`,
+//         witness_jwt: `${witnessUrl}/witness_jwt`,
+//         witness_ld: `${witnessUrl}/witness_ld`,
+//         verify: `${witnessUrl}/verify`
+//     },
+// };
 
-const clientConfig: Types.ClientConfig = { 
-    endpoints: {
-        instructions: `${witnessUrl}/instructions`,
-        statement: `${witnessUrl}/statement`,
-        witness_jwt: `${witnessUrl}/witness_jwt`,
-        witness_ld: `${witnessUrl}/witness_ld`,
-        verify: `${witnessUrl}/verify`
-    },
-};
-
+const clientConfig = defaultClientConfig();
 export const client = new Client(new WasmClient(JSON.stringify(clientConfig)));
 
 export function needsDelimiter(c: Types.FlowType): boolean {
