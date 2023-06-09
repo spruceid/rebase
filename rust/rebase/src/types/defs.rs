@@ -1,10 +1,14 @@
 use crate::types::error::*;
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
+// TODO: Pub use these?
 use did_ethr::DIDEthr;
+use did_ion::DIDION;
 use did_jwk::DIDJWK;
 use did_method_key::DIDKey;
+use did_onion::DIDOnion;
 use did_pkh::DIDPKH;
+use did_tz::DIDTz;
 use did_web::DIDWeb;
 use did_webkey::DIDWebKey;
 use schemars::schema::RootSchema;
@@ -22,7 +26,14 @@ pub use ssi_dids::DIDMethods;
 use ts_rs::TS;
 use uuid::Uuid;
 
-pub fn make_resolver() -> DIDMethods<'static> {
+#[derive(Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
+pub struct ResolverOpts {
+    did_onion_proxy_url: Option<String>,
+    did_ion_api_url: Option<String>,
+}
+
+pub fn make_resolver(opts: &Option<ResolverOpts>) -> DIDMethods<'static> {
     let mut methods = DIDMethods::default();
     methods.insert(Box::new(DIDKey));
     methods.insert(Box::new(DIDEthr));
@@ -30,11 +41,18 @@ pub fn make_resolver() -> DIDMethods<'static> {
     methods.insert(Box::new(DIDWebKey));
     methods.insert(Box::new(DIDPKH));
     methods.insert(Box::new(DIDJWK));
-    // NOTE: Requires the below require additionl configuration,
-    // TODO: Enable these!
-    // methods.insert(Box::new(DIDTZ.clone()));
-    // methods.insert(Box::new(DIDONION.clone()));
-    // methods.insert(Box::new(ION.clone()));
+    methods.insert(Box::<DIDTz>::default());
+
+    if let Some(o) = opts {
+        if let Some(u) = o.did_ion_api_url.clone() {
+            methods.insert(Box::new(DIDION::new(Some(u))));
+        }
+        if let Some(u) = o.did_onion_proxy_url.clone() {
+            let mut did_onion = DIDOnion::default();
+            did_onion.proxy_url = u;
+            methods.insert(Box::new(did_onion));
+        }
+    }
     methods
 }
 

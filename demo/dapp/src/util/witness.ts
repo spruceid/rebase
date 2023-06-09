@@ -4,12 +4,14 @@ import { Client, Types } from "@rebase-xyz/rebase-client";
 
 const witnessUrl = process.env.WITNESS_URL;
 
-const clientConfig: Types.Endpoints = {
-    instructions: `${witnessUrl}/instructions`,
-    statement: `${witnessUrl}/statement`,
-    witness_jwt: `${witnessUrl}/witness_jwt`,
-    witness_ld: `${witnessUrl}/witness_ld`,
-    verify: `${witnessUrl}/verify`
+const clientConfig: Types.ClientConfig = { 
+    endpoints: {
+        instructions: `${witnessUrl}/instructions`,
+        statement: `${witnessUrl}/statement`,
+        witness_jwt: `${witnessUrl}/witness_jwt`,
+        witness_ld: `${witnessUrl}/witness_ld`,
+        verify: `${witnessUrl}/verify`
+    },
 };
 
 export const client = new Client(new WasmClient(JSON.stringify(clientConfig)));

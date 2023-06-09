@@ -220,7 +220,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         .post_async("/verify", |mut req, _ctx| async move {
             if let Ok(t) = req.text().await {
                 if let Ok(b) = serde_json::from_str::<VCWrapper>(&t) {
-                    if handle_verify(&b).await.is_ok() {
+                    if handle_verify(&b, &None).await.is_ok() {
                         return Ok(Response::from_json(&json!({"success": true}))?
                             .with_headers(post_resp_headers()?));
                     };

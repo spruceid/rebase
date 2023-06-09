@@ -1,4 +1,3 @@
-use rebase::types::defs::get_verification_method;
 pub use rebase::{
     content::{
         attestation::content::AttestationContent, dns_verification::DnsVerificationContent,
@@ -46,9 +45,9 @@ pub use rebase::{
     },
     types::{
         defs::{
-            make_resolver, Content, ContextLoader, Credential, DIDMethods, DIDResolver, Evidence,
-            Flow, Instructions, Issuer, LinkedDataProofOptions, OneOrMany, Proof, Statement,
-            StatementResponse, URI,
+            get_verification_method, make_resolver, Content, ContextLoader, Credential, DIDMethods,
+            DIDResolver, Evidence, Flow, Instructions, Issuer, LinkedDataProofOptions, OneOrMany,
+            Proof, ResolverOpts, Statement, StatementResponse, URI,
         },
         error::{ContentError, FlowError, ProofError, StatementError},
     },
@@ -884,7 +883,10 @@ impl WitnessFlow {
     }
 }
 
-pub async fn handle_verify(req: &VCWrapper) -> Result<(), FlowError> {
+pub async fn handle_verify(
+    req: &VCWrapper,
+    resolver_opts: &Option<ResolverOpts>,
+) -> Result<(), FlowError> {
     let issuer = match &req {
         VCWrapper::Jwt(r) => {
             let c = Credential::from_jwt_unsigned(&r.jwt)
@@ -908,7 +910,7 @@ pub async fn handle_verify(req: &VCWrapper) -> Result<(), FlowError> {
         }
     };
 
-    let v_method = get_verification_method(&issuer, &make_resolver()).await;
+    let v_method = get_verification_method(&issuer, &make_resolver(resolver_opts)).await;
     if v_method.is_none() {
         return Err(FlowError::Validation(
             "Could not generate verifcation method".to_string(),
@@ -923,12 +925,21 @@ pub async fn handle_verify(req: &VCWrapper) -> Result<(), FlowError> {
 
     let res = match req {
         VCWrapper::Jwt(r) => {
-            Credential::verify_jwt(&r.jwt, Some(ldpo), &make_resolver(), &mut context_loader()?)
-                .await
+            Credential::verify_jwt(
+                &r.jwt,
+                Some(ldpo),
+                &make_resolver(resolver_opts),
+                &mut context_loader()?,
+            )
+            .await
         }
         VCWrapper::Ld(r) => {
             r.credential
-                .verify(Some(ldpo), &make_resolver(), &mut context_loader()?)
+                .verify(
+                    Some(ldpo),
+                    &make_resolver(resolver_opts),
+                    &mut context_loader()?,
+                )
                 .await
         }
     };

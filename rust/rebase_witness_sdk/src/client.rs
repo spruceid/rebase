@@ -2,7 +2,7 @@ use crate::types::{
     handle_verify, CredentialWrapper, InstructionsReq, JWTWrapper, Proofs, Statements, VCWrapper,
     VerifyRes,
 };
-use rebase::types::defs::StatementResponse;
+use rebase::types::defs::{ResolverOpts, StatementResponse};
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -37,9 +37,13 @@ pub struct Endpoints {
     pub verify: Option<Url>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, TS)]
+#[ts(rename = "ClientConfig")]
+#[ts(export)]
 pub struct Client {
-    endpoints: Endpoints,
+    pub endpoints: Endpoints,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resolver_opts: Option<ResolverOpts>,
 }
 
 #[derive(Clone, Deserialize, Serialize, TS)]
@@ -49,12 +53,18 @@ struct WitnessErr {
 }
 
 impl Client {
-    pub fn new(endpoints: Endpoints) -> Result<Client, ClientError> {
+    pub fn new(
+        endpoints: Endpoints,
+        resolver_opts: Option<ResolverOpts>,
+    ) -> Result<Client, ClientError> {
         if endpoints.witness_jwt.is_none() && endpoints.witness_ld.is_none() {
             return Err(ClientError::Config("No witness url found".to_string()));
         };
 
-        Ok(Client { endpoints })
+        Ok(Client {
+            endpoints,
+            resolver_opts,
+        })
     }
 
     pub async fn instructions(
@@ -79,7 +89,6 @@ impl Client {
     pub async fn statement(&self, req: Statements) -> Result<StatementResponse, ClientError> {
         let client = HttpClient::new();
 
-        // let res: StatementResponse = client
         let res = client
             .post(self.endpoints.statement.clone())
             .json(&req)
@@ -155,7 +164,7 @@ impl Client {
 
     pub async fn verify(&self, req: VCWrapper) -> Result<VerifyRes, ClientError> {
         Ok(VerifyRes {
-            success: matches!(handle_verify(&req).await, Ok(_)),
+            success: matches!(handle_verify(&req, &self.resolver_opts).await, Ok(_)),
         })
     }
 

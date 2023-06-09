@@ -1151,6 +1151,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "did-ion"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f214417e1ec804fedc832be81ff49466b995d507967f8e8772aa6cd6fa549cde"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "base64 0.12.3",
+ "json-patch",
+ "reqwest",
+ "serde",
+ "serde_jcs",
+ "serde_json",
+ "sha2 0.10.6",
+ "ssi-core",
+ "ssi-dids",
+ "ssi-jwk",
+ "ssi-jws",
+ "ssi-jwt",
+ "thiserror",
+]
+
+[[package]]
 name = "did-jwk"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1185,6 +1208,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "did-onion"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8e1ba10a5415931c5d436a6343bbd72673a42284a16d4acd501fbfb9d882db5"
+dependencies = [
+ "async-trait",
+ "http",
+ "reqwest",
+ "serde_json",
+ "ssi-dids",
+ "ssi-jwk",
+]
+
+[[package]]
 name = "did-pkh"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1202,6 +1239,27 @@ dependencies = [
  "ssi-dids",
  "ssi-jwk",
  "static-iref",
+]
+
+[[package]]
+name = "did-tz"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "562670fedf756b20c047dcf4ef88d020c5c86c2115f954fb3aef072952015ba4"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bs58",
+ "chrono",
+ "json-patch",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "ssi-core",
+ "ssi-dids",
+ "ssi-jwk",
+ "ssi-jws",
+ "url",
 ]
 
 [[package]]
@@ -1344,6 +1402,12 @@ dependencies = [
  "sha2 0.10.6",
  "zeroize",
 ]
+
+[[package]]
+name = "either"
+version = "1.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 
 [[package]]
 name = "elliptic-curve"
@@ -2155,6 +2219,17 @@ dependencies = [
  "ryu-js",
  "serde",
  "smallvec",
+]
+
+[[package]]
+name = "json-patch"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb3fa5a61630976fc4c353c70297f2e93f1930e3ccee574d59d618ccbd5154ce"
+dependencies = [
+ "serde",
+ "serde_json",
+ "treediff",
 ]
 
 [[package]]
@@ -3191,9 +3266,12 @@ dependencies = [
  "base58",
  "chrono",
  "did-ethr",
+ "did-ion",
  "did-jwk",
  "did-method-key",
+ "did-onion",
  "did-pkh",
+ "did-tz",
  "did-web",
  "did-webkey",
  "ed25519-dalek 1.0.1",
@@ -3282,6 +3360,7 @@ dependencies = [
  "tokio",
  "tokio-native-tls",
  "tokio-rustls",
+ "tokio-socks",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -4442,6 +4521,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-socks"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51165dfa029d2a65969413a6cc96f354b86b464498702f174a4efa13608fd8c0"
+dependencies = [
+ "either",
+ "futures-util",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "tokio-util"
 version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4488,6 +4579,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24eb03ba0eab1fd845050058ce5e616558e8f8d8fca633e6b163fe25c797213a"
 dependencies = [
  "once_cell",
+]
+
+[[package]]
+name = "treediff"
+version = "3.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "761e8d5ad7ce14bb82b7e61ccc0ca961005a275a060b9644a2431aa11553c2ff"
+dependencies = [
+ "serde_json",
 ]
 
 [[package]]
