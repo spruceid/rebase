@@ -5,7 +5,7 @@ use did_ethr::DIDEthr;
 use did_jwk::DIDJWK;
 use did_method_key::DIDKey;
 use did_pkh::DIDPKH;
-pub use did_web::DIDWeb;
+use did_web::DIDWeb;
 use did_webkey::DIDWebKey;
 use schemars::schema::RootSchema;
 use schemars::JsonSchema;
@@ -152,7 +152,7 @@ pub struct Instructions {
 
 #[derive(Deserialize, Serialize, TS)]
 #[ts(export)]
-pub struct FlowResponse {
+pub struct StatementResponse {
     pub statement: String,
     pub delimiter: Option<String>,
 }
@@ -180,7 +180,7 @@ where
         &self,
         statement: &S,
         issuer: &I,
-    ) -> Result<FlowResponse, FlowError>;
+    ) -> Result<StatementResponse, FlowError>;
 
     async fn unsigned_credential<Subj: Subject, I: Issuer>(
         &self,

@@ -3,7 +3,7 @@ mod utils;
 use js_sys::Promise;
 use rebase_witness_sdk::{
     client::{Client as RebaseClient, Endpoints},
-    types::{InstructionsReq, StatementReq, VCWrapper, WitnessReq},
+    types::{InstructionsReq, Proofs, Statements, VCWrapper},
 };
 use serde_json::from_str;
 use std::sync::Arc;
@@ -64,7 +64,7 @@ impl WasmClient {
     pub fn statement(&self, req: String) -> Promise {
         let client = self.client.clone();
         future_to_promise(async move {
-            let req: StatementReq = jserr!(serde_json::from_str(&req));
+            let req: Statements = jserr!(serde_json::from_str(&req));
             // TODO: Work from here to extricate witness error, if exists.
             let res = jserr!(client.statement(req).await);
             Ok(jserr!(serde_json::to_string(&res)).into())
@@ -74,7 +74,7 @@ impl WasmClient {
     pub fn witness_jwt(&self, req: String) -> Promise {
         let client = self.client.clone();
         future_to_promise(async move {
-            let req: WitnessReq = jserr!(serde_json::from_str(&req));
+            let req: Proofs = jserr!(serde_json::from_str(&req));
             let res = jserr!(client.witness_jwt(req).await);
             Ok(jserr!(serde_json::to_string(&res)).into())
         })
@@ -83,7 +83,7 @@ impl WasmClient {
     pub fn witness_ld(&self, req: String) -> Promise {
         let client = self.client.clone();
         future_to_promise(async move {
-            let req: WitnessReq = jserr!(serde_json::from_str(&req));
+            let req: Proofs = jserr!(serde_json::from_str(&req));
             let res = jserr!(client.witness_ld(req).await);
             Ok(jserr!(serde_json::to_string(&res)).into())
         })

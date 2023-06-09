@@ -3,7 +3,7 @@ use crate::{
     proof::email_verification::EmailVerificationProof as Prf,
     statement::email_verification::EmailVerificationStatement as Stmt,
     types::{
-        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
+        defs::{Flow, Instructions, Issuer, Proof, Statement, StatementResponse, Subject},
         error::FlowError,
     },
 };
@@ -72,7 +72,7 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasicFlow {
         &self,
         stmt: &Stmt,
         issuer: &I,
-    ) -> Result<FlowResponse, FlowError> {
+    ) -> Result<StatementResponse, FlowError> {
         let statement = stmt.generate_statement()?;
         let b = self.body(stmt, issuer).await?;
         let s = self.subject(stmt).await?;
@@ -124,7 +124,7 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasicFlow {
             .await
             .map_err(|e| FlowError::BadLookup(format!("Could not send email: {}", e)))?;
 
-        Ok(FlowResponse {
+        Ok(StatementResponse {
             statement,
             delimiter: None,
         })

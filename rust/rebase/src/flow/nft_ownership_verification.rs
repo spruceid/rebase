@@ -3,7 +3,7 @@ use crate::{
     proof::nft_ownership_verification::NftOwnershipVerificationProof as Prf,
     statement::nft_ownership_verification::NftOwnershipVerificationStatement as Stmt,
     types::{
-        defs::{Flow, FlowResponse, Instructions, Issuer, Proof, Statement, Subject},
+        defs::{Flow, Instructions, Issuer, Proof, Statement, StatementResponse, Subject},
         enums::subject::{Pkh, Subjects},
         error::FlowError,
     },
@@ -38,7 +38,7 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnershipVerificationFlow {
         &self,
         stmt: &Stmt,
         issuer: &I,
-    ) -> Result<FlowResponse, FlowError> {
+    ) -> Result<StatementResponse, FlowError> {
         match self {
             NftOwnershipVerificationFlow::Alchemy(x) => x.statement(stmt, issuer).await,
         }
@@ -158,7 +158,7 @@ impl Flow<Ctnt, Stmt, Prf> for Alchemy {
         &self,
         stmt: &Stmt,
         issuer: &I,
-    ) -> Result<FlowResponse, FlowError> {
+    ) -> Result<StatementResponse, FlowError> {
         self.sanity_check(&stmt.issued_at)?;
 
         // TODO: Adjust this when adding additional Alchemy flows.
@@ -178,7 +178,7 @@ impl Flow<Ctnt, Stmt, Prf> for Alchemy {
         // of the challenge. This ensures that the expected address is the one making this
         // request and this request isn't being replayed from an interaction older than the
         // max_elapsed_minutes.
-        Ok(FlowResponse {
+        Ok(StatementResponse {
             statement: format!(
                 "{}{}{}",
                 s,

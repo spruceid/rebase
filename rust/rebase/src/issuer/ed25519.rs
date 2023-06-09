@@ -1,5 +1,5 @@
 use crate::{
-    content::context::context_loader::context_loader,
+    context::context_loader::context_loader,
     types::{
         defs::{Issuer, Subject},
         error::{IssuerError, SubjectError},

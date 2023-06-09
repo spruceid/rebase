@@ -20,10 +20,7 @@
     onMount(async () => {
         console.log("TYPE:", type);
         try {
-            if (
-                type !== "SameControllerAssertion" &&
-                type !== "WitnessedSelfIssued"
-            ) {
+            if (type !== "SameControllerAssertion" && type !== "Attestation") {
                 let i = await instructions(type);
                 inst.set(i as Instructions);
             }
@@ -40,7 +37,7 @@
     <div class="min-h-[577px] h-full flex flex-wrap">
         {#if type === "SameControllerAssertion"}
             <SameForm />
-        {:else if type === "WitnessedSelfIssued"}
+        {:else if type === "Attestation"}
             <WitnessedSelfIssue />
         {:else if !_inst}
             <p class="inner-center">Building workflow...</p>

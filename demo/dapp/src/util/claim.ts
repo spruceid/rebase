@@ -155,7 +155,7 @@ export const credentialToDisplay = (jwt: string): CredentialDisplay => {
         };
 
     }
-    case "WitnessedBasicProfile": {
+    case "BasicProfileAttestation": {
         let did = vc?.credentialSubject?.id;
         if (!did) {
             throw new Error("No credentialSubject.id found");
