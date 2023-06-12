@@ -34,7 +34,6 @@ impl Proof<ProgressBookLinkAttestationContent> for ProgressBookLinkAttestationPr
             attestation_format: AttestationFormat::Attestation,
             id: self.statement.subject.did()?,
             link: self.statement.link.clone(),
-            signature: self.signature.clone(),
             progress: self.statement.progress,
         })
     }

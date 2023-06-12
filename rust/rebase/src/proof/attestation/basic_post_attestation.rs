@@ -36,7 +36,6 @@ impl Proof<BasicPostAttestationContent> for BasicPostAttestationProof {
             title: self.statement.title.clone(),
             body: self.statement.body.clone(),
             reply_to: self.statement.reply_to.clone(),
-            signature: self.signature.clone(),
         })
     }
 }

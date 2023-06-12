@@ -36,7 +36,6 @@ impl Proof<BookReviewAttestationContent> for BookReviewAttestationProof {
             link: self.statement.link.clone(),
             rating: self.statement.rating,
             review: self.statement.review.clone(),
-            signature: self.signature.clone(),
             title: self.statement.title.clone(),
         })
     }

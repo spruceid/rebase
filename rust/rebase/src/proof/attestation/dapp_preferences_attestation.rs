@@ -34,7 +34,6 @@ impl Proof<DappPreferencesAttestationContent> for DappPreferencesAttestationProo
             attestation_format: AttestationFormat::Attestation,
             id: self.statement.subject.did()?,
             dark_mode: self.statement.dark_mode,
-            signature: self.signature.clone(),
         })
     }
 }

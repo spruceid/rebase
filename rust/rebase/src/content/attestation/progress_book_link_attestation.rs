@@ -13,7 +13,6 @@ pub struct ProgressBookLinkAttestationContent {
     #[ts(type = "string")]
     pub link: Url,
     pub progress: i64,
-    pub signature: String,
 }
 
 impl ProgressBookLinkAttestationContent {

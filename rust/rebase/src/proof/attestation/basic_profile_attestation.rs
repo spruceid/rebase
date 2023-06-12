@@ -37,7 +37,6 @@ impl Proof<BasicProfileAttestationContent> for BasicProfileAttestationProof {
             image: self.statement.image.clone(),
             username: self.statement.username.clone(),
             website: self.statement.website.clone(),
-            signature: self.signature.clone(),
         })
     }
 }

@@ -15,7 +15,6 @@ pub struct BookReviewAttestationContent {
     // Not using u64 because of issues with the JS side JSON schema lib.
     pub rating: i64,
     pub review: String,
-    pub signature: String,
     pub title: String,
 }
 

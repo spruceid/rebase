@@ -10,7 +10,6 @@ pub struct DappPreferencesAttestationContent {
     pub attestation_format: AttestationFormat,
     pub id: String,
     pub dark_mode: bool,
-    pub signature: String,
 }
 impl DappPreferencesAttestationContent {
     fn get_type(&self) -> String {

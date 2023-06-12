@@ -11,7 +11,6 @@ pub struct BasicTagAttestationContent {
     pub id: String,
     pub post: String,
     pub users: Vec<String>,
-    pub signature: String,
 }
 
 impl BasicTagAttestationContent {

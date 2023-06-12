@@ -35,7 +35,6 @@ impl Proof<BasicTagAttestationContent> for BasicTagAttestationProof {
             id: self.statement.subject.did()?,
             users: self.statement.users.clone(),
             post: self.statement.post.clone(),
-            signature: self.signature.clone(),
         })
     }
 }

@@ -12,7 +12,6 @@ pub struct LikeAttestationContent {
     pub id: String,
     #[ts(type = "string")]
     pub target: Url,
-    pub signature: String,
 }
 
 impl LikeAttestationContent {

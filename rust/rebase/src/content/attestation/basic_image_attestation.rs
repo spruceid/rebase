@@ -10,7 +10,6 @@ pub struct BasicImageAttestationContent {
     pub attestation_format: AttestationFormat,
     pub id: String,
     pub src: String,
-    pub signature: String,
 }
 
 impl BasicImageAttestationContent {

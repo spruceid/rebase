@@ -15,7 +15,6 @@ pub struct BasicProfileAttestationContent {
     pub username: String,
     #[ts(type = "string")]
     pub website: Option<Url>,
-    pub signature: String,
 }
 
 impl BasicProfileAttestationContent {

@@ -34,7 +34,6 @@ impl Proof<BasicImageAttestationContent> for BasicImageAttestationProof {
             attestation_format: AttestationFormat::Attestation,
             id: self.statement.subject.did()?,
             src: self.statement.src.clone(),
-            signature: self.signature.clone(),
         })
     }
 }

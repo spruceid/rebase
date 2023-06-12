@@ -12,7 +12,6 @@ pub struct BasicPostAttestationContent {
     pub body: String,
     pub title: String,
     pub reply_to: Option<String>,
-    pub signature: String,
 }
 
 impl BasicPostAttestationContent {

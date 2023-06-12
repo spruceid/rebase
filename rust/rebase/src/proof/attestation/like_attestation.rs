@@ -34,7 +34,6 @@ impl Proof<LikeAttestationContent> for LikeAttestationProof {
             attestation_format: AttestationFormat::Attestation,
             id: self.statement.subject.did()?,
             target: self.statement.target.clone(),
-            signature: self.signature.clone(),
         })
     }
 }
