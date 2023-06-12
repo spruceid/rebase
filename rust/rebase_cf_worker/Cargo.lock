@@ -3378,6 +3378,7 @@ dependencies = [
  "sha3 0.9.1",
  "ssi",
  "ssi-dids",
+ "ssi-jws",
  "thiserror",
  "ts-rs",
  "url",

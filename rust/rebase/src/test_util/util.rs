@@ -133,10 +133,6 @@ impl Subject for MockIssuer {
         Err(SubjectError::Validation("unimplemented".to_string()))
     }
 
-    fn verification_method(&self) -> Result<String, SubjectError> {
-        Err(SubjectError::Validation("unimplemented".to_string()))
-    }
-
     async fn valid_signature(
         &self,
         _statement: &str,

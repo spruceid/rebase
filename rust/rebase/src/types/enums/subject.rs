@@ -52,14 +52,6 @@ impl Subject for Subjects {
         }
     }
 
-    fn verification_method(&self) -> Result<String, SubjectError> {
-        match &self {
-            Subjects::Pkh(Pkh::Eip155(x)) => x.verification_method(),
-            Subjects::Pkh(Pkh::Solana(x)) => x.verification_method(),
-            Subjects::Web(Web::Ed25519(x)) => x.verification_method(),
-        }
-    }
-
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
         match &self {
             Subjects::Pkh(Pkh::Eip155(x)) => x.valid_signature(statement, signature).await,

@@ -32,10 +32,6 @@ impl Subject for Eip155 {
         Ok(self.address.clone())
     }
 
-    fn verification_method(&self) -> Result<String, SubjectError> {
-        Ok(format!("{}#blockchainAccountId", self.did()?))
-    }
-
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
         // NOTE: THIS ASSUMES EIP191 SIGNING.
         // TODO: Call this out in the type system?

@@ -82,11 +82,6 @@ impl Subject for KeyJwk {
         Ok(self.did.to_owned())
     }
 
-    fn verification_method(&self) -> Result<String, SubjectError> {
-        let s = self.did.trim_start_matches("did:key:");
-        Ok(format!("{}#{}", &self.did, s))
-    }
-
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
         let sig = Signature::from_bytes(
             &hex::decode(signature).map_err(|e| SubjectError::Validation(e.to_string()))?,
@@ -218,10 +213,6 @@ impl Subject for WebJwk {
         Ok(self.did.to_owned())
     }
 
-    fn verification_method(&self) -> Result<String, SubjectError> {
-        Ok(format!("{}#{}", &self.did, &self.key_name))
-    }
-
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
         let sig = Signature::from_bytes(
             &hex::decode(signature).map_err(|e| SubjectError::Validation(e.to_string()))?,
@@ -317,14 +308,6 @@ impl Subject for Ed25519 {
         match self {
             Ed25519::Key(k) => k.display_id(),
             Ed25519::Web(w) => w.display_id(),
-        }
-    }
-
-    // TODO: Remove this when we use get_verification_method instead
-    fn verification_method(&self) -> Result<String, SubjectError> {
-        match self {
-            Ed25519::Key(k) => k.verification_method(),
-            Ed25519::Web(w) => w.verification_method(),
         }
     }
 

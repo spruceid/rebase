@@ -47,11 +47,6 @@ impl Subject for Solana {
         Ok(self.address.clone())
     }
 
-    fn verification_method(&self) -> Result<String, SubjectError> {
-        // NOTE: If encountering issues with this approach, use: SolanaMethod2021 instead of "controller"
-        Ok(format!("{}#controller", self.did()?))
-    }
-
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
         let sig_hex =
             hex::decode(signature).map_err(|e| SubjectError::Validation(e.to_string()))?;

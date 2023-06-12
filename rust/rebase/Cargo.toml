@@ -26,6 +26,7 @@ ssi = { version = "0.6", default-features = false, features = ["ed25519", "secp2
 # ssi = { path = "../../../ssi", default-features = false, features = ["ed25519", "secp256k1", "secp256r1"] }
 ssi-dids = "0.1.1"
 # ssi-dids = {path = "../../../ssi/ssi-dids"}
+ssi-jws = "0.1.0"
 
 thiserror = "1"
 ts-rs = "6.2"

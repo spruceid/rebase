@@ -64,9 +64,6 @@ where
 
     fn display_id(&self) -> Result<String, SubjectError>;
 
-    // TODO: Remove this when we use get_verification_method instead
-    fn verification_method(&self) -> Result<String, SubjectError>;
-
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError>;
 }
 

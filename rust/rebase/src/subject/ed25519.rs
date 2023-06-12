@@ -72,10 +72,6 @@ impl Subject for DidWeb {
         Ok(s.to_owned())
     }
 
-    fn verification_method(&self) -> Result<String, SubjectError> {
-        Ok(format!("{}#{}", &self.did, &self.key_name))
-    }
-
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
         let sig = Signature::from_bytes(
             &hex::decode(signature).map_err(|e| SubjectError::Validation(e.to_string()))?,
