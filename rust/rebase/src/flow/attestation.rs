@@ -1,7 +1,7 @@
 use crate::{
-    content::attestation::content::AttestationContent,
-    proof::attestation::proof::AttestationProof,
-    statement::attestation::statement::AttestationStatement,
+    content::attestation::attestation_content::AttestationContent,
+    proof::attestation::attestation_proof::AttestationProof,
+    statement::attestation::attestation_statement::AttestationStatement,
     types::{
         defs::{Flow, Instructions, Issuer, Proof, Statement, StatementResponse, Subject},
         error::FlowError,

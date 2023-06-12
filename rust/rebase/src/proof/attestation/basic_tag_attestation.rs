@@ -3,7 +3,8 @@ use crate::{
     statement::attestation::basic_tag_attestation::BasicTagAttestationStatement,
     types::{
         defs::{Proof, Statement, Subject},
-        error::StatementError,
+        enums::attestation::AttestationFormat,
+        error::{ProofError, StatementError},
     },
 };
 use schemars::JsonSchema;
@@ -28,8 +29,9 @@ impl Proof<BasicTagAttestationContent> for BasicTagAttestationProof {
         &self,
         _statement: &str,
         _signature: &str,
-    ) -> Result<BasicTagAttestationContent, crate::types::error::ProofError> {
+    ) -> Result<BasicTagAttestationContent, ProofError> {
         Ok(BasicTagAttestationContent {
+            attestation_format: AttestationFormat::Attestation,
             id: self.statement.subject.did()?,
             users: self.statement.users.clone(),
             post: self.statement.post.clone(),

@@ -1,18 +1,27 @@
-use crate::types::{defs::Content, error::ContentError};
+use crate::types::{defs::Content, enums::attestation::AttestationFormat, error::ContentError};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map};
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
-use std::collections::HashMap;
 use ts_rs::TS;
 
 #[derive(Deserialize, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct BasicPostAttestationContent {
+    pub attestation_format: AttestationFormat,
     pub id: String,
     pub body: String,
     pub title: String,
     pub reply_to: Option<String>,
     pub signature: String,
+}
+
+impl BasicPostAttestationContent {
+    fn get_type(&self) -> String {
+        match self.attestation_format {
+            AttestationFormat::Attestation => "BasicPostAttestation".to_string(),
+            AttestationFormat::DelegatedAttestation => "BasicPostDelegatedAttestation".to_string(),
+        }
+    }
 }
 
 impl Content for BasicPostAttestationContent {
@@ -25,14 +34,11 @@ impl Content for BasicPostAttestationContent {
     }
 
     fn types(&self) -> Result<Vec<String>, ContentError> {
-        Ok(vec![
-            "VerifiableCredential".to_string(),
-            "BasicPostAttestation".to_string(),
-        ])
+        Ok(vec!["VerifiableCredential".to_string(), self.get_type()])
     }
 
     fn subject(&self) -> Result<serde_json::Value, ContentError> {
-        let t = vec!["BasicPostAttestation".to_string()];
+        let t = vec![self.get_type()];
         let mut m = Map::new();
         m.insert("type".to_string(), t.into());
         m.insert("id".to_string(), self.id.clone().into());
@@ -47,17 +53,6 @@ impl Content for BasicPostAttestationContent {
     }
 
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, ContentError> {
-        let mut evidence_map = HashMap::new();
-        evidence_map.insert(
-            "signature".to_string(),
-            serde_json::Value::String(self.signature.clone()),
-        );
-        let e = Evidence {
-            id: None,
-            type_: vec!["AttestationEvidence".to_string()],
-            property_set: Some(evidence_map),
-        };
-
-        Ok(Some(OneOrMany::One(e)))
+        Ok(None)
     }
 }

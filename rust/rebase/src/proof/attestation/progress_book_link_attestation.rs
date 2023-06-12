@@ -3,6 +3,7 @@ use crate::{
     statement::attestation::progress_book_link_attestation::ProgressBookLinkAttestationStatement,
     types::{
         defs::{Proof, Statement, Subject},
+        enums::attestation::AttestationFormat,
         error::{ProofError, StatementError},
     },
 };
@@ -30,6 +31,7 @@ impl Proof<ProgressBookLinkAttestationContent> for ProgressBookLinkAttestationPr
         _signature: &str,
     ) -> Result<ProgressBookLinkAttestationContent, ProofError> {
         Ok(ProgressBookLinkAttestationContent {
+            attestation_format: AttestationFormat::Attestation,
             id: self.statement.subject.did()?,
             link: self.statement.link.clone(),
             signature: self.signature.clone(),

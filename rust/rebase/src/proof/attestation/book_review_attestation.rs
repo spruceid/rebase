@@ -3,7 +3,8 @@ use crate::{
     statement::attestation::book_review_attestation::BookReviewAttestationStatement,
     types::{
         defs::{Proof, Statement, Subject},
-        error::StatementError,
+        enums::attestation::AttestationFormat,
+        error::{ProofError, StatementError},
     },
 };
 use schemars::JsonSchema;
@@ -28,8 +29,9 @@ impl Proof<BookReviewAttestationContent> for BookReviewAttestationProof {
         &self,
         _statement: &str,
         _signature: &str,
-    ) -> Result<BookReviewAttestationContent, crate::types::error::ProofError> {
+    ) -> Result<BookReviewAttestationContent, ProofError> {
         Ok(BookReviewAttestationContent {
+            attestation_format: AttestationFormat::Attestation,
             id: self.statement.subject.did()?,
             link: self.statement.link.clone(),
             rating: self.statement.rating,

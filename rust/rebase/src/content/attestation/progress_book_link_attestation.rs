@@ -1,19 +1,30 @@
-use crate::types::{defs::Content, error::ContentError};
+use crate::types::{defs::Content, enums::attestation::AttestationFormat, error::ContentError};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
-use std::collections::HashMap;
 use ts_rs::TS;
 use url::Url;
 
 #[derive(Deserialize, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct ProgressBookLinkAttestationContent {
+    pub attestation_format: AttestationFormat,
     pub id: String,
     #[ts(type = "string")]
     pub link: Url,
     pub progress: i64,
     pub signature: String,
+}
+
+impl ProgressBookLinkAttestationContent {
+    fn get_type(&self) -> String {
+        match self.attestation_format {
+            AttestationFormat::Attestation => "ProgressBookLinkAttestation".to_string(),
+            AttestationFormat::DelegatedAttestation => {
+                "ProgressBookLinkDelegatedAttestation".to_string()
+            }
+        }
+    }
 }
 
 impl Content for ProgressBookLinkAttestationContent {
@@ -26,10 +37,7 @@ impl Content for ProgressBookLinkAttestationContent {
     }
 
     fn types(&self) -> Result<Vec<String>, ContentError> {
-        Ok(vec![
-            "VerifiableCredential".to_string(),
-            "ProgressBookLinkAttestation".to_string(),
-        ])
+        Ok(vec!["VerifiableCredential".to_string(), self.get_type()])
     }
 
     fn subject(&self) -> Result<serde_json::Value, ContentError> {
@@ -37,22 +45,11 @@ impl Content for ProgressBookLinkAttestationContent {
             "id": self.id,
             "link": self.link,
             "progress": self.progress,
-            "type": ["ProgressBookLinkAttestation"],
+            "type": [self.get_type()],
         }))
     }
 
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, ContentError> {
-        let mut evidence_map = HashMap::new();
-        evidence_map.insert(
-            "signature".to_string(),
-            serde_json::Value::String(self.signature.clone()),
-        );
-        let e = Evidence {
-            id: None,
-            type_: vec!["AttestationEvidence".to_string()],
-            property_set: Some(evidence_map),
-        };
-
-        Ok(Some(OneOrMany::One(e)))
+        Ok(None)
     }
 }

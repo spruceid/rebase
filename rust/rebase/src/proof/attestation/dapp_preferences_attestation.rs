@@ -3,7 +3,8 @@ use crate::{
     statement::attestation::dapp_preferences_attestation::DappPreferencesAttestationStatement,
     types::{
         defs::{Proof, Statement, Subject},
-        error::StatementError,
+        enums::attestation::AttestationFormat,
+        error::{ProofError, StatementError},
     },
 };
 use schemars::JsonSchema;
@@ -28,8 +29,9 @@ impl Proof<DappPreferencesAttestationContent> for DappPreferencesAttestationProo
         &self,
         _statement: &str,
         _signature: &str,
-    ) -> Result<DappPreferencesAttestationContent, crate::types::error::ProofError> {
+    ) -> Result<DappPreferencesAttestationContent, ProofError> {
         Ok(DappPreferencesAttestationContent {
+            attestation_format: AttestationFormat::Attestation,
             id: self.statement.subject.did()?,
             dark_mode: self.statement.dark_mode,
             signature: self.signature.clone(),

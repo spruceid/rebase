@@ -1,14 +1,14 @@
-use crate::types::{defs::Content, error::ContentError};
+use crate::types::{defs::Content, enums::attestation::AttestationFormat, error::ContentError};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map};
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
-use std::collections::HashMap;
 use ts_rs::TS;
 use url::Url;
 
 #[derive(Deserialize, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct BasicProfileAttestationContent {
+    pub attestation_format: AttestationFormat,
     pub description: Option<String>,
     pub image: Option<String>,
     pub id: String,
@@ -16,6 +16,17 @@ pub struct BasicProfileAttestationContent {
     #[ts(type = "string")]
     pub website: Option<Url>,
     pub signature: String,
+}
+
+impl BasicProfileAttestationContent {
+    fn get_type(&self) -> String {
+        match self.attestation_format {
+            AttestationFormat::Attestation => "BasicProfileAttestation".to_string(),
+            AttestationFormat::DelegatedAttestation => {
+                "BasicProfileDelegatedAttestation".to_string()
+            }
+        }
+    }
 }
 
 impl Content for BasicProfileAttestationContent {
@@ -28,14 +39,11 @@ impl Content for BasicProfileAttestationContent {
     }
 
     fn types(&self) -> Result<Vec<String>, ContentError> {
-        Ok(vec![
-            "VerifiableCredential".to_string(),
-            "BasicProfileAttestation".to_string(),
-        ])
+        Ok(vec!["VerifiableCredential".to_string(), self.get_type()])
     }
 
     fn subject(&self) -> Result<serde_json::Value, ContentError> {
-        let t = vec!["BasicProfileAttestation".to_string()];
+        let t = vec![self.get_type()];
         let mut m = Map::new();
         m.insert("type".to_string(), t.into());
         m.insert("username".to_string(), self.username.clone().into());
@@ -57,17 +65,6 @@ impl Content for BasicProfileAttestationContent {
     }
 
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, ContentError> {
-        let mut evidence_map = HashMap::new();
-        evidence_map.insert(
-            "signature".to_string(),
-            serde_json::Value::String(self.signature.clone()),
-        );
-        let e = Evidence {
-            id: None,
-            type_: vec!["AttestationEvidence".to_string()],
-            property_set: Some(evidence_map),
-        };
-
-        Ok(Some(OneOrMany::One(e)))
+        Ok(None)
     }
 }

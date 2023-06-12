@@ -1,7 +1,7 @@
 pub use rebase::{
     content::{
-        attestation::content::AttestationContent, dns_verification::DnsVerificationContent,
-        email_verification::EmailVerificationContent,
+        attestation::attestation_content::AttestationContent,
+        dns_verification::DnsVerificationContent, email_verification::EmailVerificationContent,
         github_verification::GitHubVerificationContent,
         nft_ownership_verification::NftOwnershipVerificationContent,
         poap_ownership_verification::PoapOwnershipVerificationContent,
@@ -25,16 +25,16 @@ pub use rebase::{
     },
     issuer,
     proof::{
-        attestation::proof::AttestationProof, email_verification::EmailVerificationProof,
-        github_verification::GitHubVerificationProof,
+        attestation::attestation_proof::AttestationProof,
+        email_verification::EmailVerificationProof, github_verification::GitHubVerificationProof,
         nft_ownership_verification::NftOwnershipVerificationProof,
         poap_ownership_verification::PoapOwnershipVerificationProof,
         same_controller_assertion::SameControllerAssertionProof,
         twitter_verification::TwitterVerificationProof,
     },
     statement::{
-        attestation::statement::AttestationStatement, dns_verification::DnsVerificationStatement,
-        email_verification::EmailVerificationStatement,
+        attestation::attestation_statement::AttestationStatement,
+        dns_verification::DnsVerificationStatement, email_verification::EmailVerificationStatement,
         github_verification::GitHubVerificationStatement,
         nft_ownership_verification::NftOwnershipVerificationStatement,
         poap_ownership_verification::PoapOwnershipVerificationStatement,

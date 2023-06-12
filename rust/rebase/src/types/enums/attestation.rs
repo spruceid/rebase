@@ -6,6 +6,13 @@ use serde_json::{Map, Value};
 use std::collections::HashMap;
 use ts_rs::TS;
 
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, TS)]
+#[ts(export)]
+pub enum AttestationFormat {
+    Attestation,
+    DelegatedAttestation,
+}
+
 pub trait Attestation {
     fn to_statement(&self) -> Result<(AttestationTypes, Map<String, Value>), StatementError>;
 }

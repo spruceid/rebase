@@ -3,7 +3,8 @@ use crate::{
     statement::attestation::basic_profile_attestation::BasicProfileAttestationStatement,
     types::{
         defs::{Proof, Statement, Subject},
-        error::StatementError,
+        enums::attestation::AttestationFormat,
+        error::{ProofError, StatementError},
     },
 };
 use schemars::JsonSchema;
@@ -28,8 +29,9 @@ impl Proof<BasicProfileAttestationContent> for BasicProfileAttestationProof {
         &self,
         _statement: &str,
         _signature: &str,
-    ) -> Result<BasicProfileAttestationContent, crate::types::error::ProofError> {
+    ) -> Result<BasicProfileAttestationContent, ProofError> {
         Ok(BasicProfileAttestationContent {
+            attestation_format: AttestationFormat::Attestation,
             description: self.statement.description.clone(),
             id: self.statement.subject.did()?,
             image: self.statement.image.clone(),

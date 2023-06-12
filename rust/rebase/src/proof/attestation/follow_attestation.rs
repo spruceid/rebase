@@ -3,7 +3,8 @@ use crate::{
     statement::attestation::follow_attestation::FollowAttestationStatement,
     types::{
         defs::{Proof, Statement, Subject},
-        error::StatementError,
+        enums::attestation::AttestationFormat,
+        error::{ProofError, StatementError},
     },
 };
 use schemars::JsonSchema;
@@ -28,8 +29,9 @@ impl Proof<FollowAttestationContent> for FollowAttestationProof {
         &self,
         _statement: &str,
         _signature: &str,
-    ) -> Result<FollowAttestationContent, crate::types::error::ProofError> {
+    ) -> Result<FollowAttestationContent, ProofError> {
         Ok(FollowAttestationContent {
+            attestation_format: AttestationFormat::Attestation,
             id: self.statement.subject.did()?,
             target: self.statement.target.clone(),
             signature: self.signature.clone(),

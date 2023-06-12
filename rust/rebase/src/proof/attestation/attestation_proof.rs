@@ -1,5 +1,5 @@
 use crate::{
-    content::attestation::content::*,
+    content::attestation::attestation_content::*,
     proof::attestation::{
         basic_image_attestation::*, basic_post_attestation::*, basic_profile_attestation::*,
         basic_tag_attestation::*, book_review_attestation::*, dapp_preferences_attestation::*,

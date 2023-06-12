@@ -1,16 +1,26 @@
-use crate::types::{defs::Content, error::ContentError};
+use crate::types::{defs::Content, enums::attestation::AttestationFormat, error::ContentError};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
-use std::collections::HashMap;
 use ts_rs::TS;
 
 #[derive(Deserialize, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct DappPreferencesAttestationContent {
+    pub attestation_format: AttestationFormat,
     pub id: String,
     pub dark_mode: bool,
     pub signature: String,
+}
+impl DappPreferencesAttestationContent {
+    fn get_type(&self) -> String {
+        match self.attestation_format {
+            AttestationFormat::Attestation => "DappPreferencesAttestation".to_string(),
+            AttestationFormat::DelegatedAttestation => {
+                "DappPreferencesDelegatedAttestation".to_string()
+            }
+        }
+    }
 }
 
 impl Content for DappPreferencesAttestationContent {
@@ -23,32 +33,18 @@ impl Content for DappPreferencesAttestationContent {
     }
 
     fn types(&self) -> Result<Vec<String>, ContentError> {
-        Ok(vec![
-            "VerifiableCredential".to_string(),
-            "DappPreferencesAttestation".to_string(),
-        ])
+        Ok(vec!["VerifiableCredential".to_string(), self.get_type()])
     }
 
     fn subject(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!({
             "id": self.id,
             "dark_mode": self.dark_mode,
-            "type": ["DappPreferencesAttestation"],
+            "type": [self.get_type()],
         }))
     }
 
     fn evidence(&self) -> Result<Option<OneOrMany<Evidence>>, ContentError> {
-        let mut evidence_map = HashMap::new();
-        evidence_map.insert(
-            "signature".to_string(),
-            serde_json::Value::String(self.signature.clone()),
-        );
-        let e = Evidence {
-            id: None,
-            type_: vec!["AttestationEvidence".to_string()],
-            property_set: Some(evidence_map),
-        };
-
-        Ok(Some(OneOrMany::One(e)))
+        Ok(None)
     }
 }
