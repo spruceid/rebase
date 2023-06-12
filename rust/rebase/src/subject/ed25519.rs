@@ -8,6 +8,7 @@ use ssi::jwk::Base64urlUInt;
 use ts_rs::TS;
 use url::Url;
 
+// TODO: Generalize over and change name to did_web, like how did_key is done.
 #[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
 #[serde(rename = "did_web")]
 #[ts(export, rename = "DidWeb")]
