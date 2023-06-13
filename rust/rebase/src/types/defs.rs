@@ -15,21 +15,44 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 pub use ssi::{
-    did_resolve::DIDResolver,
+    did_resolve::{DIDResolver, ResolutionInputMetadata},
     jsonld::ContextLoader,
+    jwk::{Algorithm, JWK},
     ldp::Proof as LDProof,
     one_or_many::OneOrMany,
     vc::{get_verification_method, Credential, Evidence, LinkedDataProofOptions, URI},
 };
-pub use ssi_dids::DIDMethods;
+pub use ssi_dids::{DIDMethods, VerificationMethod};
 use ts_rs::TS;
 use uuid::Uuid;
 
-#[derive(Clone, Deserialize, Serialize, TS)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
 #[ts(export)]
 pub struct ResolverOpts {
     did_onion_proxy_url: Option<String>,
     did_ion_api_url: Option<String>,
+}
+
+pub async fn get_public_jwk_and_algo(
+    did: &str,
+    resolver_opts: &Option<ResolverOpts>,
+) -> Result<(JWK, Algorithm), SubjectError> {
+    let r = make_resolver(resolver_opts);
+    if let (_, Some(d), _) = r.resolve(did, &ResolutionInputMetadata::default()).await {
+        if let Some(vm) = d.verification_method {
+            if let Some(VerificationMethod::Map(v_meth)) = vm.first() {
+                if let Some(jwk) = v_meth.public_key_jwk.clone() {
+                    if let Some(a) = jwk.get_algorithm() {
+                        return Ok((jwk, a));
+                    }
+                }
+            }
+        }
+    };
+
+    Err(SubjectError::Did(
+        "Failed to parse key and algorithm from DID".to_string(),
+    ))
 }
 
 pub fn make_resolver(opts: &Option<ResolverOpts>) -> DIDMethods<'static> {

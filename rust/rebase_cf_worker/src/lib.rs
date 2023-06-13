@@ -1,10 +1,8 @@
 use rebase_witness_sdk::types::{
-    handle_verify,
-    issuer::ed25519::{Ed25519, WebJwk},
-    Alchemy, AttestationFlow, DnsVerificationFlow, EmailVerificationFlow, GitHubVerificationFlow,
-    InstructionsReq, NftOwnershipVerificationFlow, PoapOwnershipVerificationFlow, Proofs,
-    RedditVerificationFlow, SameControllerAssertionFlow, SoundCloudVerificationFlow, Statements,
-    TwitterVerificationFlow, VCWrapper, WitnessFlow,
+    handle_verify, issuer::did_issuer::DidIssuer, Alchemy, AttestationFlow, DnsVerificationFlow,
+    EmailVerificationFlow, GitHubVerificationFlow, InstructionsReq, NftOwnershipVerificationFlow,
+    PoapOwnershipVerificationFlow, Proofs, RedditVerificationFlow, SameControllerAssertionFlow,
+    SoundCloudVerificationFlow, Statements, TwitterVerificationFlow, VCWrapper, WitnessFlow,
 };
 use serde_json::json;
 use worker::*;
@@ -101,7 +99,7 @@ fn new_flow(env: &Env) -> WitnessFlow {
     flow
 }
 
-fn new_issuer(env: &Env) -> Result<Ed25519> {
+fn new_issuer(env: &Env) -> Result<DidIssuer> {
     // Why doesn't this work ?! ....
     // DidWebJwk::new(
     //     &env.secret("REBASE_SK")?.to_string(),
@@ -111,12 +109,12 @@ fn new_issuer(env: &Env) -> Result<Ed25519> {
     // .map_err(|e| Err(format!("failed to create issuer: {}", e).into()))
 
     // ... When this does ?! :
-    match WebJwk::new(
-        &env.secret("DID_WEB")?.to_string(),
+    match DidIssuer::new(
+        env.secret("DID_WEB")?.to_string(),
         &env.secret("REBASE_SK")?.to_string(),
-        "controller",
+        None,
     ) {
-        Ok(i) => Ok(Ed25519::Web(i)),
+        Ok(i) => Ok(i),
         // Could not figure out how to get map_err to work this way.
         Err(e) => Err(format!("failed to create issuer: {}", e).into()),
     }
