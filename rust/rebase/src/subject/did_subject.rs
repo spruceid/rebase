@@ -12,7 +12,7 @@ use ts_rs::TS;
 #[serde(rename = "did_subject")]
 #[ts(export, rename = "DidSubject")]
 pub struct DidSubject {
-    did: String,
+    pub did: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     resolver_opts: Option<ResolverOpts>,
 }
@@ -30,6 +30,24 @@ impl Subject for DidSubject {
     }
 
     fn display_id(&self) -> Result<String, SubjectError> {
+        // TODO: Standardize around using did addresses instead of switching here?
+        // This maintains backwards compat, for better or worse.
+        if self.did.starts_with("did:pkh:eip155:1:") {
+            return Ok(self.did.trim_start_matches("did:pkh:eip155:1:").to_string());
+        }
+        if self
+            .did
+            .starts_with("did:pkh:solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:")
+        {
+            return Ok(self
+                .did
+                .trim_start_matches("did:pkh:solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:")
+                .to_string());
+        }
+        if self.did.starts_with("did:web:") {
+            return Ok(self.did.trim_start_matches("did:web:").to_string());
+        }
+
         Ok(self.did.to_owned())
     }
 

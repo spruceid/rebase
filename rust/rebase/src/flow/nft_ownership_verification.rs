@@ -4,7 +4,6 @@ use crate::{
     statement::nft_ownership_verification::NftOwnershipVerificationStatement as Stmt,
     types::{
         defs::{Flow, Instructions, Issuer, Proof, Statement, StatementResponse, Subject},
-        enums::subject::{Pkh, Subjects},
         error::FlowError,
     },
 };
@@ -162,13 +161,10 @@ impl Flow<Ctnt, Stmt, Prf> for Alchemy {
         self.sanity_check(&stmt.issued_at)?;
 
         // TODO: Adjust this when adding additional Alchemy flows.
-        match stmt.subject {
-            Subjects::Pkh(Pkh::Eip155(_)) => {}
-            _ => {
-                return Err(FlowError::Validation(
-                    "Currently only supports Ethereum NFTs".to_string(),
-                ))
-            }
+        if !stmt.subject.did()?.starts_with("did:pkh:eip155") {
+            return Err(FlowError::Validation(
+                "Currently only supports Ethereum NFTs".to_string(),
+            ));
         }
 
         let s = stmt.generate_statement()?;

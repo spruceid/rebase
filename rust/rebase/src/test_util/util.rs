@@ -1,8 +1,8 @@
 use crate::{
-    subject::{ed25519::DidWeb, ethereum::Eip155, solana::Solana},
+    subject::{did_subject::DidSubject, ed25519::DidWeb, ethereum::Eip155, solana::Solana},
     types::{
         defs::{Issuer, Subject},
-        enums::subject::{Pkh, Subjects, Web},
+        enums::subject::{InnerSubjects, Pkh, Subjects, Web},
         error::{FlowError, IssuerError, SubjectError},
     },
 };
@@ -19,43 +19,65 @@ pub const TEST_2KEY_SOLANA_SIG_1: &str = "a9da65e22dd752af74b92729fa0de6ee3f9126
 pub const TEST_2KEY_SOLANA_SIG_2: &str = "98406d0e97b8b9c7f9e4abf6069d1a11d20a6e4d1b71608862df915038ea6a60276a99aca5c306346936e101e7aef22205dc82486788578060946eac44ae6008";
 
 pub fn test_eth_did() -> Subjects {
-    Subjects::Pkh(Pkh::Eip155(Eip155 {
+    Subjects::BackwardsCompat(InnerSubjects::Pkh(Pkh::Eip155(Eip155 {
         address: "0xdA3176d77c04632F2862B14E35bc6B4717FB5016".to_owned(),
         chain_id: "1".to_owned(),
-    }))
+    })))
+    // Subjects::Subject(DidSubject::new(
+    //     "did:pkh:eip155:1:0xdA3176d77c04632F2862B14E35bc6B4717FB5016".to_string(),
+    //     None,
+    // ))
 }
 
 pub fn test_eth_did_2() -> Subjects {
-    Subjects::Pkh(Pkh::Eip155(Eip155 {
+    Subjects::BackwardsCompat(InnerSubjects::Pkh(Pkh::Eip155(Eip155 {
         address: "0x2CfdC694c436BBb1a7f33db015d40C6AA418C3ff".to_owned(),
         chain_id: "1".to_owned(),
-    }))
+    })))
+    // Subjects::Subject(DidSubject::new(
+    //     "did:pkh:eip155:1:0x2CfdC694c436BBb1a7f33db015d40C6AA418C3ff".to_string(),
+    //     None,
+    // ))
 }
 
+// Magic String: 4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:
 pub fn test_solana_did() -> Subjects {
-    Subjects::Pkh(Pkh::Solana(Solana {
+    Subjects::BackwardsCompat(InnerSubjects::Pkh(Pkh::Solana(Solana {
         address: "4uTjzi5QCmE1qpB7TBnDk5tyzUBvSBWKBUpWheVBuMBN".to_owned(),
-    }))
+    })))
+    // Subjects::Subject(DidSubject::new(
+    //     "did:pkh:solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:4uTjzi5QCmE1qpB7TBnDk5tyzUBvSBWKBUpWheVBuMBN".to_string(),
+    //     None,
+    // ))
 }
 
 pub fn test_solana_did_2() -> Subjects {
-    Subjects::Pkh(Pkh::Solana(Solana {
+    Subjects::BackwardsCompat(InnerSubjects::Pkh(Pkh::Solana(Solana {
         address: "5gkphffGKYKST3nfAMn7N6zKMpgH38UDRtF7tRN3tEsy".to_owned(),
-    }))
+    })))
+    // Subjects::Subject(DidSubject::new(
+    //     "did:pkh:solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:5gkphffGKYKST3nfAMn7N6zKMpgH38UDRtF7tRN3tEsy".to_string(),
+    //     None,
+    // ))
 }
 
 pub fn test_ed25519_did() -> Subjects {
-    Subjects::Web(Web::Ed25519(DidWeb {
+    Subjects::BackwardsCompat(InnerSubjects::Web(Web::Ed25519(DidWeb {
         did: "did:web:rebasedemokey.pages.dev".to_string(),
         key_name: "controller".to_string(),
-    }))
+    })))
+    // Subjects::Subject(DidSubject::new(
+    //     "did:web:rebasedemokey.pages.dev".to_string(),
+    //     None,
+    // ))
 }
 
 pub fn test_ed25519_did_2() -> Subjects {
-    Subjects::Web(Web::Ed25519(DidWeb {
+    Subjects::BackwardsCompat(InnerSubjects::Web(Web::Ed25519(DidWeb {
         did: "did:web:tzprofiles.com".to_string(),
         key_name: "controller".to_string(),
-    }))
+    })))
+    // Subjects::Subject(DidSubject::new("did:web:tzprofiles.com".to_string(), None))
 }
 
 pub enum TestWitness {

@@ -191,9 +191,13 @@ mod tests {
             proof: &Stmt,
             _issuer: &I,
         ) -> Result<Ctnt, FlowError> {
+            let comp = proof.generate_statement()?;
             // NOTE: This just passes through, instead of looking up!!!
-            if self.statement != proof.generate_statement()? {
-                return Err(FlowError::BadLookup("Mismatched statements".to_string()));
+            if self.statement != comp {
+                return Err(FlowError::BadLookup(format!(
+                    "Mismatched statements, self: {} proof: {}",
+                    self.statement, comp
+                )));
             }
 
             proof

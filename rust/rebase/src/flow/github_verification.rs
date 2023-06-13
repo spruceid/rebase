@@ -200,9 +200,10 @@ mod tests {
             proof: &Prf,
             _issuer: &I,
         ) -> Result<Ctnt, FlowError> {
+            let comp = proof.statement.generate_statement()?;
             // NOTE: This just passes through, instead of looking up!!!
-            if self.statement != proof.statement.generate_statement()? {
-                return Err(FlowError::BadLookup("Mismatched statements".to_string()))
+            if self.statement != comp {
+                return Err(FlowError::BadLookup(format!("Mismatched statements, self: {}, proof: {}", self.statement, comp)))
             }
 
             proof.statement.subject.valid_signature(&self.statement, &self.signature).await?;

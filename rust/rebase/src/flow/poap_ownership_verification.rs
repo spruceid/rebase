@@ -4,7 +4,6 @@ use crate::{
     statement::poap_ownership_verification::PoapOwnershipVerificationStatement as Stmt,
     types::{
         defs::{Flow, Instructions, Issuer, Proof, Statement, StatementResponse, Subject},
-        enums::subject::{Pkh, Subjects},
         error::FlowError,
     },
 };
@@ -115,10 +114,9 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
 
         // TODO: Investigate!
         // Can POAPs be attached to non EIP155 DIDs?
-        if let Subjects::Pkh(Pkh::Eip155(_)) = stmt.subject {
-        } else {
+        if !stmt.subject.did()?.starts_with("did:pkh:eip155") {
             return Err(FlowError::Validation(
-                "Currently only supports Ethereum Addresses for POAP Ownership flow".to_string(),
+                "Currently only supports Ethereum NFTs".to_string(),
             ));
         }
 
