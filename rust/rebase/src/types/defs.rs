@@ -1,7 +1,6 @@
 use crate::types::error::*;
 use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
-// TODO: Pub use these?
 use did_ethr::DIDEthr;
 use did_ion::DIDION;
 use did_jwk::DIDJWK;

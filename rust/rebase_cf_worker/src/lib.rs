@@ -1,9 +1,8 @@
 use rebase_witness_sdk::types::{
-    handle_verify, issuer::ed25519::DidWebJwk, Alchemy, AttestationFlow, CompatStatementReq,
-    CompatWitnessReq, DnsVerificationFlow, EmailVerificationFlow, GitHubVerificationFlow,
-    InstructionsReq, NftOwnershipVerificationFlow, PoapOwnershipVerificationFlow,
-    RedditVerificationFlow, SameControllerAssertionFlow, SoundCloudVerificationFlow,
-    TwitterVerificationFlow, VCWrapper, WitnessFlow,
+    handle_verify, issuer::ed25519::DidWebJwk, Alchemy, AttestationFlow, DnsVerificationFlow,
+    EmailVerificationFlow, GitHubVerificationFlow, InstructionsReq, NftOwnershipVerificationFlow,
+    PoapOwnershipVerificationFlow, Proofs, RedditVerificationFlow, SameControllerAssertionFlow,
+    SoundCloudVerificationFlow, Statements, TwitterVerificationFlow, VCWrapper, WitnessFlow,
 };
 use serde_json::json;
 use worker::*;
@@ -169,22 +168,8 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/statement", |_req, _ctx| preflight_response())
         .post_async("/statement", |mut req, ctx| async move {
-            // TODO: REMOVE ONCE PUBLISHED TO REMOVE BACKWARDS COMPAT
-            if let Ok(b) = req.json::<CompatStatementReq>().await {
+            if let Ok(b) = req.json::<Statements>().await {
                 if let Ok(r) = ctx.data.0.handle_statement(&b, &ctx.data.1).await {
-                    let res = Response::from_json(&r)?;
-                    return Ok(res.with_headers(post_resp_headers()?));
-                };
-            };
-            Response::error("Bad Request", 400)
-        })
-        // TODO: DEPERECATE THIS  "/witness" ROUTE, THIS SUPPORTS PRE 0.13.0 REBASE CLIENTS.
-        // TODO: Investigate if there is a wild card pattern instead of repetition
-        .options("/witness", |_req, _ctx| preflight_response())
-        .post_async("/witness", |mut req, ctx| async move {
-            // TODO: REMOVE ONCE PUBLISHED TO REMOVE BACKWARDS COMPAT
-            if let Ok(b) = req.json::<CompatWitnessReq>().await {
-                if let Ok(r) = ctx.data.0.handle_jwt(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
                 };
@@ -195,7 +180,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         .options("/witness_jwt", |_req, _ctx| preflight_response())
         .post_async("/witness_jwt", |mut req, ctx| async move {
             // TODO: REMOVE ONCE PUBLISHED TO REMOVE BACKWARDS COMPAT
-            if let Ok(b) = req.json::<CompatWitnessReq>().await {
+            if let Ok(b) = req.json::<Proofs>().await {
                 if let Ok(r) = ctx.data.0.handle_jwt(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
@@ -207,7 +192,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         .options("/witness_ld", |_req, _ctx| preflight_response())
         .post_async("/witness_ld", |mut req, ctx| async move {
             // TODO: REMOVE ONCE PUBLISHED TO REMOVE BACKWARDS COMPAT
-            if let Ok(b) = req.json::<CompatWitnessReq>().await {
+            if let Ok(b) = req.json::<Proofs>().await {
                 if let Ok(r) = ctx.data.0.handle_ld(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
