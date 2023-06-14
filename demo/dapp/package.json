@@ -1,5 +1,6 @@
 {
 	"private": true,
+	"license": "(Apache-2.0 OR MIT)",
 	"scripts": {
 		"build": "cross-env NODE_ENV=production webpack",
 		"dev": "webpack serve --port 3000",

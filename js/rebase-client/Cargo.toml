@@ -1,6 +1,11 @@
 [package]
 name = "rebase-wasm-client"
 version = "0.10.0"
+license = "Apache 2.0/MIT"
+description = "Rebase Client SDK is a library for witnessing cryptographic attestations and issuing verifiable credentials"
+homepage = "https://app.gitbook.com/o/YHxbgvbOJwARzKZAVAA0/s/26YU5vsZtoFoS8RimaG4/rebase/rebase"
+documentation = "https://app.gitbook.com/o/YHxbgvbOJwARzKZAVAA0/s/26YU5vsZtoFoS8RimaG4/rebase/rebase"
+keywords = ["cryptography", "identity", "credentials"]
 
 authors = ["K Rhoda <kelsey.rhoda@spruceid.com>"]
 edition = "2018"
