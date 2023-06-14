@@ -106,6 +106,7 @@ module.exports = {
 			index: '/index.html',
 		},
 	},
+	// NOTE: This is key to getting WASM to work.
 	experiments: {
 		asyncWebAssembly: true,
 	},
