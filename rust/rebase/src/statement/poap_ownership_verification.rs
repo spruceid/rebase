@@ -19,6 +19,7 @@ pub struct PoapOwnershipVerificationStatement {
     // There is likely a clean way to use u64, but
     // the only consequence of a negative event id
     // is not finding anything on look up.
+    #[ts(type = "number")]
     pub event_id: i64,
     pub issued_at: String,
     pub subject: Subjects,

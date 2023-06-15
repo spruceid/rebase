@@ -6,8 +6,8 @@ description = "Rebase Client SDK is a library for witnessing cryptographic attes
 homepage = "https://app.gitbook.com/o/YHxbgvbOJwARzKZAVAA0/s/26YU5vsZtoFoS8RimaG4/rebase/rebase"
 documentation = "https://app.gitbook.com/o/YHxbgvbOJwARzKZAVAA0/s/26YU5vsZtoFoS8RimaG4/rebase/rebase"
 keywords = ["cryptography", "identity", "credentials"]
+authors = ["Spruce Systems, Inc."]
 
-authors = ["K Rhoda <kelsey.rhoda@spruceid.com>"]
 edition = "2018"
 
 [lib]
