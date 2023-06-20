@@ -1,6 +1,6 @@
 import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, EmailIcon, RedditIcon, SoundCloudIcon } from "src/components/icons";
-import { WasmClient } from "@rebase-xyz/rebase-client/wasm";
-import { Client, defaultClientConfig, Types } from "@rebase-xyz/rebase-client";
+import { WasmClient } from "@spruceid/rebase-client/wasm";
+import { Client, defaultClientConfig, Types } from "@spruceid/rebase-client";
 
 // USE FOR DEBUG:
 // const witnessUrl = process.env.WITNESS_URL;

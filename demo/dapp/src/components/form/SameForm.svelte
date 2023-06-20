@@ -30,7 +30,7 @@
     import { Writable, writable } from "svelte/store";
     import { useNavigate } from "svelte-navigator";
     import Ajv from "ajv";
-    import { Types } from "@rebase-xyz/rebase-client";
+    import { Types } from "@spruceid/rebase-client";
 
     let _lookUp = null;
     lookUp.subscribe((x) => (_lookUp = x));

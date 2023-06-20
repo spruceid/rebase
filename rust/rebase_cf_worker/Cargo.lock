@@ -3354,6 +3354,8 @@ dependencies = [
 [[package]]
 name = "rebase"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79d318cc53469001da9db8d46bcea9debefd7d75ea9574d072e4386c313d744d"
 dependencies = [
  "async-trait",
  "base58",
@@ -3387,6 +3389,8 @@ dependencies = [
 [[package]]
 name = "rebase_witness_sdk"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c85f2e1b226f8376d348df954b7947a145b3bfb0e4b6ec506689bfd8e92e78a8"
 dependencies = [
  "async-trait",
  "rebase",

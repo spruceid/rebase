@@ -1,7 +1,7 @@
 // TODO: Add NFT / POAP icons.
 import type { DiscordIcon, EmailIcon, EthereumIcon, ImageIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon, RedditIcon, RibbonIcon, SoundCloudIcon } from 'src/components/icons';
 import { parseJWT } from './jwt';
-import { Types } from '@rebase-xyz/rebase-client';
+import { Types } from '@spruceid/rebase-client';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
 

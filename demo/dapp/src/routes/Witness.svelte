@@ -9,7 +9,7 @@
         WitnessedSelfIssue,
     } from "src/components";
     import { writable, type Writable } from "svelte/store";
-    import { Types } from "@rebase-xyz/rebase-client";
+    import { Types } from "@spruceid/rebase-client";
 
     export let type: Types.FlowType;
 

@@ -3,7 +3,7 @@ import { GlobeIcon, KeyIcon, TwitterIcon, EmailIcon, GitHubIcon, RedditIcon, Sou
 import type { Claim } from "./claim";
 import { connectedCount, connectSigner, disconnectSigner, retrieveSignerEntry, getAllConnected, Signer,  SignerType, SignerMap, newSignerMap, SignerQuery, signWith, retrieveSigner, ProviderType, toQuery } from "./signer";
 import type { Workflow } from "./witness";
-import { Types } from "@rebase-xyz/rebase-client";
+import { Types } from "@spruceid/rebase-client";
 
 // TODO: Break into UI file?
 export type AccountState = "available" | "obtained";

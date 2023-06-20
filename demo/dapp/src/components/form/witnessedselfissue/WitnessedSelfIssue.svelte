@@ -17,7 +17,7 @@
     import { writable } from "svelte/store";
     import { useNavigate } from "svelte-navigator";
     import FormSlot from "./FormSlot.svelte";
-    import { Types } from "@rebase-xyz/rebase-client";
+    import { Types } from "@spruceid/rebase-client";
     // TODO: Add JSON Schema validation
 
     let navigate = useNavigate();
