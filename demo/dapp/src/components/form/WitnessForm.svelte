@@ -32,7 +32,7 @@
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
     import { Writable, writable } from "svelte/store";
-    import { Types } from "@rebase-xyz/rebase-client";
+    import { Types } from "@spruceid/rebase-client";
 
     // TODO: Make this a drop-down and include polygon?
     const NFT_NETWORK = "eth-mainnet";
