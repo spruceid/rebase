@@ -25,7 +25,7 @@ impl Content for BasicImageAttestationContent {
     fn types(&self) -> Result<Vec<String>, ContentError> {
         Ok(vec![
             "VerifiableCredential".to_string(),
-            "BasicImage".to_string(),
+            "BasicImageAttestation".to_string(),
         ])
     }
 

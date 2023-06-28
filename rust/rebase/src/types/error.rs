@@ -3,6 +3,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum RebaseError {
+    #[error("capability error: {0}")]
+    CapabilityError(#[from] CapabilityError),
     #[error("content error: {0}")]
     Content(#[from] ContentError),
     #[error("issuer error: {0}")]
@@ -15,6 +17,12 @@ pub enum RebaseError {
     Proof(#[from] ProofError),
     #[error("flow error: {0}")]
     Flow(#[from] FlowError),
+}
+
+#[derive(Error, Debug)]
+pub enum CapabilityError {
+    #[error("recap error: {0}")]
+    ReCapError(String),
 }
 
 #[derive(Error, Debug)]

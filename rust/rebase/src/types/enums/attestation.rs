@@ -1,9 +1,10 @@
 use crate::types::{defs::Statement, error::StatementError};
-
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
+pub use siwe_recap::Capability as RecapCapability;
 use std::collections::HashMap;
+use strum::EnumIter;
 use ts_rs::TS;
 
 pub trait Attestation {
@@ -41,7 +42,7 @@ impl<T: Attestation> Statement for T {
     }
 }
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[derive(Clone, Deserialize, EnumIter, JsonSchema, Serialize, TS, PartialEq)]
 #[ts(export)]
 pub enum AttestationTypes {
     BasicImageAttestation,

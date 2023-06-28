@@ -1,4 +1,5 @@
 pub mod attestation;
+pub mod delegated_attestation;
 pub mod dns_verification;
 pub mod email_verification;
 pub mod github_verification;
