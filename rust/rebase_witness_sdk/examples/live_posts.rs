@@ -8,7 +8,6 @@ use std::env;
 use url::Url;
 
 fn new_client(base_url: &str) -> Result<Client, String> {
-    // TODO: Update to use a worker that supports LD routes.
     let endpoints = Endpoints {
         witness_jwt: Some(Url::parse(&format!("{}/witness_jwt", base_url)).unwrap()),
         witness_ld: Some(Url::parse(&format!("{}/witness_ld", base_url)).unwrap()),

@@ -1,8 +1,9 @@
 use rebase_witness_sdk::types::{
-    handle_verify, issuer::ed25519::DidWebJwk, Alchemy, AttestationFlow, DnsVerificationFlow,
-    EmailVerificationFlow, GitHubVerificationFlow, InstructionsReq, NftOwnershipVerificationFlow,
-    PoapOwnershipVerificationFlow, Proofs, RedditVerificationFlow, SameControllerAssertionFlow,
-    SoundCloudVerificationFlow, Statements, TwitterVerificationFlow, VCWrapper, WitnessFlow,
+    handle_verify, issuer::ed25519::Ed25519Jwk, Alchemy, AttestationFlow, DelegatedAttestationFlow,
+    DnsVerificationFlow, EmailVerificationFlow, GitHubVerificationFlow, InstructionsReq,
+    NftOwnershipVerificationFlow, PoapOwnershipVerificationFlow, Proofs, RedditVerificationFlow,
+    SameControllerAssertionFlow, SoundCloudVerificationFlow, Statements, TwitterVerificationFlow,
+    VCWrapper, WitnessFlow,
 };
 use serde_json::json;
 use worker::*;
@@ -36,7 +37,17 @@ fn new_flow(env: &Env) -> WitnessFlow {
         soundcloud_verification: None,
         twitter_verification: None,
         attestation: Some(AttestationFlow {}),
+        delegated_attestation: None,
     };
+
+    match &env.secret("DID_WEB") {
+        Err(_) => {}
+        Ok(s) => {
+            flow.delegated_attestation = Some(DelegatedAttestationFlow {
+                service_key: format!("rebase:{}", s.to_string()),
+            });
+        }
+    }
 
     match env.secret("SENDGRID_BEARER_TOKEN") {
         Err(_) => {}
@@ -99,25 +110,13 @@ fn new_flow(env: &Env) -> WitnessFlow {
     flow
 }
 
-fn new_issuer(env: &Env) -> Result<DidWebJwk> {
-    // Why doesn't this work ?! ....
-    // DidWebJwk::new(
-    //     &env.secret("REBASE_SK")?.to_string(),
-    //     &env.secret("DID_WEB")?.to_string(),
-    //     "controller",
-    // )
-    // .map_err(|e| Err(format!("failed to create issuer: {}", e).into()))
-
-    // ... When this does ?! :
-    match DidWebJwk::new(
+fn new_issuer(env: &Env) -> Result<Ed25519Jwk> {
+    Ed25519Jwk::new(
         &env.secret("DID_WEB")?.to_string(),
         &env.secret("REBASE_SK")?.to_string(),
         "controller",
-    ) {
-        Ok(i) => Ok(i),
-        // Could not figure out how to get map_err to work this way.
-        Err(e) => Err(format!("failed to create issuer: {}", e).into()),
-    }
+    )
+    .map_err(|e| format!("failed to create issuer: {}", e).into())
 }
 
 fn preflight_response() -> Result<Response> {

@@ -4,7 +4,10 @@ use crate::{
         basic_tag_attestation::*, book_review_attestation::*, dapp_preferences_attestation::*,
         follow_attestation::*, like_attestation::*, progress_book_link_attestation::*,
     },
-    types::{enums::attestation::*, error::StatementError},
+    types::{
+        enums::{attestation::*, subject::Subjects},
+        error::StatementError,
+    },
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -23,6 +26,22 @@ pub enum AttestationStatement {
     FollowAttestation(FollowAttestationStatement),
     LikeAttestation(LikeAttestationStatement),
     ProgressBookLinkAttestation(ProgressBookLinkAttestationStatement),
+}
+
+impl AttestationStatement {
+    pub fn subject(&self) -> Subjects {
+        match &self {
+            AttestationStatement::BasicImageAttestation(x) => x.subject.clone(),
+            AttestationStatement::BasicPostAttestation(x) => x.subject.clone(),
+            AttestationStatement::BasicProfileAttestation(x) => x.subject.clone(),
+            AttestationStatement::BasicTagAttestation(x) => x.subject.clone(),
+            AttestationStatement::BookReviewAttestation(x) => x.subject.clone(),
+            AttestationStatement::DappPreferencesAttestation(x) => x.subject.clone(),
+            AttestationStatement::FollowAttestation(x) => x.subject.clone(),
+            AttestationStatement::LikeAttestation(x) => x.subject.clone(),
+            AttestationStatement::ProgressBookLinkAttestation(x) => x.subject.clone(),
+        }
+    }
 }
 
 impl Attestation for AttestationStatement {

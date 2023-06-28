@@ -1,30 +1,191 @@
-use crate::types::error::*;
+pub use crate::types::{capability::recap::to_action, error::*};
 use async_trait::async_trait;
+use cacaos::siwe::{generate_nonce, TimeStamp, Version as SIWEVersion};
 use chrono::{SecondsFormat, Utc};
 use did_ethr::DIDEthr;
 use did_ion::DIDION;
 use did_jwk::DIDJWK;
-use did_method_key::DIDKey;
+pub use did_method_key::DIDKey;
 use did_onion::DIDOnion;
 use did_pkh::DIDPKH;
 use did_tz::DIDTz;
 use did_web::DIDWeb;
 use did_webkey::DIDWebKey;
+use http::uri::Authority;
+pub use iri_string::types::UriString;
+use libipld::cid::Cid;
 use schemars::schema::RootSchema;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use serde_with::{serde_as, DisplayFromStr};
+pub use siwe::{eip55, Message};
+pub use siwe_recap::Capability;
 pub use ssi::{
-    did_resolve::DIDResolver,
+    did::{DIDMethod, Source, DIDURL},
+    did_resolve::{resolve_key, DIDResolver},
     jsonld::ContextLoader,
+    jwk::JWK,
     ldp::Proof as LDProof,
     one_or_many::OneOrMany,
+    ucan::{Capability as UCanCapability, UcanResource, UcanScope},
     vc::{get_verification_method, Credential, Evidence, LinkedDataProofOptions, URI},
 };
 pub use ssi_dids::DIDMethods;
+use std::collections::BTreeMap;
 use ts_rs::TS;
 use uuid::Uuid;
 
+use super::enums::attestation::AttestationTypes;
+
+// TODO: Something better? This is C+P from kepler/lib
+pub mod address {
+    use hex::{encode, FromHex};
+    use serde::de::{Deserialize, Deserializer, Error};
+    use serde::{Serialize, Serializer};
+
+    pub fn deserialize<'de, D>(d: D) -> Result<[u8; 20], D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        String::deserialize(d).and_then(|address| {
+            <[u8; 20]>::from_hex(address.strip_prefix("0x").unwrap_or(&address))
+                .map_err(|e| D::Error::custom(format!("failed to parse ethereum: {e}")))
+        })
+    }
+
+    pub fn serialize<S: Serializer>(v: &[u8; 20], s: S) -> Result<S::Ok, S::Error> {
+        let h = encode(*v);
+        String::serialize(&h, s)
+    }
+}
+#[serde_as]
+#[derive(Deserialize, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionConfig {
+    #[serde(with = "crate::types::defs::address")]
+    #[ts(type = "string")]
+    pub address: [u8; 20],
+    pub chain_id: u64,
+    #[serde_as(as = "DisplayFromStr")]
+    #[ts(type = "string")]
+    pub domain: Authority,
+    #[serde_as(as = "DisplayFromStr")]
+    #[ts(type = "string")]
+    pub issued_at: TimeStamp,
+    #[serde_as(as = "Option<DisplayFromStr>")]
+    #[serde(default)]
+    #[ts(type = "string")]
+    pub not_before: Option<TimeStamp>,
+    #[serde_as(as = "DisplayFromStr")]
+    #[ts(type = "string")]
+    pub expiration_time: TimeStamp,
+    #[serde_as(as = "Option<Vec<DisplayFromStr>>")]
+    #[serde(default)]
+    #[ts(type = "Array<string>")]
+    pub parents: Option<Vec<Cid>>,
+    #[serde(default)]
+    #[ts(type = "object")]
+    pub jwk: Option<JWK>,
+}
+
+impl SessionConfig {
+    pub async fn generate_message(
+        &mut self,
+        service_key: &str,
+        delegated_capabilities: &Vec<AttestationTypes>,
+    ) -> Result<String, RebaseError> {
+        if self.jwk.is_none() {
+            self.generate_jwk()?;
+        }
+
+        let dk = DIDKey {};
+
+        let d =
+            // NOTE: This unwrap is safe from the above is_none check
+            dk.generate(&Source::Key(&self.jwk.as_ref().unwrap()))
+                .ok_or(CapabilityError::ReCapError(
+                    "DID Generation returned None".to_string(),
+                ))?;
+
+        let vm = get_verification_method(&d, &dk)
+            .await
+            .ok_or(CapabilityError::ReCapError(
+                "Failed to generated verification method from DID".to_string(),
+            ))?;
+
+        let m = self.into_message(&vm, service_key, delegated_capabilities)?;
+        Ok(m.to_string())
+    }
+
+    fn generate_jwk(&mut self) -> Result<(), RebaseError> {
+        let key = JWK::generate_ed25519().map_err(|error| {
+            CapabilityError::ReCapError(format!("failed to generate session key: {}", error))
+        })?;
+
+        self.jwk = Some(key);
+        Ok(())
+    }
+
+    // This should be accessed through "Generate Message"
+    fn into_message(
+        &self,
+        delegate: &str,
+        service_key: &str,
+        delegated_capabilities: &Vec<AttestationTypes>,
+    ) -> Result<Message, RebaseError> {
+        let d: UriString = delegate.try_into().map_err(|_e| {
+            CapabilityError::ReCapError(format!(
+                "failed to parse delegate into UriString, delegate: {}",
+                delegate
+            ))
+        })?;
+
+        let u: UriString = service_key.try_into().map_err(|_e| {
+            CapabilityError::ReCapError(format!(
+                "failed to parse witness into UriString, service_key: {}",
+                service_key
+            ))
+        })?;
+
+        // NOTE: If using caveats, _ will need to be some sort of struct.
+        let v: Vec<(String, Vec<BTreeMap<String, _>>)> = delegated_capabilities
+            .iter()
+            .map(|c| (to_action(c), Vec::<BTreeMap<String, _>>::new()))
+            .collect();
+
+        let m = Capability::<String>::new()
+            .with_actions_convert(u, v)
+            .map_err(|e| {
+                CapabilityError::ReCapError(format!(
+                    "failed to parse generate actions: {}",
+                    e.to_string()
+                ))
+            })?
+            .build_message(Message {
+                address: self.address,
+                chain_id: self.chain_id,
+                domain: self.domain.clone(),
+                expiration_time: Some(self.expiration_time.clone()),
+                issued_at: self.issued_at.clone(),
+                nonce: generate_nonce(),
+                not_before: self.not_before.clone(),
+                request_id: None,
+                statement: None,
+                resources: vec![],
+                uri: d,
+                version: SIWEVersion::V1,
+            })
+            .map_err(|e| {
+                CapabilityError::ReCapError(format!(
+                    "failed to generate SIWE message: {}",
+                    e.to_string()
+                ))
+            })?;
+        Ok(m)
+    }
+}
 #[derive(Clone, Deserialize, Serialize, TS)]
 #[ts(export)]
 pub struct ResolverOpts {
@@ -64,7 +225,6 @@ where
 
     fn display_id(&self) -> Result<String, SubjectError>;
 
-    // TODO: Remove this when we use get_verification_method instead
     fn verification_method(&self) -> Result<String, SubjectError>;
 
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError>;

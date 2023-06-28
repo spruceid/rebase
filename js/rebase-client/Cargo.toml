@@ -34,9 +34,13 @@ console_error_panic_hook = { version = "0.1.6", optional = true }
 # Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm for now.
 wee_alloc = { version = "0.4.5", optional = true }
 
-rebase_witness_sdk = "0.1.1"
+# rebase_witness_sdk = "0.1.1"
+getrandom = { version = "0.2", features = ["js"] }
+rebase_witness_sdk = {path = "../../rust/rebase_witness_sdk"}
+rand = { version = "0.7", features = ["wasm-bindgen"] }
 serde = "1"
 serde_json = "1"
+time = {version = "0.3.28", features = ["wasm-bindgen"]}
 url = { version = "2", features = ["serde"] }
 
 [dev-dependencies]

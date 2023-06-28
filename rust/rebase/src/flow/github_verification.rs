@@ -30,9 +30,8 @@ pub struct GitHubVerificationFlow {
 #[derive(Deserialize, Debug, Serialize)]
 pub struct GitHubResponse {
     // This value here is { content: String }
-    pub files: Map<String, serde_json::value::Value>,
     // TODO: Use serde_with and get better typing?
-    // pub files: Map<String, GistContent>,
+    pub files: Map<String, serde_json::value::Value>,
     pub owner: Owner,
     pub history: Vec<History>,
 }

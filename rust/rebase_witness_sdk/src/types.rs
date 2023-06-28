@@ -1,7 +1,8 @@
 pub use rebase::{
     content::{
-        attestation::content::AttestationContent, dns_verification::DnsVerificationContent,
-        email_verification::EmailVerificationContent,
+        attestation::content::AttestationContent,
+        delegated_attestation::content::DelegatedAttestationContent,
+        dns_verification::DnsVerificationContent, email_verification::EmailVerificationContent,
         github_verification::GitHubVerificationContent,
         nft_ownership_verification::NftOwnershipVerificationContent,
         poap_ownership_verification::PoapOwnershipVerificationContent,
@@ -13,6 +14,7 @@ pub use rebase::{
     context::context_loader::context_loader,
     flow::{
         attestation::AttestationFlow,
+        delegated_attestation::DelegatedAttestationFlow,
         dns_verification::DnsVerificationFlow,
         email_verification::SendGridBasicFlow as EmailVerificationFlow,
         github_verification::GitHubVerificationFlow,
@@ -25,8 +27,8 @@ pub use rebase::{
     },
     issuer,
     proof::{
-        attestation::proof::AttestationProof, email_verification::EmailVerificationProof,
-        github_verification::GitHubVerificationProof,
+        attestation::proof::AttestationProof, delegated_attestation::DelegatedAttestationProof,
+        email_verification::EmailVerificationProof, github_verification::GitHubVerificationProof,
         nft_ownership_verification::NftOwnershipVerificationProof,
         poap_ownership_verification::PoapOwnershipVerificationProof,
         same_controller_assertion::SameControllerAssertionProof,
@@ -45,11 +47,14 @@ pub use rebase::{
     },
     types::{
         defs::{
-            get_verification_method, make_resolver, Content, ContextLoader, Credential, DIDMethods,
-            DIDResolver, Evidence, Flow, Instructions, Issuer, LinkedDataProofOptions, OneOrMany,
-            Proof, ResolverOpts, Statement, StatementResponse, URI,
+            get_verification_method, make_resolver, to_action, Capability, Content, ContextLoader,
+            Credential, DIDKey, DIDMethod, DIDMethods, DIDResolver, Evidence, Flow, Instructions,
+            Issuer, LinkedDataProofOptions, OneOrMany, Proof, ResolverOpts, SessionConfig, Source,
+            Statement, StatementResponse, UCanCapability, UcanResource, UcanScope, DIDURL, JWK,
+            URI,
         },
-        error::{ContentError, FlowError, ProofError, StatementError},
+        enums::attestation::AttestationTypes,
+        error::{CapabilityError, ContentError, FlowError, ProofError, StatementError},
     },
 };
 
@@ -74,6 +79,7 @@ pub enum FlowType {
     SoundCloudVerification,
     TwitterVerification,
     Attestation,
+    DelegatedAttestation,
 }
 
 #[derive(Deserialize, Serialize, TS)]
@@ -89,6 +95,7 @@ pub enum Contents {
     SoundCloudVerification(SoundCloudVerificationContent),
     TwitterVerification(TwitterVerificationContent),
     Attestation(AttestationContent),
+    DelegatedAttestation(DelegatedAttestationContent),
 }
 
 #[async_trait(?Send)]
@@ -105,6 +112,7 @@ impl Content for Contents {
             Contents::SoundCloudVerification(x) => x.context(),
             Contents::TwitterVerification(x) => x.context(),
             Contents::Attestation(x) => x.context(),
+            Contents::DelegatedAttestation(x) => x.context(),
         }
     }
 
@@ -120,6 +128,7 @@ impl Content for Contents {
             Contents::SoundCloudVerification(x) => x.evidence(),
             Contents::TwitterVerification(x) => x.evidence(),
             Contents::Attestation(x) => x.evidence(),
+            Contents::DelegatedAttestation(x) => x.evidence(),
         }
     }
 
@@ -135,6 +144,7 @@ impl Content for Contents {
             Contents::SoundCloudVerification(x) => x.subject(),
             Contents::TwitterVerification(x) => x.subject(),
             Contents::Attestation(x) => x.subject(),
+            Contents::DelegatedAttestation(x) => x.subject(),
         }
     }
 
@@ -150,6 +160,7 @@ impl Content for Contents {
             Contents::SoundCloudVerification(x) => x.types(),
             Contents::TwitterVerification(x) => x.types(),
             Contents::Attestation(x) => x.types(),
+            Contents::DelegatedAttestation(x) => x.types(),
         }
     }
 }
@@ -205,6 +216,7 @@ pub enum Proofs {
     SoundCloudVerification(SoundCloudVerificationStatement),
     TwitterVerification(TwitterVerificationProof),
     Attestation(AttestationProof),
+    DelegatedAttestation(DelegatedAttestationProof),
 }
 
 impl Statement for Proofs {
@@ -220,6 +232,7 @@ impl Statement for Proofs {
             Proofs::SoundCloudVerification(x) => x.generate_statement(),
             Proofs::TwitterVerification(x) => x.generate_statement(),
             Proofs::Attestation(x) => x.generate_statement(),
+            Proofs::DelegatedAttestation(x) => x.generate_statement(),
         }
     }
 }
@@ -257,6 +270,9 @@ impl Proof<Contents> for Proofs {
             Proofs::Attestation(x) => {
                 Ok(Contents::Attestation(x.to_content(statement, signature)?))
             }
+            Proofs::DelegatedAttestation(x) => Ok(Contents::DelegatedAttestation(
+                x.to_content(statement, signature)?,
+            )),
         }
     }
 }
@@ -276,6 +292,7 @@ pub struct WitnessFlow {
     pub soundcloud_verification: Option<SoundCloudVerificationFlow>,
     pub twitter_verification: Option<TwitterVerificationFlow>,
     pub attestation: Option<AttestationFlow>,
+    pub delegated_attestation: Option<DelegatedAttestationFlow>,
 }
 
 #[async_trait(?Send)]
@@ -346,7 +363,7 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
             Statements::Attestation(s) => match &self.attestation {
                 Some(x) => Ok(x.statement(s, issuer).await?),
                 None => Err(FlowError::Validation(
-                    "no witnessed self issued flow configured".to_owned(),
+                    "no attestation flow configured".to_owned(),
                 )),
             },
         }
@@ -431,7 +448,15 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
             Proofs::Attestation(p) => match &self.attestation {
                 Some(x) => Ok(Contents::Attestation(x.validate_proof(p, issuer).await?)),
                 None => Err(FlowError::Validation(
-                    "no witnessed self issued flow configured".to_owned(),
+                    "no attestation flow configured".to_owned(),
+                )),
+            },
+            Proofs::DelegatedAttestation(p) => match &self.delegated_attestation {
+                Some(x) => Ok(Contents::DelegatedAttestation(
+                    x.validate_proof(p, issuer).await?,
+                )),
+                None => Err(FlowError::Validation(
+                    "no delegated attesation flow configured".to_owned(),
                 )),
             },
         }
@@ -527,7 +552,13 @@ impl WitnessFlow {
             FlowType::Attestation => match &self.attestation {
                 Some(x) => x.instructions(),
                 _ => Err(FlowError::Validation(
-                    "no witnessed self issued flow configured".to_owned(),
+                    "no attestation flow configured".to_owned(),
+                )),
+            },
+            FlowType::DelegatedAttestation => match &self.delegated_attestation {
+                Some(x) => x.instructions(),
+                _ => Err(FlowError::Validation(
+                    "no delegated attestation flow configured".to_owned(),
                 )),
             },
         }

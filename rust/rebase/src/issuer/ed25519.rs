@@ -21,19 +21,19 @@ use ssi::{
 
 use serde::{Deserialize, Serialize};
 
-// TODO: Add a TS type for JWK then this?
 #[derive(Clone, Deserialize, Serialize)]
-pub struct DidWebJwk {
+pub struct Ed25519Jwk {
     pub did: String,
     pub jwk: JWK,
     pub key_name: String,
 }
 
-impl DidWebJwk {
+// NOTE: This Issuer supports "did:web" and "did:key" variants neutrally
+impl Ed25519Jwk {
     pub fn new(did: &str, jwk_str: &str, key_name: &str) -> Result<Self, IssuerError> {
-        if !did.starts_with("did:web:") {
+        if !did.starts_with("did:web:") && !did.starts_with("did:key:") {
             return Err(IssuerError::Internal(format!(
-                "Currently only supports ed25519 keys as did:web, got: {}",
+                "Currently only supports ed25519 keys as did:web or did:key, got: {}",
                 did
             )));
         }
@@ -41,7 +41,7 @@ impl DidWebJwk {
         let jwk: JWK = serde_json::from_str(jwk_str)
             .map_err(|e| IssuerError::Internal(format!("deserialization error: {}", e)))?;
 
-        Ok(DidWebJwk {
+        Ok(Ed25519Jwk {
             did: did.to_owned(),
             jwk,
             key_name: key_name.to_owned(),
@@ -68,10 +68,21 @@ impl DidWebJwk {
             )),
         }
     }
+
+    pub fn public_key(&self) -> Result<PublicKey, SubjectError> {
+        match &self.jwk.params {
+            Params::OKP(o) => Ok(PublicKey::from_bytes(&o.public_key.0).map_err(|e| {
+                SubjectError::Validation(format!("could not generate public key: {}", e))
+            })?),
+            _ => Err(SubjectError::Validation(
+                "could not recover public key from jwk".to_string(),
+            )),
+        }
+    }
 }
 
 #[async_trait(?Send)]
-impl Subject for DidWebJwk {
+impl Subject for Ed25519Jwk {
     fn did(&self) -> Result<String, SubjectError> {
         Ok(self.did.to_owned())
     }
@@ -91,17 +102,15 @@ impl Subject for DidWebJwk {
         .map_err(|e| SubjectError::Validation(e.to_string()))?;
 
         let stmt = statement.as_bytes();
-        let keypair = self.to_keypair()?;
+        let pk = self.public_key()?;
 
-        keypair
-            .public
-            .verify(stmt, &sig)
+        pk.verify(stmt, &sig)
             .map_err(|e| SubjectError::Validation(e.to_string()))
     }
 }
 
 #[async_trait(?Send)]
-impl Issuer for DidWebJwk {
+impl Issuer for Ed25519Jwk {
     // sign takes plain text and returns the corresponding signature
     async fn sign(&self, plain_text: &str) -> Result<String, IssuerError> {
         let sig = self.to_keypair()?.sign(plain_text.as_bytes());
