@@ -1,7 +1,7 @@
 [package]
 name = "todo-worker"
-version = "0.0.0"
-edition = "2018"
+version = "0.0.1"
+edition = "2021"
 license = "Apache-2.0 OR MIT"
 description = "Rebase Cloudflare Worker is a library for witnessing cryptographic attestations and issuing verifiable credentials"
 homepage = "https://www.spruceid.dev/rebase"

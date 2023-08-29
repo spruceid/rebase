@@ -3388,9 +3388,9 @@ dependencies = [
 
 [[package]]
 name = "rebase_witness_sdk"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c85f2e1b226f8376d348df954b7947a145b3bfb0e4b6ec506689bfd8e92e78a8"
+checksum = "f3e505a99a054a308ffa970901092dcb8984428a7acce602b2a5302a2d6b4aba"
 dependencies = [
  "async-trait",
  "rebase",
@@ -4578,7 +4578,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "todo-worker"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "cfg-if 0.1.10",
  "console_error_panic_hook",
