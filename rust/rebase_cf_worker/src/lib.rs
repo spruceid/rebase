@@ -157,6 +157,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/instructions", |_req, _ctx| preflight_response())
         .post_async("/instructions", |mut req, ctx| async move {
+            let _ = &ctx;
             if let Ok(b) = req.json::<InstructionsReq>().await {
                 if let Ok(r) = ctx.data.0.handle_instructions(&b).await {
                     let res = Response::from_json(&r)?;
@@ -168,6 +169,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/statement", |_req, _ctx| preflight_response())
         .post_async("/statement", |mut req, ctx| async move {
+            let _ = &ctx;
             if let Ok(b) = req.json::<Statements>().await {
                 if let Ok(r) = ctx.data.0.handle_statement(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
@@ -179,6 +181,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/witness_jwt", |_req, _ctx| preflight_response())
         .post_async("/witness_jwt", |mut req, ctx| async move {
+            let _ = &ctx;
             if let Ok(b) = req.json::<Proofs>().await {
                 if let Ok(r) = ctx.data.0.handle_jwt(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
@@ -190,6 +193,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         // TODO: Investigate if there is a wild card pattern instead of repetition
         .options("/witness_ld", |_req, _ctx| preflight_response())
         .post_async("/witness_ld", |mut req, ctx| async move {
+            let _ = &ctx;
             if let Ok(b) = req.json::<Proofs>().await {
                 if let Ok(r) = ctx.data.0.handle_ld(&b, &ctx.data.1).await {
                     let res = Response::from_json(&r)?;
