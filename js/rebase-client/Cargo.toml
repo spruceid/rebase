@@ -8,7 +8,7 @@ documentation = "https://www.spruceid.dev/rebase"
 keywords = ["cryptography", "identity", "credentials"]
 authors = ["Spruce Systems, Inc."]
 
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "rlib", "lib"]
