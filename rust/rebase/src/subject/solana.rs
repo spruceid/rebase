@@ -4,7 +4,8 @@ use base58::{FromBase58, FromBase58Error};
 use ed25519_dalek::{ed25519::signature::Signature as Ed25519Sig, PublicKey, Verifier};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
 fn b58_err(err: FromBase58Error) -> String {
     match err {
@@ -19,8 +20,8 @@ fn b58_err(err: FromBase58Error) -> String {
 // or if it's not going to change, then note it as a magic string.
 pub const SOLANA_NETWORK: &str = "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ";
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Solana {
     pub address: String,
 }

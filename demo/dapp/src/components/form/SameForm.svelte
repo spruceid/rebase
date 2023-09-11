@@ -1,7 +1,7 @@
 <script lang="ts">
     import {
         alert,
-        client,
+        getClient,
         claims,
         Claim,
         compareQueries,
@@ -30,7 +30,11 @@
     import { Writable, writable } from "svelte/store";
     import { useNavigate } from "svelte-navigator";
     import Ajv from "ajv";
-    import { Types } from "@spruceid/rebase-client";
+    import {
+        SameControllerAssertionStatement,
+        Statements,
+        Subjects,
+    } from "@spruceid/rebase-client";
 
     let _lookUp = null;
     lookUp.subscribe((x) => (_lookUp = x));
@@ -49,11 +53,11 @@
     let _lookUp2: Signer = null;
     lookUp2.subscribe((x) => (_lookUp2 = x));
 
-    let key1: Writable<Types.Subjects> = writable(null);
+    let key1: Writable<Subjects> = writable(null);
     let _key1 = null;
     key1.subscribe((x) => (_key1 = x));
 
-    let key2: Writable<Types.Subjects> = writable(null);
+    let key2: Writable<Subjects> = writable(null);
     let _key2 = null;
     key2.subscribe((x) => (_key2 = x));
 
@@ -80,6 +84,7 @@
             lookUp1.set(_lookUp);
         }
 
+        let client = await getClient();
         let res = await client.instructions("SameControllerAssertion");
         statement_schema = res.statement_schema;
         witness_schema = res.witness_schema;
@@ -133,11 +138,11 @@
 
         key1.set(getSubject(s1.signer));
         key2.set(getSubject(s2.signer));
-        let stmt: Types.SameControllerAssertionStatement = {
+        let stmt: SameControllerAssertionStatement = {
             id1: _key1,
             id2: _key2,
         };
-        let o: Types.Statements = {
+        let o: Statements = {
             SameControllerAssertion: stmt,
         };
 
@@ -151,6 +156,7 @@
 
         const noStatementErr = "Did not find statement in response";
         try {
+            let client = await getClient();
             let res = await client.statement(o);
             statement.set(res.statement);
         } catch (e) {
@@ -184,7 +190,7 @@
             );
         }
 
-        const stmt: Types.SameControllerAssertionStatement = {
+        const stmt: SameControllerAssertionStatement = {
             id1: _key1,
             id2: _key2,
         };
@@ -206,6 +212,7 @@
         }
 
         try {
+            let client = await getClient();
             let res = await client.witness_jwt(proof);
             let { jwt } = res;
             setNew(jwt);

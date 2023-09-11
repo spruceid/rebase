@@ -3,14 +3,14 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
 use std::collections::HashMap;
-use ts_rs::TS;
+use tsify::Tsify;
 use url::Url;
+use wasm_bindgen::prelude::*;
 
-#[derive(Deserialize, Serialize, TS, Clone)]
-#[ts(export)]
+#[derive(Deserialize, Serialize, Tsify, Clone)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct FollowAttestationContent {
     pub id: String,
-    #[ts(type = "string")]
     pub target: Url,
     pub signature: String,
 }

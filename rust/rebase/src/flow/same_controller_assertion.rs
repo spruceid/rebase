@@ -11,9 +11,11 @@ use crate::{
 use async_trait::async_trait;
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
-#[derive(Deserialize, Serialize, TS)]
+#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct SameControllerAssertionFlow {}
 
 #[async_trait(?Send)]
@@ -68,7 +70,6 @@ mod tests {
             TEST_2KEY_ETH_SIG_2, TEST_2KEY_SOLANA_SIG_1, TEST_2KEY_SOLANA_SIG_2,
         },
         types::enums::subject::Subjects,
-        // types::types::{Issuer, Proof, Statement, Subject},
     };
 
     async fn mock_proof(

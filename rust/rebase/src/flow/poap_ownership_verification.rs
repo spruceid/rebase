@@ -17,11 +17,12 @@ use reqwest::{
 };
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
-use ts_rs::TS;
+use tsify::Tsify;
 use url::Url;
+use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct PoapOwnershipVerificationFlow {
     pub api_key: String,
     pub challenge_delimiter: String,

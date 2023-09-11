@@ -5,7 +5,8 @@ use serde_json::{Map, Value};
 pub use siwe_recap::Capability as RecapCapability;
 use std::collections::HashMap;
 use strum::EnumIter;
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
 pub trait Attestation {
     fn to_statement(&self) -> Result<(AttestationTypes, Map<String, Value>), StatementError>;
@@ -42,8 +43,8 @@ impl<T: Attestation> Statement for T {
     }
 }
 
-#[derive(Clone, Deserialize, EnumIter, JsonSchema, Serialize, TS, PartialEq)]
-#[ts(export)]
+#[derive(Clone, Deserialize, EnumIter, JsonSchema, Serialize, Tsify, PartialEq)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum AttestationTypes {
     BasicImageAttestation,
     BasicPostAttestation,

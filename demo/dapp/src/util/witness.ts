@@ -1,6 +1,7 @@
 import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, EmailIcon, RedditIcon, SoundCloudIcon } from "src/components/icons";
-import { WasmClient } from "@spruceid/rebase-client/wasm";
-import { Client, defaultClientConfig, Types } from "@spruceid/rebase-client";
+// import { WasmClient } from "@spruceid/rebase-client/wasm";
+// import { Client, defaultClientConfig, Types } from "@spruceid/rebase-client";
+import {Client, FlowType} from "@spruceid/rebase-client";
 
 // USE FOR DEBUG:
 // const witnessUrl = process.env.WITNESS_URL;
@@ -14,10 +15,20 @@ import { Client, defaultClientConfig, Types } from "@spruceid/rebase-client";
 //     },
 // };
 
-const clientConfig = defaultClientConfig();
-export const client = new Client(new WasmClient(JSON.stringify(clientConfig)));
+// const clientConfig = defaultClientConfig();
+// export const client = new Client(new WasmClient(JSON.stringify(clientConfig)));
 
-export function needsDelimiter(c: Types.FlowType): boolean {
+let client: Client | null = null;
+
+export async function getClient(): Promise<Client> {
+    if (!client) {
+        client = await Client.initialize()
+    }
+
+    return client;
+}
+
+export function needsDelimiter(c: FlowType): boolean {
     switch (c) {
         case "GitHubVerification": 
         case "TwitterVerification":
@@ -67,7 +78,7 @@ const ICONS = {
     Attestation: GlobeIcon,
 };
 
-export const titleCase = (s: Types.FlowType): string => {
+export const titleCase = (s: FlowType): string => {
     switch (s) {
         case "DnsVerification":
             return "DNS";
@@ -99,7 +110,7 @@ interface WitnessInfo {
     witness_placeholder: string,
 }
 
-function witness_info(t: Types.FlowType): WitnessInfo {
+function witness_info(t: FlowType): WitnessInfo {
     let statement = `Enter your ${titleCase(t)} account handle to verify and include it in a message signed via your wallet.`;
     let statement_label = "Enter Account Handle";
     let statement_placeholder =  `Enter your ${titleCase(t)} handle`;
@@ -170,7 +181,7 @@ function witness_info(t: Types.FlowType): WitnessInfo {
     }
 }
 
-export const instructions = async (t: Types.FlowType): Promise<Instructions> => {
+export const instructions = async (t: FlowType): Promise<Instructions> => {
     let {statement, statement_label, statement_placeholder, witness, witness_label, witness_placeholder} = witness_info(t);
     switch (t) {
         case "Attestation": {

@@ -1,10 +1,7 @@
 use crate::{
     content::delegated_attestation::content::DelegatedAttestationContent,
     issuer::ed25519::Ed25519Jwk,
-    proof::{
-        attestation::proof::AttestationProof,
-        delegated_attestation::{parse_siwe_recap, DelegatedAttestationProof},
-    },
+    proof::delegated_attestation::{parse_siwe_recap, DelegatedAttestationProof},
     statement::attestation::statement::AttestationStatement,
     types::{
         defs::{
@@ -23,10 +20,11 @@ use did_web::DIDWeb;
 use schemars::schema_for;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
-#[derive(Deserialize, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DelegatedAttestationFlow {
     pub service_key: String,
 }
@@ -119,7 +117,7 @@ impl Flow<DelegatedAttestationContent, AttestationStatement, DelegatedAttestatio
         let split_did: Vec<String> = m
             .uri
             .to_string()
-            .split("#")
+            .split('#')
             .map(|s| s.to_string())
             .collect();
 

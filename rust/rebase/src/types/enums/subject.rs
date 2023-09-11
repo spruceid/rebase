@@ -4,11 +4,11 @@ use crate::types::{defs::Subject, error::SubjectError};
 use async_trait::async_trait;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[serde(rename = "subject")]
-#[ts(export, rename = "Subjects")]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Subjects {
     #[serde(rename = "pkh")]
     Pkh(Pkh),
@@ -16,9 +16,8 @@ pub enum Subjects {
     Web(Web),
 }
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[serde(rename = "pkh")]
-#[ts(export, rename = "Pkh")]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Pkh {
     #[serde(rename = "eip155")]
     Eip155(Eip155),
@@ -26,9 +25,8 @@ pub enum Pkh {
     Solana(Solana),
 }
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[serde(rename = "web")]
-#[ts(export, rename = "Web")]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Web {
     #[serde(rename = "ed25519")]
     Ed25519(Ed25519),

@@ -8,10 +8,11 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, JsonSchema, Deserialize, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct EmailVerificationContent {
     pub subject: Subjects,
     pub statement: String,

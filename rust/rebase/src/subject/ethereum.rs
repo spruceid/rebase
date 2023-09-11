@@ -12,11 +12,11 @@ use k256::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
-// This represents the usage of did:pkh:eip155
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Eip155 {
     pub address: String,
     pub chain_id: String,

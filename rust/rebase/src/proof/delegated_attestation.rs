@@ -30,10 +30,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use siwe::{eip55, Message};
 use std::str::FromStr;
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DelegatedAttestationProof {
     pub attestation: AttestationStatement,
     pub attestation_signature: String,
@@ -42,8 +43,8 @@ pub struct DelegatedAttestationProof {
     pub siwe_signature: String,
 }
 
-#[derive(Deserialize, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct ParsedReCap {
     // The did:key:... address of the delegate key
     pub delegate: String,
@@ -55,10 +56,9 @@ pub struct ParsedReCap {
 
 pub const RECAP_PREFIX: &str = "urn:recap:";
 
-#[derive(Clone, Deserialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 struct HexRecap {
-    #[ts(type = "object")]
     pub att: Map<String, Value>,
     // NOTE: Currently ignored.
     // #[ts(type = "Array<any>")]
@@ -89,12 +89,12 @@ pub fn parse_siwe_recap(siwe_recap: &str, service_key: &str) -> Result<ParsedReC
                 if let Ok(s) = String::from_utf8(s) {
                     if let Ok(parsed) = serde_json::from_str::<HexRecap>(&s) {
                         for (k, _) in parsed.att.clone() {
-                            if &k == service_key {
+                            if k == service_key {
                                 if counter > 0 {
                                     return Err(ProofError::ContentGeneration("Multiple ReCaps for the same host found, please only provide one entry per Resources for Rebase ReCaps".to_string()));
                                 }
                                 r = Some(parsed.clone());
-                                counter = counter + 1;
+                                counter += 1;
                             }
                         }
                     }
@@ -123,7 +123,7 @@ pub fn parse_siwe_recap(siwe_recap: &str, service_key: &str) -> Result<ParsedReC
                     }
                 }
 
-                if types.len() == 0 {
+                if types.is_empty() {
                     Err(ProofError::ContentGeneration(
                         "Found no attestation types in ReCap".to_string(),
                     ))

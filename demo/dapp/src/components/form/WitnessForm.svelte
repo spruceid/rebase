@@ -9,7 +9,7 @@
         getSubject,
         witnessState,
         sign,
-        client,
+        getClient,
         Signer,
         lookUp,
         alert,
@@ -32,7 +32,7 @@
     import WitnessFormWitness from "./WitnessFormWitness.svelte";
     import WitnessFormComplete from "./WitnessFormComplete.svelte";
     import { Writable, writable } from "svelte/store";
-    import { Types } from "@spruceid/rebase-client";
+    import { FlowType, Statements, Proofs } from "@spruceid/rebase-client";
 
     // TODO: Make this a drop-down and include polygon?
     const NFT_NETWORK = "eth-mainnet";
@@ -74,7 +74,7 @@
         claims.set(next);
     };
 
-    export let type: Types.FlowType;
+    export let type: FlowType;
     export let instructions: Instructions;
 
     let statement: Writable<string> = writable("");
@@ -146,6 +146,7 @@
         }
 
         try {
+            let client = await getClient();
             let instruction_res = await client.instructions(type);
             statement_schema = instruction_res?.statement_schema;
             witness_schema = instruction_res?.witness_schema;
@@ -255,7 +256,8 @@
 
         const badRespErr = "Badly formatted witness service response";
         try {
-            let res = await client.statement(opts as Types.Statements);
+            let client = await getClient();
+            let res = await client.statement(opts as Statements);
 
             if (!res.statement) {
                 throw new Error(badRespErr + " missing statement");
@@ -352,12 +354,13 @@
         }
 
         try {
+            let client = await getClient();
             if (useJwt) {
-                let res = await client.witness_jwt(opts as Types.Proofs);
+                let res = await client.witness_jwt(opts as Proofs);
                 let { jwt } = res;
                 setNew(jwt);
             } else {
-                let res = await client.witness_ld(opts as Types.Proofs);
+                let res = await client.witness_ld(opts as Proofs);
                 let { credential } = res;
                 console.log(credential);
             }

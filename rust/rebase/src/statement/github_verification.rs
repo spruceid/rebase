@@ -5,10 +5,11 @@ use crate::types::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct GitHubVerificationStatement {
     pub handle: String,
     pub subject: Subjects,

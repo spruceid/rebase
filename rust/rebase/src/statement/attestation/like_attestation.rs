@@ -9,14 +9,14 @@ use crate::types::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
-use ts_rs::TS;
+use tsify::Tsify;
 use url::Url;
+use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct LikeAttestationStatement {
     pub subject: Subjects,
-    #[ts(type = "string")]
     pub target: Url,
 }
 

@@ -2,10 +2,11 @@ use crate::types::{defs::Content, error::ContentError};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map};
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
-#[derive(Deserialize, Serialize, TS, Clone)]
-#[ts(export)]
+#[derive(Deserialize, Serialize, Tsify, Clone)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DelegatedBasicPostAttestationContent {
     pub id: String,
     pub body: String,

@@ -1,11 +1,12 @@
 [package]
 name = "rebase"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "Apache-2.0 OR MIT"
 description = "Rebase is a library for witnessing cryptographic attestations and issuing verifiable credentials"
 homepage = "https://www.spruceid.dev/rebase"
 documentation = "https://www.spruceid.dev/rebase"
+repository = "https://github.com/spruceid/rebase/"
 keywords = ["cryptography", "identity", "credentials"]
 authors = ["Spruce Systems, Inc."]
 
@@ -57,10 +58,12 @@ ssi-dids = "0.1.1"
 
 thiserror = "1"
 time = {version = "0.3.28", features = ["wasm-bindgen"]}
-ts-rs = "6.2"
+tsify = "0.4.5"
 
 url = { version = "2.2", features = ["serde"] }
 uuid = { version = "0.8", features = ["serde", "v4", "stdweb"] }
+# NOTE: This is used by tsify
+wasm-bindgen = "0.2.84"
 
 
 [dev-dependencies]

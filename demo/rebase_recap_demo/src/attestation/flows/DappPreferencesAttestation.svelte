@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { Types } from "@spruceid/rebase-client";
+    import { AttestationStatement, Subjects } from "@spruceid/rebase-client";
 
-    export let handler = (statement: Types.AttestationStatement) =>
-        Promise<void>;
-    export let subject: Types.Subjects;
+    export let handler = (statement: AttestationStatement) => Promise<void>;
+    export let subject: Subjects;
 
     let dark_mode = false;
 

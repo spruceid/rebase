@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { Types } from "@spruceid/rebase-client";
+    import { AttestationStatement, Subjects } from "@spruceid/rebase-client";
 
-    export const handler = (statement: Types.AttestationStatement) =>
-        Promise<void>;
-    export const subject: Types.Subjects = null;
+    export const handler = (statement: AttestationStatement) => Promise<void>;
+    export const subject: Subjects = null;
 </script>
 
 <!-- TODO: IMPL -->

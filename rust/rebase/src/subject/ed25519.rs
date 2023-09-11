@@ -5,12 +5,13 @@ use hex;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use ssi::jwk::Base64urlUInt;
-use ts_rs::TS;
+use tsify::Tsify;
 use url::Url;
+use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
 #[serde(rename = "did_web")]
-#[ts(export, rename = "DidWeb")]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DidWeb {
     pub did: String,
     pub key_name: String,

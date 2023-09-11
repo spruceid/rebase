@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Claim, credentialToDisplay, client, alert } from "src/util";
+    import { Claim, credentialToDisplay, getClient, alert } from "src/util";
     import {
         IconButton,
         DownloadIcon,
@@ -18,6 +18,7 @@
 
     export const verify = async (jwt: string) => {
         try {
+            let client = await getClient();
             let res = await client.verify({ jwt });
             console.log(res);
             alert.set({

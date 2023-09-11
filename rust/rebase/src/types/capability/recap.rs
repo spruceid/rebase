@@ -21,5 +21,5 @@ pub fn to_action(attestation_type: &AttestationTypes) -> String {
 }
 
 pub fn from_action_string(action_string: &str) -> Option<AttestationTypes> {
-    AttestationTypes::iter().find(|t| &to_action(t) == action_string)
+    AttestationTypes::iter().find(|t| to_action(t) == action_string)
 }
