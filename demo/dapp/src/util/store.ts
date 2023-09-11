@@ -3,7 +3,7 @@ import { GlobeIcon, KeyIcon, TwitterIcon, EmailIcon, GitHubIcon, RedditIcon, Sou
 import type { Claim } from "./claim";
 import { connectedCount, connectSigner, disconnectSigner, retrieveSignerEntry, getAllConnected, Signer,  SignerType, SignerMap, newSignerMap, SignerQuery, signWith, retrieveSigner, ProviderType, toQuery } from "./signer";
 import type { Workflow } from "./witness";
-import { Types } from "@spruceid/rebase-client";
+import { Subjects } from "@spruceid/rebase-client";
 
 // TODO: Break into UI file?
 export type AccountState = "available" | "obtained";
@@ -131,7 +131,7 @@ function defaultClaims(): Claim[] {
 
 export let claims: Writable<Array<Claim>> = writable(defaultClaims());
 
-export const getSubject = (signer: Signer): Types.Subjects => {
+export const getSubject = (signer: Signer): Subjects => {
     if (!signer) {
         throw new Error("Please connect your wallet");
     }

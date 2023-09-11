@@ -6,10 +6,11 @@ use crate::types::{
 use chrono::DateTime;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use ts_rs::TS;
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct PoapOwnershipVerificationStatement {
     // NOTE: This should ideally be a u64
     // i64 is being used because it comes out
@@ -19,7 +20,6 @@ pub struct PoapOwnershipVerificationStatement {
     // There is likely a clean way to use u64, but
     // the only consequence of a negative event id
     // is not finding anything on look up.
-    #[ts(type = "number")]
     pub event_id: i64,
     pub issued_at: String,
     pub subject: Subjects,

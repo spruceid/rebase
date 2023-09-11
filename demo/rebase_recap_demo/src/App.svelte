@@ -4,11 +4,12 @@
 	import AttestationForm from "./attestation/AttestationForm.svelte";
 	import CredentialDisplay from "./credential/CredentialDisplay.svelte";
 	import {
-		Types,
+		AttestationTypes,
+		AttestationStatement,
 		Client,
-		// defaultClientConfig,
+		Subjects,
+		SessionConfig,
 	} from "@spruceid/rebase-client";
-	import { WasmClient } from "@spruceid/rebase-client/wasm";
 	import { ethers } from "ethers";
 	import Web3Modal from "web3modal";
 	import WalletConnectProvider from "@walletconnect/web3-provider";
@@ -17,35 +18,42 @@
 	let _debugMode = false;
 	debugMode.subscribe((x) => (_debugMode = x));
 
-	// TODO: Restore once updated witness is deployed
-	// const clientConfig = defaultClientConfig();
-	const DEMO_WITNESS_URL = "http://localhost:8787";
-	const clientConfig: Types.ClientConfig = {
-		endpoints: {
-			instructions: `${DEMO_WITNESS_URL}/instructions`,
-			statement: `${DEMO_WITNESS_URL}/statement`,
-			witness_jwt: `${DEMO_WITNESS_URL}/witness_jwt`,
-			witness_ld: `${DEMO_WITNESS_URL}/witness_ld`,
-			verify: `${DEMO_WITNESS_URL}/verify`,
-		},
-	};
-
-	export const client = new Client(
-		new WasmClient(JSON.stringify(clientConfig))
-	);
-
 	const rebaseServiceKey = "rebase:did:web:rebasedemokey.pages.dev";
 
-	// Re-constituted from dapp's stuff.
+	let client: Client = null;
 
+	// TODO: REMOVE
+	const witnessUrl = "http://localhost:8787";
+
+	async function getClient(): Promise<Client> {
+		if (!client) {
+			// TODO: RESTORE ONCE WORKER IS PUBLISHED
+			// client = await Client.initialize();
+			client = await Client.initialize({
+				config: {
+					endpoints: {
+						instructions: `${witnessUrl}/instructions`,
+						statement: `${witnessUrl}/statement`,
+						witness_jwt: `${witnessUrl}/witness_jwt`,
+						witness_ld: `${witnessUrl}/witness_ld`,
+						verify: `${witnessUrl}/verify`,
+					},
+				},
+			});
+		}
+
+		return client;
+	}
+
+	// Re-constituted from dapp's stuff.
 	const signer: Writable<Signer> = writable(null);
 	let _signer: Signer = null;
 	signer.subscribe((x) => (_signer = x));
 
-	let nextPermissions: Array<Types.AttestationTypes> = [];
+	let nextPermissions: Array<AttestationTypes> = [];
 
 	// Consider exporting this properly.
-	let allAttestationTypes: Array<Types.AttestationTypes> = [
+	let allAttestationTypes: Array<AttestationTypes> = [
 		"BasicImageAttestation",
 		"BasicPostAttestation",
 		"BasicProfileAttestation",
@@ -57,7 +65,7 @@
 		"ProgressBookLinkAttestation",
 	];
 
-	type Route = Types.AttestationTypes | "Home" | "Credentials";
+	type Route = AttestationTypes | "Home" | "Credentials";
 	let route: Writable<Route> = writable("Home");
 	let _route: Route = "Home";
 	route.subscribe((x) => (_route = x));
@@ -68,9 +76,10 @@
 	credentials.subscribe((x) => (_credentials = x));
 
 	async function issue(
-		statement: Types.AttestationStatement,
+		statement: AttestationStatement,
 		currentSigner: Signer
 	) {
+		await getClient();
 		let vc = await client.delegated_attestation_jwt(
 			statement,
 			currentSigner.subject()
@@ -158,7 +167,7 @@
 			return;
 		};
 
-		const subject = (): Types.Subjects => {
+		const subject = (): Subjects => {
 			return {
 				pkh: {
 					eip155: {
@@ -185,7 +194,7 @@
 		let nextCentury = new Date();
 		nextCentury.setFullYear(now.getFullYear() + 100);
 
-		let sessionConfig: Types.SessionConfig = {
+		let sessionConfig: SessionConfig = {
 			actions: {},
 			address: nextId,
 			chainId: 1,
@@ -195,6 +204,7 @@
 			expirationTime: nextCentury.toISOString(),
 		};
 
+		await getClient();
 		let delegatedAttestationPreConfig = await client.siwe_message(
 			sessionConfig,
 			rebaseServiceKey,
@@ -268,7 +278,7 @@
 
 		let attestationType = prefixedAttestationType.slice(
 			"Delegated".length
-		) as Types.AttestationTypes;
+		) as AttestationTypes;
 
 		if (!allAttestationTypes.includes(attestationType)) {
 			return false;
@@ -289,7 +299,7 @@
 		let address = v[v.length - 1];
 		let chain_id = v[v.length - 2];
 
-		let subject: Types.Subjects = {
+		let subject: Subjects = {
 			pkh: {
 				eip155: {
 					address,

@@ -1,7 +1,7 @@
 // TODO: Add NFT / POAP icons.
 import type { DiscordIcon, EmailIcon, EthereumIcon, ImageIcon, TwitterIcon, GitHubIcon, GlobeIcon, SolanaIcon, RedditIcon, RibbonIcon, SoundCloudIcon } from 'src/components/icons';
 import { parseJWT } from './jwt';
-import { Types } from '@spruceid/rebase-client';
+import { FlowType } from '@spruceid/rebase-client';
 
 export type ClaimType = "self_attested" | "blockchain" | "public";
 
@@ -179,7 +179,7 @@ export const credentialToDisplay = (jwt: string): CredentialDisplay => {
 export type Claim = {
     // NOTE: we could use object instead of string for credential, but for now, assume a JWT
     credentials: Array<string>,
-    credential_type: Types.FlowType,
+    credential_type: FlowType,
     icon: ClaimIcon,
     title: string,
     type: ClaimType,

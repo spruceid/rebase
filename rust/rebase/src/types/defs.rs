@@ -33,8 +33,9 @@ pub use ssi::{
 };
 pub use ssi_dids::DIDMethods;
 use std::collections::BTreeMap;
-use ts_rs::TS;
+use tsify::Tsify;
 use uuid::Uuid;
+use wasm_bindgen::prelude::*;
 
 use super::enums::attestation::AttestationTypes;
 
@@ -60,33 +61,26 @@ pub mod address {
     }
 }
 #[serde_as]
-#[derive(Deserialize, Clone, Serialize, TS)]
-#[ts(export)]
+#[derive(Deserialize, Clone, Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct SessionConfig {
     #[serde(with = "crate::types::defs::address")]
-    #[ts(type = "string")]
     pub address: [u8; 20],
     pub chain_id: u64,
     #[serde_as(as = "DisplayFromStr")]
-    #[ts(type = "string")]
     pub domain: Authority,
     #[serde_as(as = "DisplayFromStr")]
-    #[ts(type = "string")]
     pub issued_at: TimeStamp,
     #[serde_as(as = "Option<DisplayFromStr>")]
     #[serde(default)]
-    #[ts(type = "string")]
     pub not_before: Option<TimeStamp>,
     #[serde_as(as = "DisplayFromStr")]
-    #[ts(type = "string")]
     pub expiration_time: TimeStamp,
     #[serde_as(as = "Option<Vec<DisplayFromStr>>")]
     #[serde(default)]
-    #[ts(type = "Array<string>")]
     pub parents: Option<Vec<Cid>>,
     #[serde(default)]
-    #[ts(type = "object")]
     pub jwk: Option<JWK>,
 }
 
@@ -94,7 +88,7 @@ impl SessionConfig {
     pub async fn generate_message(
         &mut self,
         service_key: &str,
-        delegated_capabilities: &Vec<AttestationTypes>,
+        delegated_capabilities: &[AttestationTypes],
     ) -> Result<String, RebaseError> {
         if self.jwk.is_none() {
             self.generate_jwk()?;
@@ -104,7 +98,7 @@ impl SessionConfig {
 
         let d =
             // NOTE: This unwrap is safe from the above is_none check
-            dk.generate(&Source::Key(&self.jwk.as_ref().unwrap()))
+            dk.generate(&Source::Key(self.jwk.as_ref().unwrap()))
                 .ok_or(CapabilityError::ReCapError(
                     "DID Generation returned None".to_string(),
                 ))?;
@@ -115,7 +109,7 @@ impl SessionConfig {
                 "Failed to generated verification method from DID".to_string(),
             ))?;
 
-        let m = self.into_message(&vm, service_key, delegated_capabilities)?;
+        let m = self.inner_generate_message(&vm, service_key, delegated_capabilities)?;
         Ok(m.to_string())
     }
 
@@ -129,11 +123,11 @@ impl SessionConfig {
     }
 
     // This should be accessed through "Generate Message"
-    fn into_message(
+    fn inner_generate_message(
         &self,
         delegate: &str,
         service_key: &str,
-        delegated_capabilities: &Vec<AttestationTypes>,
+        delegated_capabilities: &[AttestationTypes],
     ) -> Result<Message, RebaseError> {
         let d: UriString = delegate.try_into().map_err(|_e| {
             CapabilityError::ReCapError(format!(
@@ -158,10 +152,7 @@ impl SessionConfig {
         let m = Capability::<String>::new()
             .with_actions_convert(u, v)
             .map_err(|e| {
-                CapabilityError::ReCapError(format!(
-                    "failed to parse generate actions: {}",
-                    e.to_string()
-                ))
+                CapabilityError::ReCapError(format!("failed to parse generate actions: {}", e))
             })?
             .build_message(Message {
                 address: self.address,
@@ -178,16 +169,13 @@ impl SessionConfig {
                 version: SIWEVersion::V1,
             })
             .map_err(|e| {
-                CapabilityError::ReCapError(format!(
-                    "failed to generate SIWE message: {}",
-                    e.to_string()
-                ))
+                CapabilityError::ReCapError(format!("failed to generate SIWE message: {}", e))
             })?;
         Ok(m)
     }
 }
-#[derive(Clone, Deserialize, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct ResolverOpts {
     did_onion_proxy_url: Option<String>,
     did_ion_api_url: Option<String>,
@@ -315,20 +303,18 @@ where
     fn to_content(&self, statement: &str, signature: &str) -> Result<T, ProofError>;
 }
 
-#[derive(Deserialize, Serialize, TS)]
-#[ts(export)]
+#[derive(Deserialize, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Instructions {
     pub statement: String,
     pub signature: String,
     pub witness: String,
-    #[ts(type = "object")]
     pub statement_schema: RootSchema,
-    #[ts(type = "object")]
     pub witness_schema: RootSchema,
 }
 
-#[derive(Deserialize, Serialize, TS)]
-#[ts(export)]
+#[derive(Deserialize, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct StatementResponse {
     pub statement: String,
     pub delimiter: Option<String>,
@@ -374,8 +360,8 @@ where
 
 // NOTE: Currently only supports main-nets. Other networks could be added here.
 // The serialized string variant is what is used in requests to Alchemy's API.
-#[derive(Clone, Deserialize, JsonSchema, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum AlchemyNetworks {
     #[serde(rename = "eth-mainnet")]
     EthMainnet,

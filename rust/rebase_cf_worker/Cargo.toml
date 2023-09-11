@@ -1,5 +1,5 @@
 [package]
-name = "todo-worker"
+name = "rebase-worker"
 version = "0.0.1"
 edition = "2021"
 license = "Apache-2.0 OR MIT"
@@ -16,8 +16,7 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-# rebase_witness_sdk = "0.1.1"
-rebase_witness_sdk = { path = "../rebase_witness_sdk" }
+rebase_witness_sdk = "0.1.2"
 cfg-if = "0.1.2"
 worker = "0.0.11"
 serde_json = "1.0.67"

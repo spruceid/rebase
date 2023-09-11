@@ -9,9 +9,9 @@
         WitnessedSelfIssue,
     } from "src/components";
     import { writable, type Writable } from "svelte/store";
-    import { Types } from "@spruceid/rebase-client";
+    import { FlowType } from "@spruceid/rebase-client";
 
-    export let type: Types.FlowType;
+    export let type: FlowType;
 
     let inst: Writable<Instructions> = writable(null);
     let _inst: Instructions = null;

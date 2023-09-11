@@ -23,8 +23,9 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use std::{collections::BTreeMap, str::FromStr};
 use thiserror::Error;
-use ts_rs::TS;
+use tsify::Tsify;
 use url::Url;
+use wasm_bindgen::prelude::*;
 
 #[derive(Debug, Deserialize, Error, Serialize)]
 pub enum ClientError {
@@ -42,40 +43,34 @@ pub enum ClientError {
     DelegatedConf(String),
 }
 
-#[derive(Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
+#[derive(Clone, Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Endpoints {
-    #[ts(type = "string", optional)]
     pub witness_jwt: Option<Url>,
-    #[ts(type = "string", optional)]
     pub witness_ld: Option<Url>,
-    #[ts(type = "string")]
     pub statement: Url,
-    #[ts(type = "string")]
     pub instructions: Url,
-    #[ts(type = "string", optional)]
     pub verify: Option<Url>,
 }
 
-#[derive(Clone, Serialize, Deserialize, TS)]
-#[ts(rename = "ClientConfig")]
-#[ts(export)]
+#[derive(Clone, Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Client {
     pub endpoints: Endpoints,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolver_opts: Option<ResolverOpts>,
 }
 
-#[derive(Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
+#[derive(Clone, Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DelegatedAttestationPreConfig {
     service_key: String,
     session_config: SessionConfig,
     siwe_recap_message: String,
 }
 
-#[derive(Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
+#[derive(Clone, Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DelegatedAttestationConfig {
     service_key: String,
     session_config: SessionConfig,
@@ -146,7 +141,7 @@ impl DelegatedAttestationConfig {
             )));
         }
 
-        let split_did: Vec<String> = vm.split("#").map(|s| s.to_string()).collect();
+        let split_did: Vec<String> = vm.split('#').map(|s| s.to_string()).collect();
         if split_did.len() != 2 {
             return Err(ClientError::DelegatedConf(
                 "Delegate DID was not in expected format".to_string(),
@@ -157,8 +152,8 @@ impl DelegatedAttestationConfig {
             ClientError::DelegatedConf(format!("Could not serailize JWK from did resolver: {}", e))
         })?;
 
-        Ok(Ed25519Jwk::new(&split_did[0], &json_jwk, &split_did[1])
-            .map_err(|e| ClientError::DelegatedConf(e.to_string()))?)
+        Ed25519Jwk::new(&split_did[0], &json_jwk, &split_did[1])
+            .map_err(|e| ClientError::DelegatedConf(e.to_string()))
     }
 
     pub async fn delegated_attestation(
@@ -233,8 +228,8 @@ impl DelegatedAttestationConfig {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize, TS)]
-#[ts(export)]
+#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 struct WitnessErr {
     pub error: String,
 }
@@ -351,7 +346,7 @@ impl Client {
 
     pub async fn verify(&self, req: VCWrapper) -> Result<VerifyRes, ClientError> {
         Ok(VerifyRes {
-            success: matches!(handle_verify(&req, &self.resolver_opts).await, Ok(_)),
+            success: handle_verify(&req, &self.resolver_opts).await.is_ok(),
         })
     }
 
@@ -389,7 +384,7 @@ impl Client {
     pub async fn siwe_message(
         session_config: SessionConfig,
         service_key: &str,
-        delegated_capabilities: &Vec<AttestationTypes>,
+        delegated_capabilities: &[AttestationTypes],
     ) -> Result<DelegatedAttestationPreConfig, ClientError> {
         let mut session_config = session_config;
         let s = session_config
@@ -407,7 +402,7 @@ impl Client {
     // TODO: Something better with T?
     // TODO: This could possibly be a stand-alone fn since it has no ref to self
     pub fn attestation_types_to_actions<T>(
-        delegated_capabilities: &Vec<AttestationTypes>,
+        delegated_capabilities: &[AttestationTypes],
     ) -> Vec<(String, Vec<BTreeMap<String, T>>)> {
         delegated_capabilities
             .iter()
@@ -431,7 +426,7 @@ impl Client {
             .witness_jwt(Proofs::DelegatedAttestation(proof))
             .await?;
 
-        let v: Vec<String> = vc.jwt.split(".").map(|s| s.to_string()).collect();
+        let v: Vec<String> = vc.jwt.split('.').map(|s| s.to_string()).collect();
         if v.len() < 2 {
             return Err(ClientError::DelegatedConf(
                 "JWT was not in expected format".to_string(),
@@ -447,7 +442,7 @@ impl Client {
 
         let did = delegated_attestation_config
             .service_key
-            // TODO: Use a const or configurable prefix?
+            // TODO: Use a const or configurable prefix set in the DelegatedAttestationConfig?
             .strip_prefix("rebase:")
             .ok_or(ClientError::DelegatedConf(
                 "Failed to strip prefix from service_key".to_string(),

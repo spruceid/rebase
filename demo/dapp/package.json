@@ -50,7 +50,7 @@
 		"webpack-dev-server": "^4.7.3"
 	},
 	"dependencies": {
-		"@spruceid/rebase-client": "0.16.2",
+		"@spruceid/rebase-client": "0.18.0",
 		"@walletconnect/web3-provider": "^1.7.8",
 		"ajv": "^8.11.0",
 		"ajv-formats": "^2.1.1",

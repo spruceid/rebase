@@ -1,5 +1,4 @@
 mod utils;
-
 use crate::utils::set_panic_hook;
 use js_sys::Promise;
 use rebase_witness_sdk::{
@@ -29,17 +28,6 @@ extern "C" {
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-macro_rules! jserr {
-    ($expression:expr) => {
-        match $expression {
-            Ok(a) => a,
-            Err(e) => {
-                return Err(JsValue::from(format!("{}", e)));
-            }
-        }
-    };
-}
-
 #[wasm_bindgen]
 pub struct WasmClient {
     client: Arc<RebaseClient>,
@@ -51,6 +39,17 @@ fn is_valid(endpoints: &Endpoints) -> Result<(), String> {
     } else {
         Ok(())
     }
+}
+
+macro_rules! jserr {
+    ($expression:expr) => {
+        match $expression {
+            Ok(a) => a,
+            Err(e) => {
+                return Err(JsValue::from(format!("{}", e)));
+            }
+        }
+    };
 }
 
 #[wasm_bindgen]

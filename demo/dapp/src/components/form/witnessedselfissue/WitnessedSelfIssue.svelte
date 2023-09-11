@@ -1,6 +1,6 @@
 <script lang="ts">
     import {
-        client,
+        getClient,
         type Claim,
         claims,
         alert,
@@ -17,7 +17,11 @@
     import { writable } from "svelte/store";
     import { useNavigate } from "svelte-navigator";
     import FormSlot from "./FormSlot.svelte";
-    import { Types } from "@spruceid/rebase-client";
+    import {
+        BasicProfileAttestationStatement,
+        Statements,
+        Proofs,
+    } from "@spruceid/rebase-client";
     // TODO: Add JSON Schema validation
 
     let navigate = useNavigate();
@@ -73,7 +77,7 @@
             throw new Error("No default signer set");
         }
 
-        let stmt: Types.BasicProfileAttestationStatement = {
+        let stmt: BasicProfileAttestationStatement = {
             description: _description,
             image: _image,
             username: _username,
@@ -81,7 +85,7 @@
             subject: getSubject(current),
         };
 
-        let req: Types.Statements = {
+        let req: Statements = {
             Attestation: {
                 BasicProfileAttestation: stmt,
             },
@@ -90,6 +94,7 @@
         // TODO: JSON Schema validation here!
         const badRespErr =
             "Badly formatted witness service response in statement";
+        let client = await getClient();
         let res = await client.statement(req);
 
         let statement = res?.statement;
@@ -98,7 +103,7 @@
         }
         let signature = await sign(statement);
 
-        let proofReq: Types.Proofs = {
+        let proofReq: Proofs = {
             Attestation: {
                 BasicProfileAttestation: {
                     signature,

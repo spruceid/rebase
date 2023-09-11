@@ -1,0 +1,42 @@
+[package]
+name = "rebase_client_wasm"
+version = "0.0.1"
+authors = ["Spruce Systems, Inc"]
+edition = "2021"
+homepage = "https://www.spruceid.dev/rebase"
+documentation = "https://www.spruceid.dev/rebase"
+repository = "https://github.com/spruceid/rebase/"
+description = "The WASM used to create the Rebase JavaScript Client, usable by other WASM-targeting Rust libs"
+keywords = ["cryptography", "identity", "credentials"]
+license = "Apache-2.0 OR MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies]
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.7", optional = true }
+
+js-sys = "0.3"
+rebase_witness_sdk = "0.1.2"
+getrandom = { version = "0.2", features = ["js"] }
+rand = { version = "0.7", features = ["wasm-bindgen"] }
+serde = {version = "1", features = ["derive"]}
+serde_json = "1"
+wasm-bindgen = "0.2.84"
+wasm-bindgen-futures = "0.4"
+time = {version = "0.3.28", features = ["wasm-bindgen"]}
+url = { version = "2", features = ["serde"] }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.34"
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"
