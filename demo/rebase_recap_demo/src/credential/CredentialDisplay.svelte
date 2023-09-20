@@ -1,19 +1,52 @@
 <script lang="ts">
-    import { JWTFMT } from "src/util/types";
+    import { AttestationStatement } from "@spruceid/rebase-client";
+    import { JWTFMT, Signer } from "src/util/types";
     import { Writable, writable } from "svelte/store";
+    import BasicPostAttestation from "src/attestation/flows/BasicPostAttestation.svelte";
+    import TagInput from "./TagInput.svelte";
 
     export let credential: JWTFMT;
     export let allCredentials: Array<JWTFMT | false>;
 
+    export let signer: Signer;
+    export let nextPermissions;
+    export let issue: (statement: AttestationStatement) => Promise<void>;
+
     // Use to avoid warning.
-    console.log(allCredentials);
+    console.log(nextPermissions);
 
     let showJSON: Writable<boolean> = writable(false);
     let _showJSON = false;
     showJSON.subscribe((x) => (_showJSON = x));
+
+    const makeFilter = (
+        comparison: string,
+        objectPath: Array<string>
+    ): ((credential: JWTFMT) => boolean) => {
+        return (credential: JWTFMT): boolean => {
+            if (objectPath.length <= 0) {
+                return false;
+            }
+
+            let pathKeys = Object.keys(objectPath);
+            let x = credential;
+            for (let i = 0, x = pathKeys.length; i < x; i++) {
+                let pathKey = pathKeys[i];
+                if (x && x[pathKey]) {
+                    x = x[pathKey];
+                }
+            }
+
+            if (typeof x !== "string") {
+                return false;
+            } else {
+                return x === comparison;
+            }
+        };
+    };
 </script>
 
-<div>
+<div style="border-style:solid;">
     <p>Type: {credential.type}</p>
     <!-- TODO: Make this more dynamic? -->
     {#if credential.type === "BasicImageAttestation"}
@@ -24,6 +57,15 @@
                     alt="credential source"
                 />
             </p>
+            <!-- TODO: Move this to it's own component -->
+            {#if nextPermissions.includes("BasicTagAttestation")}
+                <TagInput
+                    postUUID={credential.uuid}
+                    {allCredentials}
+                    {issue}
+                    {signer}
+                />
+            {/if}
         </div>
     {:else if credential.type === "BasicPostAttestation"}
         <!-- TODO: Add replies, likes, and tags -->
@@ -34,6 +76,63 @@
             <p>
                 Body: {credential.details.BasicPostAttestation.body}
             </p>
+            <p>Post ID: {credential.uuid}</p>
+            {#if credential?.details?.BasicPostAttestation?.reply_to}
+                <p>
+                    Reply To: {credential.details.BasicPostAttestation.reply_to}
+                </p>
+            {/if}
+            {#if nextPermissions.includes("LikeAttestation")}
+                <p>
+                    Like this post: <button
+                        on:click={() => {
+                            issue({
+                                LikeAttestation: {
+                                    subject: signer.subject(),
+                                    target: credential.uuid,
+                                },
+                            });
+                        }}>Like!</button
+                    >
+                </p>
+            {/if}
+            <div>
+                <p>Likes of this post</p>
+                {#each allCredentials as reply}
+                    {#if reply?.details?.LikeAttestation?.target == credential.uuid}
+                        Like ID: {reply.uuid}
+                    {/if}
+                {/each}
+            </div>
+            <div>
+                <p>Reply to this post?</p>
+                <BasicPostAttestation
+                    subject={signer.subject()}
+                    attestationType="BasicPostAttestation"
+                    replyTo={credential.uuid}
+                    handler={issue}
+                />
+            </div>
+            <div>
+                <p>Replies to this post:</p>
+                {#each allCredentials as reply}
+                    {#if reply?.details?.BasicPostAttestation?.reply_to == credential.uuid}
+                        <p>
+                            Title: {reply.details.BasicPostAttestation.title}
+                        </p>
+                        <p>
+                            Body: {reply.details.BasicPostAttestation.body}
+                        </p>
+                        <p>Post ID: {reply.uuid}</p>
+                        {#if reply?.details?.BasicPostAttestation?.reply_to}
+                            <p>
+                                Reply To: {reply.details.BasicPostAttestation
+                                    .reply_to}
+                            </p>
+                        {/if}
+                    {/if}
+                {/each}
+            </div>
         </div>
     {:else if credential.type === "BasicProfileAttestation"}
         <!-- TODO: Add follows and tags -->
@@ -56,6 +155,20 @@
                 <p>
                     Description: {credential.details.BasicProfileAttestation
                         .description}
+                </p>
+            {/if}
+            {#if nextPermissions.includes("FollowAttestation")}
+                <p>
+                    Follow this user: <button
+                        on:click={() => {
+                            issue({
+                                FollowAttestation: {
+                                    subject: signer.subject(),
+                                    target: credential.uuid,
+                                },
+                            });
+                        }}>Follow!</button
+                    >
                 </p>
             {/if}
         </div>

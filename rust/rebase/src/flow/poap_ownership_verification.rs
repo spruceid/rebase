@@ -210,3 +210,87 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
         Ok(proof.to_content(&s, &proof.signature)?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        test_util::util::{
+            test_eth_did, test_witness_signature, test_witness_statement, MockFlow, MockIssuer,
+            TestKey, TestWitness,
+        },
+        types::{
+            defs::{Issuer, Proof, Statement, Subject},
+            enums::subject::Subjects,
+        },
+    };
+
+    fn mock_proof(key: fn() -> Subjects, signature: String) -> Prf {
+        Prf {
+            statement: Stmt {
+                subject: key(),
+                event_id: 102213,
+                issued_at: "2023-09-27T16:36:33.696Z".to_string(),
+            },
+            signature,
+        }
+    }
+
+    #[async_trait(?Send)]
+    impl Flow<Ctnt, Stmt, Prf> for MockFlow {
+        fn instructions(&self) -> Result<Instructions, FlowError> {
+            Ok(Instructions {
+                statement: "Unimplemented".to_string(),
+                statement_schema: schema_for!(Stmt),
+                signature: "Unimplemented".to_string(),
+                witness: "Unimplemented".to_string(),
+                witness_schema: schema_for!(Prf),
+            })
+        }
+
+        async fn statement<I: Issuer>(
+            &self,
+            statement: &Stmt,
+            _issuer: &I,
+        ) -> Result<StatementResponse, FlowError> {
+            Ok(StatementResponse {
+                statement: statement.generate_statement()?,
+                delimiter: Some("\n\n".to_string()),
+            })
+        }
+
+        async fn validate_proof<I: Issuer>(
+            &self,
+            proof: &Prf,
+            _issuer: &I,
+        ) -> Result<Ctnt, FlowError> {
+            proof
+                .statement
+                .subject
+                .valid_signature(&self.statement, &self.signature)
+                .await?;
+
+            Ok(proof
+                .to_content(&self.statement, &self.signature)
+                .map_err(FlowError::Proof)?)
+        }
+    }
+
+    #[tokio::test]
+    async fn mock_poap_ownership() {
+        let signature = test_witness_signature(TestWitness::NftOwnership, TestKey::Eth).unwrap();
+        let statement = test_witness_statement(TestWitness::NftOwnership, TestKey::Eth).unwrap();
+
+        let p = mock_proof(test_eth_did, signature.clone());
+
+        let flow = MockFlow {
+            statement,
+            signature,
+        };
+
+        let i = MockIssuer {};
+        flow.unsigned_credential(&p, &test_eth_did(), &i)
+            .await
+            .unwrap();
+    }
+}

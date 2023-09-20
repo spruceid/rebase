@@ -56,3 +56,58 @@ impl Flow<AttestationContent, AttestationStatement, AttestationProof> for Attest
         Ok(proof.to_content(&stmt, &proof.signature())?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        proof::attestation::basic_post_attestation::BasicPostAttestationProof,
+        statement::attestation::basic_post_attestation::BasicPostAttestationStatement,
+        test_util::util::test_did_keypair,
+        types::defs::{Issuer, Statement},
+    };
+
+    #[tokio::test]
+    async fn mock_attestation_flow() {
+        let (subj1, iss1) = test_did_keypair().await.unwrap();
+        let (_, iss2) = test_did_keypair().await.unwrap();
+        let flow = AttestationFlow {};
+
+        let statement = BasicPostAttestationStatement {
+            subject: subj1,
+            reply_to: None,
+            body: "World".to_string(),
+            title: "Hello".to_string(),
+        };
+
+        let s = statement.generate_statement().unwrap();
+
+        let signature = iss1.sign(&s).await.unwrap();
+
+        let proof = BasicPostAttestationProof {
+            statement: statement.clone(),
+            signature: signature.clone(),
+        };
+
+        flow.validate_proof(
+            &AttestationProof::BasicPostAttestation(proof.clone()),
+            &iss2,
+        )
+        .await
+        .unwrap();
+
+        let bad_sig = iss2.sign(&s).await.unwrap();
+        let bad_proof = BasicPostAttestationProof {
+            statement: statement.clone(),
+            signature: bad_sig,
+        };
+
+        if flow
+            .validate_proof(&AttestationProof::BasicPostAttestation(bad_proof), &iss2)
+            .await
+            .is_ok()
+        {
+            panic!("Flow approved bad signature")
+        }
+    }
+}

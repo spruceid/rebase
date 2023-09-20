@@ -1,11 +1,9 @@
 import { TwitterIcon, GlobeIcon, GitHubIcon, DiscordIcon, EmailIcon, RedditIcon, SoundCloudIcon } from "src/components/icons";
-// import { WasmClient } from "@spruceid/rebase-client/wasm";
-// import { Client, defaultClientConfig, Types } from "@spruceid/rebase-client";
 import {Client, FlowType} from "@spruceid/rebase-client";
 
 // USE FOR DEBUG:
 // const witnessUrl = process.env.WITNESS_URL;
-// const clientConfig: Types.ClientConfig = { 
+// const clientConfig: ClientConfig = { 
 //     endpoints: {
 //         instructions: `${witnessUrl}/instructions`,
 //         statement: `${witnessUrl}/statement`,
@@ -14,9 +12,6 @@ import {Client, FlowType} from "@spruceid/rebase-client";
 //         verify: `${witnessUrl}/verify`
 //     },
 // };
-
-// const clientConfig = defaultClientConfig();
-// export const client = new Client(new WasmClient(JSON.stringify(clientConfig)));
 
 let client: Client | null = null;
 

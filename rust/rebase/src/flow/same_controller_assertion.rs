@@ -64,9 +64,9 @@ mod tests {
     use super::*;
     use crate::{
         test_util::util::{
-            test_ed25519_did, test_ed25519_did_2, test_eth_did, test_eth_did_2, test_solana_did,
-            test_solana_did_2, test_witness_signature, MockIssuer, TestKey, TestWitness,
-            TEST_2KEY_ED25519_SIG_1, TEST_2KEY_ED25519_SIG_2, TEST_2KEY_ETH_SIG_1,
+            test_did_keypair, test_ed25519_did, test_ed25519_did_2, test_eth_did, test_eth_did_2,
+            test_solana_did, test_solana_did_2, test_witness_signature, MockIssuer, TestKey,
+            TestWitness, TEST_2KEY_ED25519_SIG_1, TEST_2KEY_ED25519_SIG_2, TEST_2KEY_ETH_SIG_1,
             TEST_2KEY_ETH_SIG_2, TEST_2KEY_SOLANA_SIG_1, TEST_2KEY_SOLANA_SIG_2,
         },
         types::enums::subject::Subjects,
@@ -400,5 +400,62 @@ mod tests {
             Err(_) => {}
             Ok(_) => panic!("Invalid signatures in both signatures were incorrectly validated!"),
         }
+    }
+
+    #[tokio::test]
+    async fn mock_same_controller_on_the_fly() {
+        let i = MockIssuer {};
+        let flow = SameControllerAssertionFlow {};
+        let (subj1, iss1) = test_did_keypair().await.unwrap();
+        let (subj2, iss2) = test_did_keypair().await.unwrap();
+        let (_, iss3) = test_did_keypair().await.unwrap();
+
+        let ver_stmt1 = Stmt {
+            id1: subj1.clone(),
+            id2: subj2.clone(),
+        };
+
+        let statement = ver_stmt1.generate_statement().unwrap();
+        let signature1 = iss1.sign(&statement).await.unwrap();
+        let signature2 = iss2.sign(&statement).await.unwrap();
+
+        let p = Prf {
+            statement: Stmt {
+                id1: subj1.clone(),
+                id2: subj2.clone(),
+            },
+            signature1: signature1.to_owned(),
+            signature2: signature2.to_owned(),
+        };
+
+        flow.unsigned_credential(&p, &subj1, &i).await.unwrap();
+
+        let p = Prf {
+            statement: Stmt {
+                id1: subj1.clone(),
+                id2: subj2.clone(),
+            },
+            signature1: signature2.to_owned(),
+            signature2: signature1.to_owned(),
+        };
+
+        if flow.unsigned_credential(&p, &subj1, &i).await.is_ok() {
+            panic!("Approved first bad signature");
+        };
+
+        let signature3 = iss3.sign(&statement).await.unwrap();
+
+        let p = Prf {
+            statement: Stmt {
+                id1: subj1.clone(),
+                id2: subj2.clone(),
+            },
+            signature1: signature1.to_owned(),
+            signature2: signature3.to_owned(),
+        };
+
+        if flow.unsigned_credential(&p, &subj2, &i).await.is_ok() {
+            panic!("Approved second bad signature");
+        };
     }
 }

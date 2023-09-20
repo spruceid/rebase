@@ -1,68 +1,61 @@
-use crate::types::{defs::Subject, error::SubjectError};
+use crate::types::{
+    defs::{resolve_key, DIDKey, DIDWeb, Subject, JWK},
+    error::SubjectError,
+};
 use async_trait::async_trait;
 use ed25519_dalek::{ed25519::signature::Signature, PublicKey, Verifier};
 use hex;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use ssi::jwk::Base64urlUInt;
+use ssi::jwk::Params;
 use tsify::Tsify;
-use url::Url;
 use wasm_bindgen::prelude::*;
 
 #[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
-#[serde(rename = "did_web")]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct DidWeb {
+pub struct Ed25519Jwk {
     pub did: String,
     pub key_name: String,
 }
 
-impl DidWeb {
-    pub async fn pubkey(&self) -> Result<PublicKey, SubjectError> {
-        match self.did.strip_prefix("did:web:") {
-            Some(u) => {
-                let client = reqwest::Client::new();
-                let request_url = format!("https://{}/.well-known/did.json", u);
-                let res: Res = client
-                    .get(
-                        Url::parse(&request_url)
-                            .map_err(|e| SubjectError::Validation(e.to_string()))?,
-                    )
-                    .send()
-                    .await
-                    .map_err(|e| {
-                        SubjectError::Validation(format!("failed to retrieve public key: {}", e))
-                    })?
-                    .json()
-                    .await
-                    .map_err(|e| {
-                        SubjectError::Validation(format!("invalid public key format: {}", e))
-                    })?;
+impl Ed25519Jwk {
+    pub fn new(did: &str, key_name: &str) -> Result<Self, SubjectError> {
+        Ok(Ed25519Jwk {
+            did: did.to_owned(),
+            key_name: key_name.to_owned(),
+        })
+    }
 
-                if res.verification_method.is_empty() {
-                    return Err(SubjectError::Validation(
-                        "no verifications found in did document".to_string(),
-                    ));
-                };
-
-                let b = Base64urlUInt::try_from(res.verification_method[0].key.x.clone()).map_err(
-                    |e| SubjectError::Validation(format!("failed to decode public key: {}", e)),
-                )?;
-
-                Ok(PublicKey::from_bytes(&b.0).map_err(|e| {
-                    SubjectError::Validation(format!("failed to create from bytes: {}", e))
-                })?)
-            }
-            None => Err(SubjectError::Validation(format!(
-                "Unexpected did web format: {}",
+    pub async fn jwk(&self) -> Result<JWK, SubjectError> {
+        if !self.did.starts_with("did:web:") && !self.did.starts_with("did:key:") {
+            return Err(SubjectError::Did(format!(
+                "Currently only supports ed25519 keys as did:web or did:key, got: {}",
                 self.did
-            ))),
+            )));
+        }
+
+        let full_did = format!("{}#{}", self.did, self.key_name);
+        if self.did.starts_with("did:key:") {
+            let resolver = DIDKey {};
+            resolve_key(&full_did, &resolver).await.map_err(|e| {
+                SubjectError::Validation(format!("Could not build JWK from DID: {}", e))
+            })
+        } else if self.did.starts_with("did:web:") {
+            let resolver = DIDWeb {};
+            resolve_key(&full_did, &resolver).await.map_err(|e| {
+                SubjectError::Validation(format!("Could not build JWK from DID: {}", e))
+            })
+        } else {
+            Err(SubjectError::Validation(format!(
+                "Delegate DID must be of did:web or did:key, got {}",
+                self.did
+            )))
         }
     }
 }
 
 #[async_trait(?Send)]
-impl Subject for DidWeb {
+impl Subject for Ed25519Jwk {
     fn did(&self) -> Result<String, SubjectError> {
         Ok(self.did.clone())
     }
@@ -77,16 +70,23 @@ impl Subject for DidWeb {
     }
 
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError> {
-        let sig = Signature::from_bytes(
+        let jwk = self.jwk().await?;
+        let pk = match &jwk.params {
+            Params::OKP(o) => Ok(PublicKey::from_bytes(&o.public_key.0).map_err(|e| {
+                SubjectError::Validation(format!("could not generate public key: {}", e))
+            })?),
+            _ => Err(SubjectError::Validation(
+                "could not recover public key from jwk".to_string(),
+            )),
+        }?;
+
+        let statement = statement.as_bytes();
+        let signature = Signature::from_bytes(
             &hex::decode(signature).map_err(|e| SubjectError::Validation(e.to_string()))?,
         )
         .map_err(|e| SubjectError::Validation(e.to_string()))?;
 
-        let stmt = statement.as_bytes();
-        let pubkey = self.pubkey().await?;
-
-        pubkey
-            .verify(stmt, &sig)
+        pk.verify(statement, &signature)
             .map_err(|e| SubjectError::Validation(e.to_string()))
     }
 }
@@ -143,3 +143,7 @@ pub enum Context {
     String(String),
     Struct(ContextKey),
 }
+
+// NOTE: Tests for this file can be found in issuer/ed25519
+// There the function test_did_kepair from test_util is tested as
+// both issuer and subject.

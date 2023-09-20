@@ -9,8 +9,9 @@ pub use did_method_key::DIDKey;
 use did_onion::DIDOnion;
 use did_pkh::DIDPKH;
 use did_tz::DIDTz;
-use did_web::DIDWeb;
+pub use did_web::DIDWeb;
 use did_webkey::DIDWebKey;
+use hex::FromHex;
 use http::uri::Authority;
 pub use iri_string::types::UriString;
 use libipld::cid::Cid;
@@ -39,34 +40,20 @@ use wasm_bindgen::prelude::*;
 
 use super::enums::attestation::AttestationTypes;
 
-// TODO: Something better? This is C+P from kepler/lib
-pub mod address {
-    use hex::{encode, FromHex};
-    use serde::de::{Deserialize, Deserializer, Error};
-    use serde::{Serialize, Serializer};
-
-    pub fn deserialize<'de, D>(d: D) -> Result<[u8; 20], D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        String::deserialize(d).and_then(|address| {
-            <[u8; 20]>::from_hex(address.strip_prefix("0x").unwrap_or(&address))
-                .map_err(|e| D::Error::custom(format!("failed to parse ethereum: {e}")))
-        })
-    }
-
-    pub fn serialize<S: Serializer>(v: &[u8; 20], s: S) -> Result<S::Ok, S::Error> {
-        let h = encode(*v);
-        String::serialize(&h, s)
-    }
+pub fn address_from_string(address: String) -> Result<[u8; 20], RebaseError> {
+    <[u8; 20]>::from_hex(address.strip_prefix("0x").unwrap_or(&address)).map_err(|_e| {
+        RebaseError::CapabilityError(CapabilityError::ReCapError(
+            "Failed to parse Ethereum Address from hex".to_string(),
+        ))
+    })
 }
+
 #[serde_as]
 #[derive(Deserialize, Clone, Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct SessionConfig {
-    #[serde(with = "crate::types::defs::address")]
-    pub address: [u8; 20],
+    pub address: String,
     pub chain_id: u64,
     #[serde_as(as = "DisplayFromStr")]
     pub domain: Authority,
@@ -155,7 +142,7 @@ impl SessionConfig {
                 CapabilityError::ReCapError(format!("failed to parse generate actions: {}", e))
             })?
             .build_message(Message {
-                address: self.address,
+                address: address_from_string(self.address.clone())?,
                 chain_id: self.chain_id,
                 domain: self.domain.clone(),
                 expiration_time: Some(self.expiration_time.clone()),
