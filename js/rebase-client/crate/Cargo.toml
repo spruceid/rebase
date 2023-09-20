@@ -1,6 +1,6 @@
 [package]
 name = "rebase_client_wasm"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Spruce Systems, Inc"]
 edition = "2021"
 homepage = "https://www.spruceid.dev/rebase"
@@ -24,7 +24,7 @@ default = ["console_error_panic_hook"]
 console_error_panic_hook = { version = "0.1.7", optional = true }
 
 js-sys = "0.3"
-rebase_witness_sdk = "0.1.2"
+rebase_witness_sdk = "0.1.3"
 getrandom = { version = "0.2", features = ["js"] }
 rand = { version = "0.7", features = ["wasm-bindgen"] }
 serde = {version = "1", features = ["derive"]}

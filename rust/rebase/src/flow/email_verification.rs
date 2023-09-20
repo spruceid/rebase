@@ -179,3 +179,119 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasicFlow {
 }
 
 /* TODO: Add automated tests. */
+
+#[cfg(test)]
+mod tests {
+    use std::ops::Sub;
+
+    use super::*;
+    use crate::{
+        test_util::util::test_did_keypair,
+        types::defs::{Issuer, Statement},
+    };
+
+    #[tokio::test]
+    async fn mock_email() {
+        // get witness' issuer:
+        // NOTE: A working issuer is required for these tests.
+        let (_, i) = test_did_keypair().await.unwrap();
+
+        // Test it works as expected.
+
+        // get subjects keypair
+        let (subj1, iss1) = test_did_keypair().await.unwrap();
+        let ver_stmt1 = Stmt {
+            subject: subj1.clone(),
+            email: "example@example.com".to_string(),
+        };
+
+        // Because the lookup happens at the Statement step, we can use a real flow struct, unlike other flows.
+        let flow = SendGridBasicFlow {
+            api_key: "unimplemented".to_string(),
+            challenge_delimiter: ":::".to_string(),
+            from_addr: "unimplemented".to_string(),
+            from_name: "unimplemented".to_string(),
+            subject_name: "unimplemented".to_string(),
+            max_elapsed_minutes: 10,
+        };
+
+        let now = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
+        let s = format!(
+            "{}{}{}",
+            ver_stmt1.generate_statement().unwrap(),
+            ":::",
+            now
+        );
+        let witness_sig = i.sign(&s).await.unwrap();
+        let challenge = format!("{}:::{}", witness_sig, now);
+
+        let s1 = &ver_stmt1.generate_statement().unwrap();
+        let sig1 = iss1.sign(s1).await.unwrap();
+
+        let ver_proof1 = Prf {
+            challenge: challenge.clone(),
+            statement: ver_stmt1.clone(),
+            signature: sig1.clone(),
+        };
+
+        flow.jwt(&ver_proof1, &i).await.unwrap();
+
+        // Test it detects a bad signature.
+
+        let (_, iss2) = test_did_keypair().await.unwrap();
+        let bad_sig = iss2.sign(s1).await.unwrap();
+
+        let bad_proof1 = Prf {
+            challenge: challenge.clone(),
+            statement: ver_stmt1.clone(),
+            signature: bad_sig,
+        };
+
+        match flow.jwt(&bad_proof1, &i).await {
+            Err(_) => {}
+            Ok(_) => panic!("Accepted bad signature"),
+        }
+
+        // Test it detects a bad challenge.
+
+        // We'll use this in the next test, but it will be useful now as a mismatched challenge.
+        let t = Utc::now();
+        let earlier = t
+            .sub(Duration::minutes(30))
+            .to_rfc3339_opts(SecondsFormat::Millis, true);
+
+        let bad_s = format!(
+            "{}{}{}",
+            ver_stmt1.generate_statement().unwrap(),
+            ":::",
+            earlier
+        );
+        let expired_witness_sig = i.sign(&bad_s).await.unwrap();
+
+        // NOTE: Here we use "now" so that the datetime checking isn't
+        // triggered, and the challenge's cryptographic integrity is checked.
+        let bad_challenge = format!("{}:::{}", expired_witness_sig, now);
+
+        let bad_proof2 = Prf {
+            challenge: bad_challenge,
+            statement: ver_stmt1.clone(),
+            signature: sig1.clone(),
+        };
+        match flow.jwt(&bad_proof2, &i).await {
+            Err(_) => {}
+            Ok(_) => panic!("Accepted bad challenge"),
+        }
+
+        // Test it detects an expired challenge
+        let expired_challenge = format!("{}:::{}", expired_witness_sig, earlier);
+        let bad_proof3 = Prf {
+            challenge: expired_challenge,
+            statement: ver_stmt1.clone(),
+            signature: sig1.clone(),
+        };
+        match flow.jwt(&bad_proof3, &i).await {
+            Err(_) => {}
+            Ok(_) => panic!("Accepted expired challenge"),
+        }
+    }
+}

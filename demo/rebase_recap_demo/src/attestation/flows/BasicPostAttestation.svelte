@@ -5,6 +5,7 @@
 
     export let handler = (statement: AttestationStatement) => Promise<void>;
     export let subject: Subjects;
+    export let replyTo = null;
 
     let body: Writable<string> = writable("");
     let _body: string = "";
@@ -22,8 +23,6 @@
     const reset = () => {
         body.set("");
         title.set("");
-        // NOTE: This would be needed in an application context.
-        // reply_to.set(null);
     };
 
     const f = async () => {
@@ -42,7 +41,7 @@
                 title: _title,
                 // NOTE: This would be needed in an application context.
                 // reply_to: _reply_to,
-                reply_to: null,
+                reply_to: replyTo ?? null,
             },
         };
 

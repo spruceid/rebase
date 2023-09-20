@@ -22,24 +22,25 @@
 
 	let client: Client = null;
 
-	// TODO: REMOVE
-	const witnessUrl = "http://localhost:8787";
+	// NOTE: For Debug
+	// const witnessUrl = "http://localhost:8787";
 
 	async function getClient(): Promise<Client> {
 		if (!client) {
-			// TODO: RESTORE ONCE WORKER IS PUBLISHED
-			// client = await Client.initialize();
-			client = await Client.initialize({
-				config: {
-					endpoints: {
-						instructions: `${witnessUrl}/instructions`,
-						statement: `${witnessUrl}/statement`,
-						witness_jwt: `${witnessUrl}/witness_jwt`,
-						witness_ld: `${witnessUrl}/witness_ld`,
-						verify: `${witnessUrl}/verify`,
-					},
-				},
-			});
+			client = await Client.initialize();
+
+			// NOTE: For Debug
+			// client = await Client.initialize({
+			// 	config: {
+			// 		endpoints: {
+			// 			instructions: `${witnessUrl}/instructions`,
+			// 			statement: `${witnessUrl}/statement`,
+			// 			witness_jwt: `${witnessUrl}/witness_jwt`,
+			// 			witness_ld: `${witnessUrl}/witness_ld`,
+			// 			verify: `${witnessUrl}/verify`,
+			// 		},
+			// 	},
+			// });
 		}
 
 		return client;
@@ -65,6 +66,14 @@
 		"ProgressBookLinkAttestation",
 	];
 
+	const skippable = (attestationType: AttestationTypes): boolean => {
+		return (
+			attestationType === "BasicTagAttestation" ||
+			attestationType === "LikeAttestation" ||
+			attestationType === "FollowAttestation"
+		);
+	};
+
 	type Route = AttestationTypes | "Home" | "Credentials";
 	let route: Writable<Route> = writable("Home");
 	let _route: Route = "Home";
@@ -75,15 +84,9 @@
 	let _credentials: Array<string> = [];
 	credentials.subscribe((x) => (_credentials = x));
 
-	async function issue(
-		statement: AttestationStatement,
-		currentSigner: Signer
-	) {
+	async function issue(statement: AttestationStatement) {
 		await getClient();
-		let vc = await client.delegated_attestation_jwt(
-			statement,
-			currentSigner.subject()
-		);
+		let vc = await client.delegated_attestation_jwt(statement);
 
 		if (!vc?.jwt) {
 			throw new Error(`Bad format of VC: ${JSON.stringify(vc)}`);
@@ -196,6 +199,9 @@
 
 		let sessionConfig: SessionConfig = {
 			actions: {},
+			// NOTE: The type err is because of how it's defined/deserialized in Rebase.
+			// NOTE: This only works if you pass it as a string, contray to the typedef
+			// @ts-ignore
 			address: nextId,
 			chainId: 1,
 			domain: window.location.host,
@@ -496,19 +502,23 @@
 		{#if _route === "Home"}
 			{#if _debugMode}
 				{#each allAttestationTypes as perm}
-					<p>
-						<button on:click={() => route.set(perm)}
-							>Issue new {perm}</button
-						>
-					</p>
+					{#if !skippable(perm)}
+						<p>
+							<button on:click={() => route.set(perm)}
+								>Issue new {perm}</button
+							>
+						</p>
+					{/if}
 				{/each}
 			{:else}
 				{#each nextPermissions as perm}
-					<p>
-						<button on:click={() => route.set(perm)}
-							>Issue new {perm}</button
-						>
-					</p>
+					{#if !skippable(perm)}
+						<p>
+							<button on:click={() => route.set(perm)}
+								>Issue new {perm}</button
+							>
+						</p>
+					{/if}
 				{/each}
 			{/if}
 		{:else if _route === "Credentials"}
@@ -518,6 +528,9 @@
 			{#each _credentials.map(fmtJWT).filter((x) => !!x) as c}
 				{#if c}
 					<CredentialDisplay
+						signer={_signer}
+						{issue}
+						{nextPermissions}
 						credential={c}
 						allCredentials={_credentials
 							.map(fmtJWT)

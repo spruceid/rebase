@@ -1,4 +1,4 @@
-use crate::subject::{ed25519::DidWeb as Ed25519, ethereum::Eip155, solana::Solana};
+use crate::subject::{ed25519::Ed25519Jwk as Ed25519, ethereum::Eip155, solana::Solana};
 use crate::types::{defs::Subject, error::SubjectError};
 
 use async_trait::async_trait;
@@ -14,6 +14,15 @@ pub enum Subjects {
     Pkh(Pkh),
     #[serde(rename = "web")]
     Web(Web),
+    #[serde(rename = "key")]
+    Key(Key),
+}
+
+#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum Key {
+    #[serde(rename = "ed25519")]
+    Ed25519(Ed25519),
 }
 
 #[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
@@ -39,6 +48,7 @@ impl Subject for Subjects {
             Subjects::Pkh(Pkh::Eip155(x)) => x.did(),
             Subjects::Pkh(Pkh::Solana(x)) => x.did(),
             Subjects::Web(Web::Ed25519(x)) => x.did(),
+            Subjects::Key(Key::Ed25519(x)) => x.did(),
         }
     }
 
@@ -47,6 +57,7 @@ impl Subject for Subjects {
             Subjects::Pkh(Pkh::Eip155(x)) => x.display_id(),
             Subjects::Pkh(Pkh::Solana(x)) => x.display_id(),
             Subjects::Web(Web::Ed25519(x)) => x.display_id(),
+            Subjects::Key(Key::Ed25519(x)) => x.display_id(),
         }
     }
 
@@ -55,6 +66,7 @@ impl Subject for Subjects {
             Subjects::Pkh(Pkh::Eip155(x)) => x.verification_method(),
             Subjects::Pkh(Pkh::Solana(x)) => x.verification_method(),
             Subjects::Web(Web::Ed25519(x)) => x.verification_method(),
+            Subjects::Key(Key::Ed25519(x)) => x.verification_method(),
         }
     }
 
@@ -63,6 +75,7 @@ impl Subject for Subjects {
             Subjects::Pkh(Pkh::Eip155(x)) => x.valid_signature(statement, signature).await,
             Subjects::Pkh(Pkh::Solana(x)) => x.valid_signature(statement, signature).await,
             Subjects::Web(Web::Ed25519(x)) => x.valid_signature(statement, signature).await,
+            Subjects::Key(Key::Ed25519(x)) => x.valid_signature(statement, signature).await,
         }
     }
 }
@@ -75,6 +88,7 @@ impl Subjects {
             Subjects::Pkh(Pkh::Eip155(_)) => Ok("Ethereum Address".to_string()),
             Subjects::Pkh(Pkh::Solana(_)) => Ok("Solana Address".to_string()),
             Subjects::Web(Web::Ed25519(_)) => Ok("Ed25519 Web Key".to_string()),
+            Subjects::Key(Key::Ed25519(_)) => Ok("Ed25519 DID Key".to_string()),
         }
     }
 }

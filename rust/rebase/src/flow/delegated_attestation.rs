@@ -164,3 +164,37 @@ impl Flow<DelegatedAttestationContent, AttestationStatement, DelegatedAttestatio
         Ok(proof.to_content(&proof.generate_statement()?, &proof.attestation_signature)?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        statement::attestation::basic_post_attestation::BasicPostAttestationStatement,
+        test_util::util::{test_did_keypair, test_eth_did},
+    };
+
+    #[tokio::test]
+    async fn test_delegated_attestation() {
+        // Due to the inability to replicate things like SIWE ReCaps on the fly, this is a fairly simple test.
+        let proof = DelegatedAttestationProof {
+            attestation: AttestationStatement::BasicPostAttestation(BasicPostAttestationStatement {
+                title: "Hello".to_string(),
+                body: "World".to_string(),
+                reply_to: None,
+                subject: test_eth_did(),
+            }),
+            attestation_signature: "cf12bcc0dabf76651407cb88a72808585df23d60dcb22b0b10a14dff3da2ff54017c7991cf01b4fc4cba617d3aaa785cbb6f5c1b33f10846ed23550e5324e106".to_string(),
+            service_key: "rebase:did:web:rebasedemokey.pages.dev".to_string(),
+            siwe_message: "localhost:8080 wants you to sign in with your Ethereum account:\n0xdA3176d77c04632F2862B14E35bc6B4717FB5016\n\nI further authorize the stated URI to perform the following actions on my behalf: (1) 'issue': 'basic_post_attestation' for 'rebase:did:web:rebasedemokey.pages.dev'.\n\nURI: did:key:z6MkiqEVE7UdwpRncdBH5QQQ7THmd8DzuANApbmaXyXNKPSc#z6MkiqEVE7UdwpRncdBH5QQQ7THmd8DzuANApbmaXyXNKPSc\nVersion: 1\nChain ID: 1\nNonce: 6JQhF2R1wBhfF6ONV\nIssued At: 2023-09-27T17:11:32.013Z\nExpiration Time: 2123-09-27T17:11:32.014Z\nNot Before: 2022-09-27T17:11:32.013Z\nResources:\n- urn:recap:eyJhdHQiOnsicmViYXNlOmRpZDp3ZWI6cmViYXNlZGVtb2tleS5wYWdlcy5kZXYiOnsiaXNzdWUvYmFzaWNfcG9zdF9hdHRlc3RhdGlvbiI6W3t9XX19LCJwcmYiOltdfQ".to_string(),
+            siwe_signature: "0xa5f8764d637cab627245b5e008b06f04c50361e34e2b19f1a940646373e7f1810385fd8d5c1501b7f0d899f95603cc4632bc9cd77454f24b5e0d64493657e6161c".to_string(),
+        };
+
+        let flow = DelegatedAttestationFlow {
+            service_key: "rebase:did:web:rebasedemokey.pages.dev".to_string(),
+        };
+
+        let (_, issuer) = test_did_keypair().await.unwrap();
+
+        flow.jwt(&proof, &issuer).await.unwrap();
+    }
+}

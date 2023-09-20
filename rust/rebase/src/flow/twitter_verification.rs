@@ -139,8 +139,9 @@ mod tests {
     use super::*;
     use crate::{
         test_util::util::{
-            test_ed25519_did, test_eth_did, test_solana_did, test_witness_signature,
-            test_witness_statement, MockFlow, MockIssuer, TestKey, TestWitness,
+            test_did_keypair, test_ed25519_did, test_eth_did, test_solana_did,
+            test_witness_signature, test_witness_statement, MockFlow, MockIssuer, TestKey,
+            TestWitness,
         },
         types::{
             defs::{Issuer, Proof, Statement, Subject},
@@ -240,5 +241,67 @@ mod tests {
         flow.unsigned_credential(&did, &test_solana_did(), &i)
             .await
             .unwrap();
+    }
+
+    #[tokio::test]
+    async fn mock_twitter_on_the_fly() {
+        let i = MockIssuer {};
+        let (subj1, iss1) = test_did_keypair().await.unwrap();
+
+        let ver_proof1 = Prf {
+            statement: Stmt {
+                subject: subj1.clone(),
+                handle: "foo".to_owned(),
+            },
+            tweet_url: "unused".to_owned(),
+        };
+
+        let statement = ver_proof1.generate_statement().unwrap();
+        let signature = iss1.sign(&statement).await.unwrap();
+        let flow = MockFlow {
+            statement,
+            signature,
+        };
+
+        flow.unsigned_credential(&ver_proof1, &subj1, &i)
+            .await
+            .unwrap();
+
+        let (subj2, iss2) = test_did_keypair().await.unwrap();
+
+        let ver_proof2 = Prf {
+            statement: Stmt {
+                subject: subj2.clone(),
+                handle: "foo".to_owned(),
+            },
+            tweet_url: "unused".to_owned(),
+        };
+
+        let statement = ver_proof2.generate_statement().unwrap();
+        let signature = iss2.sign(&statement).await.unwrap();
+        let flow = MockFlow {
+            statement,
+            signature,
+        };
+
+        flow.unsigned_credential(&ver_proof2, &subj2, &i)
+            .await
+            .unwrap();
+
+        // Make sure it fails correctly:
+        let statement = ver_proof2.generate_statement().unwrap();
+        let signature = iss1.sign(&statement).await.unwrap();
+        let flow = MockFlow {
+            statement,
+            signature,
+        };
+
+        if flow
+            .unsigned_credential(&ver_proof2, &subj2, &i)
+            .await
+            .is_ok()
+        {
+            panic!("Approved bad signature");
+        };
     }
 }
