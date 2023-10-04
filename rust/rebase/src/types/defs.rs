@@ -49,7 +49,7 @@ pub fn address_from_string(address: String) -> Result<[u8; 20], RebaseError> {
 }
 
 #[serde_as]
-#[derive(Deserialize, Clone, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[serde(rename_all = "camelCase")]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct SessionConfig {
@@ -161,7 +161,7 @@ impl SessionConfig {
         Ok(m)
     }
 }
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct ResolverOpts {
     did_onion_proxy_url: Option<String>,
@@ -290,7 +290,7 @@ where
     fn to_content(&self, statement: &str, signature: &str) -> Result<T, ProofError>;
 }
 
-#[derive(Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Instructions {
     pub statement: String,
@@ -300,7 +300,7 @@ pub struct Instructions {
     pub witness_schema: RootSchema,
 }
 
-#[derive(Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct StatementResponse {
     pub statement: String,
@@ -347,7 +347,7 @@ where
 
 // NOTE: Currently only supports main-nets. Other networks could be added here.
 // The serialized string variant is what is used in requests to Alchemy's API.
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum AlchemyNetworks {
     #[serde(rename = "eth-mainnet")]

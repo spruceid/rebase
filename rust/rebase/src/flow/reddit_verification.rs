@@ -32,7 +32,7 @@ pub struct AboutSubreddit {
     pub public_description: String,
 }
 
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct RedditVerificationFlow {
     pub user_agent: String,

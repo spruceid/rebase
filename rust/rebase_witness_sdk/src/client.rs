@@ -43,7 +43,7 @@ pub enum ClientError {
     DelegatedConf(String),
 }
 
-#[derive(Clone, Serialize, Deserialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Endpoints {
     pub witness_jwt: Option<Url>,
@@ -53,7 +53,7 @@ pub struct Endpoints {
     pub verify: Option<Url>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Client {
     pub endpoints: Endpoints,
@@ -61,7 +61,7 @@ pub struct Client {
     pub resolver_opts: Option<ResolverOpts>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DelegatedAttestationPreConfig {
     service_key: String,
@@ -69,7 +69,7 @@ pub struct DelegatedAttestationPreConfig {
     siwe_recap_message: String,
 }
 
-#[derive(Clone, Serialize, Deserialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DelegatedAttestationConfig {
     service_key: String,
@@ -228,7 +228,7 @@ impl DelegatedAttestationConfig {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 struct WitnessErr {
     pub error: String,
@@ -463,7 +463,7 @@ impl Client {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Serialize, Deserialize, Tsify)]
 struct JWTDecodeWrapper {
     iss: String,
 }

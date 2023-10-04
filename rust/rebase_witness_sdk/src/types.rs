@@ -67,7 +67,7 @@ use wasm_bindgen::prelude::*;
 // NOTE: If there is a way to write a macro where a enum can derive a trait
 // by having each member of the enum impl the trait, this file would become
 // just enum defs. I have searched, yet it elludes me. May you find the way.
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum FlowType {
     DnsVerification,
@@ -83,7 +83,7 @@ pub enum FlowType {
     DelegatedAttestation,
 }
 
-#[derive(Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Contents {
     DnsVerification(DnsVerificationContent),
@@ -166,10 +166,8 @@ impl Content for Contents {
     }
 }
 
-// NOTE: Tsify may struggle without the TSRS's rename = "Statements" directive
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-// #[serde(rename = "opts")]
 pub enum Statements {
     DnsVerification(DnsVerificationStatement),
     EmailVerification(EmailVerificationStatement),
@@ -202,10 +200,8 @@ impl Statement for Statements {
     }
 }
 
-// NOTE: Tsify may struggle without the TSRS's rename = "Proofs" directive
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-// #[serde(rename = "proof")]
 pub enum Proofs {
     DnsVerification(DnsVerificationStatement),
     EmailVerification(EmailVerificationProof),
@@ -280,7 +276,7 @@ impl Proof<Contents> for Proofs {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct WitnessFlow {
     pub dns_verification: Option<DnsVerificationFlow>,
@@ -465,26 +461,26 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
         }
     }
 }
-#[derive(Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct InstructionsReq {
     #[serde(rename = "type")]
     pub instruction_type: FlowType,
 }
 
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct JWTWrapper {
     pub jwt: String,
 }
 
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct CredentialWrapper {
     pub credential: Credential,
 }
 
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(untagged)]
 pub enum VCWrapper {
@@ -492,7 +488,7 @@ pub enum VCWrapper {
     Jwt(JWTWrapper),
 }
 
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct VerifyRes {
     pub success: bool,

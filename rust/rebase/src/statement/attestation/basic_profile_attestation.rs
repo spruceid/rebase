@@ -13,7 +13,7 @@ use tsify::Tsify;
 use url::Url;
 use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct BasicProfileAttestationStatement {
     pub description: Option<String>,

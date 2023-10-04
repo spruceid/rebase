@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
-#[derive(Clone, JsonSchema, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, JsonSchema, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DnsVerificationContent {
     pub domain: String,

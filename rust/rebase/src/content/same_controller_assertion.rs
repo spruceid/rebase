@@ -10,7 +10,7 @@ use ssi::{one_or_many::OneOrMany, vc::Evidence};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
-#[derive(Clone, JsonSchema, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct SameControllerAssertionContent {
     pub id1: Subjects,

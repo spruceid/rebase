@@ -7,7 +7,7 @@ use tsify::Tsify;
 use url::Url;
 use wasm_bindgen::prelude::*;
 
-#[derive(Deserialize, Serialize, Tsify, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct FollowAttestationContent {
     pub id: String,

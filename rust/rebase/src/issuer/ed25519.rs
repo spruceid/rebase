@@ -21,7 +21,7 @@ use ssi::{
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Ed25519Jwk {
     pub did: String,
     pub jwk: JWK,
