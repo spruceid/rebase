@@ -18,7 +18,7 @@ use tsify::Tsify;
 use url::Url;
 use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(untagged)]
 // NOTE: If adding other providers change `untagged` to something else.
@@ -54,7 +54,7 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnershipVerificationFlow {
 
 // TODO: Make Alchemy variant be configurable by chain + per-chain configs.
 // NOTE: For now, this is just a wrapper around the alchemy API.
-#[derive(Clone, Deserialize, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 pub struct Alchemy {
     pub api_key: String,
     pub challenge_delimiter: String,

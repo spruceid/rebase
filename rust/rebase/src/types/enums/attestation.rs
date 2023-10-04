@@ -43,7 +43,7 @@ impl<T: Attestation> Statement for T {
     }
 }
 
-#[derive(Clone, Deserialize, EnumIter, JsonSchema, Serialize, Tsify, PartialEq)]
+#[derive(Clone, Debug, Deserialize, EnumIter, JsonSchema, Serialize, Tsify, PartialEq)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum AttestationTypes {
     BasicImageAttestation,

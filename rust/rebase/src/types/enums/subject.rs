@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Subjects {
     #[serde(rename = "pkh")]
@@ -18,14 +18,14 @@ pub enum Subjects {
     Key(Key),
 }
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Key {
     #[serde(rename = "ed25519")]
     Ed25519(Ed25519),
 }
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Pkh {
     #[serde(rename = "eip155")]
@@ -34,7 +34,7 @@ pub enum Pkh {
     Solana(Solana),
 }
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Web {
     #[serde(rename = "ed25519")]

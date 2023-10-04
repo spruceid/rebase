@@ -20,7 +20,7 @@ fn b58_err(err: FromBase58Error) -> String {
 // or if it's not going to change, then note it as a magic string.
 pub const SOLANA_NETWORK: &str = "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ";
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Solana {
     pub address: String,

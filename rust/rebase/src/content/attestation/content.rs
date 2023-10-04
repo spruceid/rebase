@@ -12,7 +12,7 @@ use ssi::{one_or_many::OneOrMany, vc::Evidence};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
-#[derive(Deserialize, Serialize, Tsify, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum AttestationContent {
     BasicImageAttestation(BasicImageAttestationContent),

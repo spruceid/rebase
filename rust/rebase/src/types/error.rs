@@ -1,7 +1,7 @@
 use serde_json::Error as SerializeError;
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum RebaseError {
     #[error("capability error: {0}")]
     CapabilityError(#[from] CapabilityError),
@@ -19,13 +19,13 @@ pub enum RebaseError {
     Flow(#[from] FlowError),
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum CapabilityError {
     #[error("recap error: {0}")]
     ReCapError(String),
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum SubjectError {
     #[error("failed to generate subject type: {0}")]
     SubjType(String),
@@ -35,7 +35,7 @@ pub enum SubjectError {
     Did(String),
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum IssuerError {
     #[error("{0}")]
     Subject(#[from] SubjectError),
@@ -51,7 +51,7 @@ pub enum IssuerError {
     Internal(String),
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum ContentError {
     #[error("{0}")]
     Subject(#[from] SubjectError),
@@ -63,7 +63,7 @@ pub enum ContentError {
     Invalid(String),
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum StatementError {
     #[error("failed to generate statement: {0}")]
     Statement(String),
@@ -71,7 +71,7 @@ pub enum StatementError {
     Subject(#[from] SubjectError),
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum ProofError {
     #[error("failed to generate content: {0}")]
     ContentGeneration(String),
@@ -81,7 +81,7 @@ pub enum ProofError {
     Subject(#[from] SubjectError),
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum FlowError {
     #[error("failed in proof look up: {0}")]
     BadLookup(String),

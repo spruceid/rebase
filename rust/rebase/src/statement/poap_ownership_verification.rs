@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct PoapOwnershipVerificationStatement {
     // NOTE: This should ideally be a u64

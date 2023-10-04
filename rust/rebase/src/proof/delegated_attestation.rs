@@ -33,7 +33,7 @@ use std::str::FromStr;
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct DelegatedAttestationProof {
     pub attestation: AttestationStatement,
@@ -43,7 +43,7 @@ pub struct DelegatedAttestationProof {
     pub siwe_signature: String,
 }
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct ParsedReCap {
     // The did:key:... address of the delegate key
@@ -56,7 +56,7 @@ pub struct ParsedReCap {
 
 pub const RECAP_PREFIX: &str = "urn:recap:";
 
-#[derive(Clone, Deserialize, JsonSchema, Serialize, Tsify)]
+#[derive(Clone, Debug, Deserialize, JsonSchema, Serialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 struct HexRecap {
     pub att: Map<String, Value>,
