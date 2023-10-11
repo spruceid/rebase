@@ -18,7 +18,8 @@ use wasm_bindgen::prelude::*;
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct SameControllerAssertionFlow {}
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<Ctnt, Stmt, Prf> for SameControllerAssertionFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
@@ -30,10 +31,10 @@ impl Flow<Ctnt, Stmt, Prf> for SameControllerAssertionFlow {
         })
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send + Clone>(
         &self,
-        statement: &Stmt,
-        _issuer: &I,
+        statement: Stmt,
+        _issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         Ok(StatementResponse {
             statement: statement.generate_statement()?,
@@ -41,7 +42,11 @@ impl Flow<Ctnt, Stmt, Prf> for SameControllerAssertionFlow {
         })
     }
 
-    async fn validate_proof<I: Issuer>(&self, proof: &Prf, _issuer: &I) -> Result<Ctnt, FlowError> {
+    async fn validate_proof<I: Issuer + Send>(
+        &self,
+        proof: Prf,
+        _issuer: I,
+    ) -> Result<Ctnt, FlowError> {
         let s = proof.statement.generate_statement()?;
         proof
             .statement
@@ -103,7 +108,7 @@ mod tests {
 
         let flow = SameControllerAssertionFlow {};
 
-        flow.unsigned_credential(&p, &test_eth_did(), &issuer)
+        flow.unsigned_credential(p, test_eth_did(), issuer.clone())
             .await
             .unwrap();
 
@@ -117,7 +122,10 @@ mod tests {
         .await
         .unwrap();
 
-        match flow.unsigned_credential(&p, &test_eth_did(), &issuer).await {
+        match flow
+            .unsigned_credential(p, test_eth_did(), issuer.clone())
+            .await
+        {
             Err(_) => {}
             Ok(_) => panic!("Reversed signatures were incorrectly validated!"),
         }
@@ -132,7 +140,10 @@ mod tests {
         .await
         .unwrap();
 
-        match flow.unsigned_credential(&p, &test_eth_did(), &issuer).await {
+        match flow
+            .unsigned_credential(p, test_eth_did(), issuer.clone())
+            .await
+        {
             Err(_) => {}
             Ok(_) => panic!("Reversed keys were incorrectly validated!"),
         }
@@ -147,7 +158,10 @@ mod tests {
         .await
         .unwrap();
 
-        match flow.unsigned_credential(&p, &test_eth_did(), &issuer).await {
+        match flow
+            .unsigned_credential(p, test_eth_did(), issuer.clone())
+            .await
+        {
             Err(_) => {}
             Ok(_) => panic!("Invalid signature in signature_2 was incorrectly validated!"),
         }
@@ -162,7 +176,10 @@ mod tests {
         .await
         .unwrap();
 
-        match flow.unsigned_credential(&p, &test_eth_did(), &issuer).await {
+        match flow
+            .unsigned_credential(p, test_eth_did(), issuer.clone())
+            .await
+        {
             Err(_) => {}
             Ok(_) => panic!("Invalid signature in signature_1 was incorrectly validated!"),
         }
@@ -176,7 +193,10 @@ mod tests {
         )
         .await
         .unwrap();
-        match flow.unsigned_credential(&p, &test_eth_did(), &issuer).await {
+        match flow
+            .unsigned_credential(p, test_eth_did(), issuer.clone())
+            .await
+        {
             Err(_) => {}
             Ok(_) => panic!("Invalid signatures in both signatures were incorrectly validated!"),
         }
@@ -197,7 +217,7 @@ mod tests {
         .await
         .unwrap();
 
-        flow.unsigned_credential(&p, &test_ed25519_did(), &issuer)
+        flow.unsigned_credential(p, test_ed25519_did(), issuer.clone())
             .await
             .unwrap();
 
@@ -212,7 +232,7 @@ mod tests {
         .unwrap();
 
         match flow
-            .unsigned_credential(&p, &test_ed25519_did(), &issuer)
+            .unsigned_credential(p, test_ed25519_did(), issuer.clone())
             .await
         {
             Err(_) => {}
@@ -230,7 +250,7 @@ mod tests {
         .unwrap();
 
         match flow
-            .unsigned_credential(&p, &test_ed25519_did(), &issuer)
+            .unsigned_credential(p, test_ed25519_did(), issuer.clone())
             .await
         {
             Err(_) => {}
@@ -248,7 +268,7 @@ mod tests {
         .unwrap();
 
         match flow
-            .unsigned_credential(&p, &test_ed25519_did(), &issuer)
+            .unsigned_credential(p, test_ed25519_did(), issuer.clone())
             .await
         {
             Err(_) => {}
@@ -266,7 +286,7 @@ mod tests {
         .unwrap();
 
         match flow
-            .unsigned_credential(&p, &test_ed25519_did(), &issuer)
+            .unsigned_credential(p, test_ed25519_did(), issuer.clone())
             .await
         {
             Err(_) => {}
@@ -284,7 +304,7 @@ mod tests {
         .unwrap();
 
         match flow
-            .unsigned_credential(&p, &test_ed25519_did(), &issuer)
+            .unsigned_credential(p, test_ed25519_did(), issuer)
             .await
         {
             Err(_) => {}
@@ -307,7 +327,7 @@ mod tests {
         .await
         .unwrap();
 
-        flow.unsigned_credential(&p, &test_solana_did(), &issuer)
+        flow.unsigned_credential(p, test_solana_did(), issuer.clone())
             .await
             .unwrap();
 
@@ -322,7 +342,7 @@ mod tests {
         .unwrap();
 
         match flow
-            .unsigned_credential(&p, &test_solana_did(), &issuer)
+            .unsigned_credential(p, test_solana_did(), issuer.clone())
             .await
         {
             Err(_) => {}
@@ -340,7 +360,7 @@ mod tests {
         .unwrap();
 
         match flow
-            .unsigned_credential(&p, &test_solana_did(), &issuer)
+            .unsigned_credential(p, test_solana_did(), issuer.clone())
             .await
         {
             Err(_) => {}
@@ -358,7 +378,7 @@ mod tests {
         .unwrap();
 
         match flow
-            .unsigned_credential(&p, &test_solana_did(), &issuer)
+            .unsigned_credential(p, test_solana_did(), issuer.clone())
             .await
         {
             Err(_) => {}
@@ -376,7 +396,7 @@ mod tests {
         .unwrap();
 
         match flow
-            .unsigned_credential(&p, &test_solana_did(), &issuer)
+            .unsigned_credential(p, test_solana_did(), issuer.clone())
             .await
         {
             Err(_) => {}
@@ -393,10 +413,7 @@ mod tests {
         .await
         .unwrap();
 
-        match flow
-            .unsigned_credential(&p, &test_solana_did(), &issuer)
-            .await
-        {
+        match flow.unsigned_credential(p, test_solana_did(), issuer).await {
             Err(_) => {}
             Ok(_) => panic!("Invalid signatures in both signatures were incorrectly validated!"),
         }
@@ -428,7 +445,9 @@ mod tests {
             signature2: signature2.to_owned(),
         };
 
-        flow.unsigned_credential(&p, &subj1, &i).await.unwrap();
+        flow.unsigned_credential(p, subj1.clone(), i.clone())
+            .await
+            .unwrap();
 
         let p = Prf {
             statement: Stmt {
@@ -439,7 +458,11 @@ mod tests {
             signature2: signature1.to_owned(),
         };
 
-        if flow.unsigned_credential(&p, &subj1, &i).await.is_ok() {
+        if flow
+            .unsigned_credential(p, subj1.clone(), i.clone())
+            .await
+            .is_ok()
+        {
             panic!("Approved first bad signature");
         };
 
@@ -454,7 +477,7 @@ mod tests {
             signature2: signature3.to_owned(),
         };
 
-        if flow.unsigned_credential(&p, &subj2, &i).await.is_ok() {
+        if flow.unsigned_credential(p, subj2, i).await.is_ok() {
             panic!("Approved second bad signature");
         };
     }

@@ -3,6 +3,7 @@ use crate::types::{
     enums::subject::Subjects,
     error::ContentError,
 };
+use async_trait::async_trait;
 use chrono::{SecondsFormat, Utc};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -21,6 +22,8 @@ pub struct TwitterVerificationContent {
     pub signature: String,
 }
 
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Content for TwitterVerificationContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([

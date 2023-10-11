@@ -48,7 +48,8 @@ pub struct TwitterResponse {
     pub includes: TwitterResponseIncludes,
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<Ctnt, Stmt, Prf> for TwitterVerificationFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
@@ -60,10 +61,10 @@ impl Flow<Ctnt, Stmt, Prf> for TwitterVerificationFlow {
         })
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send + Clone>(
         &self,
-        statement: &Stmt,
-        _issuer: &I,
+        statement: Stmt,
+        _issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         Ok(StatementResponse {
             delimiter: Some(self.delimiter.to_owned()),
@@ -71,7 +72,11 @@ impl Flow<Ctnt, Stmt, Prf> for TwitterVerificationFlow {
         })
     }
 
-    async fn validate_proof<I: Issuer>(&self, proof: &Prf, _issuer: &I) -> Result<Ctnt, FlowError> {
+    async fn validate_proof<I: Issuer + Send>(
+        &self,
+        proof: Prf,
+        _issuer: I,
+    ) -> Result<Ctnt, FlowError> {
         let mut headers = HeaderMap::new();
         let s: HeaderValue = format!("Bearer {}", &self.api_key).parse().map_err(|_| {
             FlowError::BadLookup("failed to generate authorization header".to_string())
@@ -159,7 +164,8 @@ mod tests {
         }
     }
 
-    #[async_trait(?Send)]
+    #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+    #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
     impl Flow<Ctnt, Stmt, Prf> for MockFlow {
         fn instructions(&self) -> Result<Instructions, FlowError> {
             Ok(Instructions {
@@ -171,10 +177,10 @@ mod tests {
             })
         }
 
-        async fn statement<I: Issuer>(
+        async fn statement<I: Issuer + Send + Clone>(
             &self,
-            statement: &Stmt,
-            _issuer: &I,
+            statement: Stmt,
+            _issuer: I,
         ) -> Result<StatementResponse, FlowError> {
             Ok(StatementResponse {
                 statement: statement.generate_statement()?,
@@ -182,10 +188,10 @@ mod tests {
             })
         }
 
-        async fn validate_proof<I: Issuer>(
+        async fn validate_proof<I: Issuer + Send>(
             &self,
-            proof: &Prf,
-            _issuer: &I,
+            proof: Prf,
+            _issuer: I,
         ) -> Result<Ctnt, FlowError> {
             // NOTE: This just passes through, instead of looking up!!!
             if self.statement != proof.statement.generate_statement()? {
@@ -215,7 +221,7 @@ mod tests {
             signature,
         };
         let i = MockIssuer {};
-        flow.unsigned_credential(&did, &test_eth_did(), &i)
+        flow.unsigned_credential(did, test_eth_did(), i.clone())
             .await
             .unwrap();
 
@@ -227,7 +233,7 @@ mod tests {
             statement,
             signature,
         };
-        flow.unsigned_credential(&did, &test_ed25519_did(), &i)
+        flow.unsigned_credential(did, test_ed25519_did(), i.clone())
             .await
             .unwrap();
 
@@ -238,7 +244,7 @@ mod tests {
             statement,
             signature,
         };
-        flow.unsigned_credential(&did, &test_solana_did(), &i)
+        flow.unsigned_credential(did, test_solana_did(), i.clone())
             .await
             .unwrap();
     }
@@ -263,7 +269,7 @@ mod tests {
             signature,
         };
 
-        flow.unsigned_credential(&ver_proof1, &subj1, &i)
+        flow.unsigned_credential(ver_proof1, subj1, i.clone())
             .await
             .unwrap();
 
@@ -284,7 +290,7 @@ mod tests {
             signature,
         };
 
-        flow.unsigned_credential(&ver_proof2, &subj2, &i)
+        flow.unsigned_credential(ver_proof2.clone(), subj2.clone(), i.clone())
             .await
             .unwrap();
 
@@ -296,11 +302,7 @@ mod tests {
             signature,
         };
 
-        if flow
-            .unsigned_credential(&ver_proof2, &subj2, &i)
-            .await
-            .is_ok()
-        {
+        if flow.unsigned_credential(ver_proof2, subj2, i).await.is_ok() {
             panic!("Approved bad signature");
         };
     }

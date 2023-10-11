@@ -27,7 +27,8 @@ pub enum NftOwnershipVerificationFlow {
     Alchemy(Alchemy),
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<Ctnt, Stmt, Prf> for NftOwnershipVerificationFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         match self {
@@ -35,17 +36,21 @@ impl Flow<Ctnt, Stmt, Prf> for NftOwnershipVerificationFlow {
         }
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send + Clone>(
         &self,
-        stmt: &Stmt,
-        issuer: &I,
+        stmt: Stmt,
+        issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         match self {
             NftOwnershipVerificationFlow::Alchemy(x) => x.statement(stmt, issuer).await,
         }
     }
 
-    async fn validate_proof<I: Issuer>(&self, proof: &Prf, issuer: &I) -> Result<Ctnt, FlowError> {
+    async fn validate_proof<I: Issuer + Send>(
+        &self,
+        proof: Prf,
+        issuer: I,
+    ) -> Result<Ctnt, FlowError> {
         match self {
             NftOwnershipVerificationFlow::Alchemy(x) => x.validate_proof(proof, issuer).await,
         }
@@ -141,7 +146,8 @@ impl Alchemy {
     }
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<Ctnt, Stmt, Prf> for Alchemy {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
@@ -154,10 +160,10 @@ impl Flow<Ctnt, Stmt, Prf> for Alchemy {
         })
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send + Clone>(
         &self,
-        stmt: &Stmt,
-        issuer: &I,
+        stmt: Stmt,
+        issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         self.sanity_check(&stmt.issued_at)?;
 
@@ -178,18 +184,19 @@ impl Flow<Ctnt, Stmt, Prf> for Alchemy {
         // of the challenge. This ensures that the expected address is the one making this
         // request and this request isn't being replayed from an interaction older than the
         // max_elapsed_minutes.
+        let f = issuer.sign(&s);
+        let sig = f.await?;
         Ok(StatementResponse {
-            statement: format!(
-                "{}{}{}",
-                s,
-                self.challenge_delimiter,
-                issuer.sign(&s).await?
-            ),
+            statement: format!("{}{}{}", s, self.challenge_delimiter, sig),
             delimiter: None,
         })
     }
 
-    async fn validate_proof<I: Issuer>(&self, proof: &Prf, issuer: &I) -> Result<Ctnt, FlowError> {
+    async fn validate_proof<I: Issuer + Send>(
+        &self,
+        proof: Prf,
+        issuer: I,
+    ) -> Result<Ctnt, FlowError> {
         self.sanity_check(&proof.statement.issued_at)?;
 
         let base = format!(
@@ -201,24 +208,18 @@ impl Flow<Ctnt, Stmt, Prf> for Alchemy {
 
         let client = Client::new();
 
-        // NOTE: This is mutable but safe. It doesn't even leave the fn boundry.
-        // Code that removes mut is longer and less clear
-        // or requires a 3rd party lib for async recursion.
-        // Clippy approves as well.
-        let mut res = self
-            .process_page(&client, &proof.statement.contract_address, &base, None)
-            .await?;
+        let f = self.process_page(&client, &proof.statement.contract_address, &base, None);
+        let mut res = f.await?;
 
         if !res.found && res.next_page.is_some() {
             loop {
-                res = self
-                    .process_page(
-                        &client,
-                        &proof.statement.contract_address,
-                        &base,
-                        res.next_page,
-                    )
-                    .await?;
+                let f = self.process_page(
+                    &client,
+                    &proof.statement.contract_address,
+                    &base,
+                    res.next_page,
+                );
+                res = f.await?;
 
                 if res.found || res.next_page.is_none() {
                     break;
@@ -235,6 +236,8 @@ impl Flow<Ctnt, Stmt, Prf> for Alchemy {
 
         let s = proof.statement.generate_statement()?;
 
+        let f = issuer.sign(&s);
+        let sig = f.await?;
         proof
             .statement
             .subject
@@ -243,12 +246,7 @@ impl Flow<Ctnt, Stmt, Prf> for Alchemy {
                 // then can recreate the statement by recreating the challenge.
                 // This is not vulnerable to replay attacks after the
                 // max_elapsed_minutes has elapsed.
-                &format!(
-                    "{}{}{}",
-                    s,
-                    &self.challenge_delimiter,
-                    issuer.sign(&s).await?
-                ),
+                &format!("{}{}{}", s, &self.challenge_delimiter, sig),
                 &proof.signature,
             )
             .await?;
@@ -311,7 +309,8 @@ mod tests {
         }
     }
 
-    #[async_trait(?Send)]
+    #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+    #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
     impl Flow<Ctnt, Stmt, Prf> for MockFlow {
         fn instructions(&self) -> Result<Instructions, FlowError> {
             Ok(Instructions {
@@ -323,10 +322,10 @@ mod tests {
             })
         }
 
-        async fn statement<I: Issuer>(
+        async fn statement<I: Issuer + Send + Clone>(
             &self,
-            statement: &Stmt,
-            _issuer: &I,
+            statement: Stmt,
+            _issuer: I,
         ) -> Result<StatementResponse, FlowError> {
             Ok(StatementResponse {
                 statement: statement.generate_statement()?,
@@ -334,10 +333,10 @@ mod tests {
             })
         }
 
-        async fn validate_proof<I: Issuer>(
+        async fn validate_proof<I: Issuer + Send>(
             &self,
-            proof: &Prf,
-            _issuer: &I,
+            proof: Prf,
+            _issuer: I,
         ) -> Result<Ctnt, FlowError> {
             proof
                 .statement
@@ -364,7 +363,7 @@ mod tests {
         };
 
         let i = MockIssuer {};
-        flow.unsigned_credential(&p, &test_eth_did(), &i)
+        flow.unsigned_credential(p, test_eth_did(), i)
             .await
             .unwrap();
     }

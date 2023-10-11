@@ -17,7 +17,8 @@ use wasm_bindgen::prelude::*;
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct AttestationFlow {}
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<AttestationContent, AttestationStatement, AttestationProof> for AttestationFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         // NOTE: These instructions are for all witnessed flows.
@@ -32,10 +33,10 @@ impl Flow<AttestationContent, AttestationStatement, AttestationProof> for Attest
         })
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send>(
         &self,
-        statement: &AttestationStatement,
-        _issuer: &I,
+        statement: AttestationStatement,
+        _issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         Ok(StatementResponse {
             statement: statement.generate_statement()?,
@@ -43,10 +44,10 @@ impl Flow<AttestationContent, AttestationStatement, AttestationProof> for Attest
         })
     }
 
-    async fn validate_proof<I: Issuer>(
+    async fn validate_proof<I: Issuer + Send>(
         &self,
-        proof: &AttestationProof,
-        _issuer: &I,
+        proof: AttestationProof,
+        _issuer: I,
     ) -> Result<AttestationContent, FlowError> {
         let stmt = proof.generate_statement()?;
         proof
@@ -90,8 +91,8 @@ mod tests {
         };
 
         flow.validate_proof(
-            &AttestationProof::BasicPostAttestation(proof.clone()),
-            &iss2,
+            AttestationProof::BasicPostAttestation(proof.clone()),
+            iss2.clone(),
         )
         .await
         .unwrap();
@@ -103,7 +104,7 @@ mod tests {
         };
 
         if flow
-            .validate_proof(&AttestationProof::BasicPostAttestation(bad_proof), &iss2)
+            .validate_proof(AttestationProof::BasicPostAttestation(bad_proof), iss2)
             .await
             .is_ok()
         {

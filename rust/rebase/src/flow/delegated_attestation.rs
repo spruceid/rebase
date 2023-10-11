@@ -29,7 +29,8 @@ pub struct DelegatedAttestationFlow {
     pub service_key: String,
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<DelegatedAttestationContent, AttestationStatement, DelegatedAttestationProof>
     for DelegatedAttestationFlow
 {
@@ -45,10 +46,10 @@ impl Flow<DelegatedAttestationContent, AttestationStatement, DelegatedAttestatio
         })
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send>(
         &self,
-        statement: &AttestationStatement,
-        _issuer: &I,
+        statement: AttestationStatement,
+        _issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         Ok(StatementResponse {
             statement: statement.generate_statement()?,
@@ -56,10 +57,10 @@ impl Flow<DelegatedAttestationContent, AttestationStatement, DelegatedAttestatio
         })
     }
 
-    async fn validate_proof<I: Issuer>(
+    async fn validate_proof<I: Issuer + Send>(
         &self,
-        proof: &DelegatedAttestationProof,
-        _issuer: &I,
+        proof: DelegatedAttestationProof,
+        _issuer: I,
     ) -> Result<DelegatedAttestationContent, FlowError> {
         // Check that the SIWE message is valid.
         // TODO: Use Message's own verify methods instead?
@@ -195,6 +196,6 @@ mod tests {
 
         let (_, issuer) = test_did_keypair().await.unwrap();
 
-        flow.jwt(&proof, &issuer).await.unwrap();
+        flow.jwt(proof, issuer).await.unwrap();
     }
 }

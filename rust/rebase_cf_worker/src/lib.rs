@@ -170,7 +170,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         .post_async("/statement", |mut req, ctx| async move {
             let _ = &ctx;
             if let Ok(b) = req.json::<Statements>().await {
-                if let Ok(r) = ctx.data.0.handle_statement(&b, &ctx.data.1).await {
+                if let Ok(r) = ctx.data.0.handle_statement(b, ctx.data.1.clone()).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
                 };
@@ -182,7 +182,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         .post_async("/witness_jwt", |mut req, ctx| async move {
             let _ = &ctx;
             if let Ok(b) = req.json::<Proofs>().await {
-                if let Ok(r) = ctx.data.0.handle_jwt(&b, &ctx.data.1).await {
+                if let Ok(r) = ctx.data.0.handle_jwt(b, ctx.data.1.clone()).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
                 };
@@ -194,7 +194,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
         .post_async("/witness_ld", |mut req, ctx| async move {
             let _ = &ctx;
             if let Ok(b) = req.json::<Proofs>().await {
-                if let Ok(r) = ctx.data.0.handle_ld(&b, &ctx.data.1).await {
+                if let Ok(r) = ctx.data.0.handle_ld(b, ctx.data.1.clone()).await {
                     let res = Response::from_json(&r)?;
                     return Ok(res.with_headers(post_resp_headers()?));
                 };

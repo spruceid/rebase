@@ -44,7 +44,7 @@
     "webpack-dev-server": "^4.7.3"
   },
   "dependencies": {
-    "@spruceid/rebase-client": "0.18.1",
+    "@spruceid/rebase-client": "0.19.0",
     "@walletconnect/web3-provider": "^1.7.8",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",

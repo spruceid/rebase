@@ -294,17 +294,18 @@ pub struct WitnessFlow {
     pub delegated_attestation: Option<DelegatedAttestationFlow>,
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<Contents, Statements, Proofs> for WitnessFlow {
     // NOTE: This is unused, currently
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Err(FlowError::Validation("Cannot use generalized Instructions function for generalized witness, use get_instructions".to_owned()))
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send + Clone>(
         &self,
-        stmt: &Statements,
-        issuer: &I,
+        stmt: Statements,
+        issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         match stmt {
             Statements::DnsVerification(s) => match &self.dns_verification {
@@ -368,10 +369,10 @@ impl Flow<Contents, Statements, Proofs> for WitnessFlow {
         }
     }
 
-    async fn validate_proof<I: Issuer>(
+    async fn validate_proof<I: Issuer + Send>(
         &self,
-        proof: &Proofs,
-        issuer: &I,
+        proof: Proofs,
+        issuer: I,
     ) -> Result<Contents, FlowError> {
         match proof {
             Proofs::DnsVerification(p) => match &self.dns_verification {
@@ -562,18 +563,18 @@ impl WitnessFlow {
         }
     }
 
-    pub async fn handle_ld<I: Issuer>(
+    pub async fn handle_ld<I: Issuer + Send + Clone>(
         &self,
-        proof: &Proofs,
-        issuer: &I,
+        proof: Proofs,
+        issuer: I,
     ) -> Result<serde_json::Value, FlowError> {
         Ok(json!({ "credential": self.credential(proof, issuer).await? }))
     }
 
-    pub async fn handle_jwt<I: Issuer>(
+    pub async fn handle_jwt<I: Issuer + Send + Clone>(
         &self,
-        proof: &Proofs,
-        issuer: &I,
+        proof: Proofs,
+        issuer: I,
     ) -> Result<serde_json::Value, FlowError> {
         Ok(json!({ "jwt": self.jwt(proof, issuer).await? }))
     }
@@ -585,10 +586,10 @@ impl WitnessFlow {
         Ok(json!(self.get_instructions(req.instruction_type.clone())?))
     }
 
-    pub async fn handle_statement<I: Issuer>(
+    pub async fn handle_statement<I: Issuer + Send + Clone>(
         &self,
-        statement: &Statements,
-        issuer: &I,
+        statement: Statements,
+        issuer: I,
     ) -> Result<serde_json::Value, FlowError> {
         Ok(json!(self.statement(statement, issuer).await?))
     }

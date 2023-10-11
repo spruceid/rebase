@@ -81,7 +81,8 @@ impl Ed25519Jwk {
     }
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Subject for Ed25519Jwk {
     fn did(&self) -> Result<String, SubjectError> {
         Ok(self.did.to_owned())
@@ -109,7 +110,8 @@ impl Subject for Ed25519Jwk {
     }
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Issuer for Ed25519Jwk {
     // sign takes plain text and returns the corresponding signature
     async fn sign(&self, plain_text: &str) -> Result<String, IssuerError> {
@@ -289,7 +291,7 @@ mod test {
 
         let content = proof.to_content(&s, &signature).unwrap();
 
-        let vc = content.credential(&iss).await.unwrap();
+        let vc = content.credential(iss.clone()).await.unwrap();
 
         let vc_iss = vc.issuer.as_ref().unwrap().get_id();
 
@@ -314,7 +316,7 @@ mod test {
             panic!("{}", res.errors.join(", "));
         };
 
-        let jwt = content.jwt(&iss).await.unwrap();
+        let jwt = content.jwt(iss).await.unwrap();
         let c = Credential::from_jwt_unsigned(&jwt)
             .map_err(|e| IssuerError::Vc(e.to_string()))
             .unwrap();

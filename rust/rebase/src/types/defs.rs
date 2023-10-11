@@ -191,7 +191,8 @@ pub fn make_resolver(opts: &Option<ResolverOpts>) -> DIDMethods<'static> {
     methods
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait Subject
 where
     Self: Sized,
@@ -205,7 +206,8 @@ where
     async fn valid_signature(&self, statement: &str, signature: &str) -> Result<(), SubjectError>;
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait Issuer
 where
     Self: Subject,
@@ -223,12 +225,13 @@ where
     ) -> Result<Option<OneOrMany<LDProof>>, IssuerError>;
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait Content {
     // Return the unsigned credential using a subject.
-    async fn unsigned_credential<T: Subject>(
+    async fn unsigned_credential<T: Subject + Send>(
         &self,
-        subject: &T,
+        subject: T,
     ) -> Result<Credential, ContentError> {
         let did = subject.did()?;
 
@@ -247,19 +250,24 @@ pub trait Content {
     }
 
     // Return the complete, signed LD Proof credential
-    async fn credential<T: Issuer>(&self, issuer: &T) -> Result<Credential, ContentError> {
-        let mut vc = self.unsigned_credential(issuer).await?;
-
-        issuer.sign_vc(&mut vc).await?;
-
+    async fn credential<T: Issuer + Send + Clone>(
+        &self,
+        issuer: T,
+    ) -> Result<Credential, ContentError> {
+        let f = self.unsigned_credential(issuer.clone());
+        let mut vc = f.await?;
+        let f = issuer.sign_vc(&mut vc);
+        f.await?;
         Ok(vc)
     }
 
     // Return a JWT signed credential
-    async fn jwt<T: Issuer>(&self, issuer: &T) -> Result<String, ContentError> {
-        let vc = self.unsigned_credential(issuer).await?;
-
-        Ok(issuer.generate_jwt(&vc).await?)
+    async fn jwt<T: Issuer + Send + Clone>(&self, issuer: T) -> Result<String, ContentError> {
+        let f = self.unsigned_credential(issuer.clone());
+        let vc = f.await?;
+        let f = issuer.generate_jwt(&vc);
+        let jwt = f.await?;
+        Ok(jwt)
     }
 
     // TODO: Better type?
@@ -282,6 +290,8 @@ pub trait Statement {
     fn generate_statement(&self) -> Result<String, StatementError>;
 }
 
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait Proof<T>
 where
     T: Content,
@@ -307,42 +317,57 @@ pub struct StatementResponse {
     pub delimiter: Option<String>,
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 pub trait Flow<C, S, P>
 where
-    C: Content,
-    S: Statement,
-    P: Proof<C>,
+    C: Content + Send + Sync,
+    S: Statement + Send,
+    for<'async_trait> P: Proof<C> + Send + Clone + 'async_trait,
 {
-    async fn credential<I: Issuer>(&self, proof: &P, issuer: &I) -> Result<Credential, FlowError> {
-        let content = self.validate_proof(proof, issuer).await?;
-        Ok(content.credential(issuer).await?)
+    async fn credential<I: Issuer + Send + Clone>(
+        &self,
+        proof: P,
+        issuer: I,
+    ) -> Result<Credential, FlowError> {
+        let f = self.validate_proof(proof.clone(), issuer.clone());
+        let content = f.await?;
+        let f = content.credential(issuer.clone());
+        Ok(f.await?)
     }
 
     fn instructions(&self) -> Result<Instructions, FlowError>;
 
-    async fn jwt<I: Issuer>(&self, proof: &P, issuer: &I) -> Result<String, FlowError> {
-        let content = self.validate_proof(proof, issuer).await?;
-        Ok(content.jwt(issuer).await?)
+    async fn jwt<I: Issuer + Send + Clone>(
+        &self,
+        proof: P,
+        issuer: I,
+    ) -> Result<String, FlowError> {
+        let f = self.validate_proof(proof, issuer.clone());
+        let content = f.await?;
+        let f = content.jwt(issuer);
+        Ok(f.await?)
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send + Clone>(
         &self,
-        statement: &S,
-        issuer: &I,
+        statement: S,
+        issuer: I,
     ) -> Result<StatementResponse, FlowError>;
 
-    async fn unsigned_credential<Subj: Subject, I: Issuer>(
+    async fn unsigned_credential<Subj: Subject + Send, I: Issuer + Send>(
         &self,
-        proof: &P,
-        subj: &Subj,
-        issuer: &I,
+        proof: P,
+        subj: Subj,
+        issuer: I,
     ) -> Result<Credential, FlowError> {
-        let content = self.validate_proof(proof, issuer).await?;
-        Ok(content.unsigned_credential(subj).await?)
+        let f = self.validate_proof(proof, issuer);
+        let content = f.await?;
+        let f = content.unsigned_credential(subj);
+        Ok(f.await?)
     }
 
-    async fn validate_proof<I: Issuer>(&self, proof: &P, issuer: &I) -> Result<C, FlowError>;
+    async fn validate_proof<I: Issuer + Send>(&self, proof: P, issuer: I) -> Result<C, FlowError>;
 }
 
 // NOTE: Currently only supports main-nets. Other networks could be added here.

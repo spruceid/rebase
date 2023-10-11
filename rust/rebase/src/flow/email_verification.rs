@@ -34,8 +34,27 @@ pub struct SendGridBasicFlow {
     pub subject_name: String,
 }
 
-impl SendGridBasicFlow {
-    async fn body<I: Issuer>(&self, stmt: &Stmt, issuer: &I) -> Result<String, FlowError> {
+// NOTE: This is forced into a trait so it can be made into an async trait
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
+pub trait EmailGen {
+    async fn body<I: Issuer + Send + Clone>(
+        &self,
+        stmt: Stmt,
+        issuer: I,
+    ) -> Result<String, FlowError>;
+
+    async fn subject(&self, stmt: Stmt) -> Result<String, FlowError>;
+}
+
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
+impl EmailGen for SendGridBasicFlow {
+    async fn body<I: Issuer + Send + Clone>(
+        &self,
+        stmt: Stmt,
+        issuer: I,
+    ) -> Result<String, FlowError> {
         let now = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
         let statement = format!(
             "{}{}{}",
@@ -43,11 +62,14 @@ impl SendGridBasicFlow {
             &self.challenge_delimiter,
             now
         );
-        let challenge = issuer.sign(&statement).await?;
+
+        let s = statement.clone();
+        let f = issuer.sign(&s);
+        let challenge = f.await?;
         Ok(format!("Please paste the following into the challenge input on the witness page used to generate this email:\n\n{}:::{}", challenge, now))
     }
 
-    async fn subject(&self, stmt: &Stmt) -> Result<String, FlowError> {
+    async fn subject(&self, stmt: Stmt) -> Result<String, FlowError> {
         Ok(format!(
             "Verifying ownership of {} {} for {}",
             stmt.subject.statement_title()?,
@@ -57,7 +79,8 @@ impl SendGridBasicFlow {
     }
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<Ctnt, Stmt, Prf> for SendGridBasicFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
@@ -69,14 +92,16 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasicFlow {
         })
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send + Clone>(
         &self,
-        stmt: &Stmt,
-        issuer: &I,
+        stmt: Stmt,
+        issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         let statement = stmt.generate_statement()?;
-        let b = self.body(stmt, issuer).await?;
-        let s = self.subject(stmt).await?;
+        let f = self.body(stmt.clone(), issuer.clone());
+        let b = f.await?;
+        let f = self.subject(stmt.clone());
+        let s = f.await?;
         let req = json!({
             "personalizations": [{
                     "to": [
@@ -131,7 +156,11 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasicFlow {
         })
     }
 
-    async fn validate_proof<I: Issuer>(&self, proof: &Prf, issuer: &I) -> Result<Ctnt, FlowError> {
+    async fn validate_proof<I: Issuer + Send>(
+        &self,
+        proof: Prf,
+        issuer: I,
+    ) -> Result<Ctnt, FlowError> {
         if self.max_elapsed_minutes <= 0 {
             return Err(FlowError::Validation(
                 "Max elapsed minutes must be set to a number greater than 0".to_string(),
@@ -165,7 +194,8 @@ impl Flow<Ctnt, Stmt, Prf> for SendGridBasicFlow {
             ts
         );
 
-        issuer.valid_signature(&t, ch).await?;
+        let f = issuer.valid_signature(&t, ch);
+        f.await?;
 
         let s = proof.statement.generate_statement()?;
         proof
@@ -234,7 +264,7 @@ mod tests {
             signature: sig1.clone(),
         };
 
-        flow.jwt(&ver_proof1, &i).await.unwrap();
+        flow.jwt(ver_proof1.clone(), i.clone()).await.unwrap();
 
         // Test it detects a bad signature.
 
@@ -247,7 +277,7 @@ mod tests {
             signature: bad_sig,
         };
 
-        match flow.jwt(&bad_proof1, &i).await {
+        match flow.jwt(bad_proof1.clone(), i.clone()).await {
             Err(_) => {}
             Ok(_) => panic!("Accepted bad signature"),
         }
@@ -277,7 +307,7 @@ mod tests {
             statement: ver_stmt1.clone(),
             signature: sig1.clone(),
         };
-        match flow.jwt(&bad_proof2, &i).await {
+        match flow.jwt(bad_proof2, i.clone()).await {
             Err(_) => {}
             Ok(_) => panic!("Accepted bad challenge"),
         }
@@ -289,7 +319,7 @@ mod tests {
             statement: ver_stmt1.clone(),
             signature: sig1.clone(),
         };
-        match flow.jwt(&bad_proof3, &i).await {
+        match flow.jwt(bad_proof3, i).await {
             Err(_) => {}
             Ok(_) => panic!("Accepted expired challenge"),
         }

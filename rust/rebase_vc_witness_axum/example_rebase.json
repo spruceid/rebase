@@ -1,0 +1,54 @@
+{
+    "issuer": {
+        "did": "<THE_DID_OF_THE_ISSUER>",
+        "jwk": {
+            "kty": "<SEE_THIS_SITE_https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-set-properties>",
+            "crv": "<SEE_THIS_SITE_https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-set-properties>",
+            "x": "<SEE_THIS_SITE_https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-set-properties>",
+            "d": "<SEE_THIS_SITE_https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-set-properties>"
+        },
+        "key_name": "<THE_FRAGMENT_THAT_IS_AFTER_THE_#_IN_THE_DID_NAME>"
+    },
+    "rebase": {
+        "Attestation": {},
+        "DelegatedAttestation": {
+            "service_key": "<THE_DID_OF_THE_ISSUER>"
+        },
+        "DnsVerification": {},
+        "EmailVerification": {
+            "api_key": "<A_SENDGRID_API_KEY>",
+            "challenge_delimiter": ":::",
+            "from_addr": "<AN_EMAIL_REGISTERED_WITH_SENDGRID>",
+            "from_name": "<THE_NAME_APPEARING_ON_THE_EMAIL>",
+            "max_elapsed_minutes": 15,
+            "subject_name": "<THE_REASON_FOR_VERIFICATION_APPEARING_ON_THE_EMAIL_SUBJECT>"
+        },
+        "GitHubVerification": {
+            "user_agent": "<A_TRACKABLE_USER_AGENT>",
+            "delimiter": "\n\n"
+        },
+        "NftOwnershipVerification": {
+            "api_key": "<AN_ALCHEMY_API_KEY>",
+            "challenge_delimiter": "\n\n",
+            "max_elapsed_minutes": 15
+        },
+        "PoapOwnershipVerification": {
+            "api_key": "<A_POAP_API_KEY>",
+            "challenge_delimiter": "\n\n",
+            "max_elapsed_minutes": 15
+        },
+        "RedditVerification": {
+            "user_agent": "<A_USER_AGENT_AS_SPECIFIED_IN_REDDIT_DOCS>"
+        },
+        "SameControllerAssertion": {},
+        "SoundCloudVerification": {
+            "client_id": "<A_SOUNDCLOUD_USER_ID>",
+            "limit": 100,
+            "max_offset": 9000
+        },
+        "TwitterVerification": {
+            "api_key": "<A_PAID_TWITTER_API_KEY>",
+            "delimiter": "\n\n"
+        }
+    }
+}
