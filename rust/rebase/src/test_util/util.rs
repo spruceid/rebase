@@ -168,9 +168,11 @@ pub struct MockFlow {
     pub signature: String,
 }
 
+#[derive(Clone)]
 pub struct MockIssuer {}
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Subject for MockIssuer {
     fn did(&self) -> Result<String, SubjectError> {
         Err(SubjectError::Validation("unimplemented".to_string()))
@@ -193,7 +195,8 @@ impl Subject for MockIssuer {
     }
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Issuer for MockIssuer {
     async fn sign(&self, _plain_text: &str) -> Result<String, IssuerError> {
         Err(IssuerError::Internal("unimplemented".to_string()))

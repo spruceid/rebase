@@ -1,4 +1,5 @@
 use crate::types::{defs::Content, error::ContentError};
+use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map};
 use ssi::{one_or_many::OneOrMany, vc::Evidence};
@@ -17,6 +18,8 @@ pub struct DelegatedBasicProfileAttestationContent {
     pub delegate: String,
 }
 
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Content for DelegatedBasicProfileAttestationContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([

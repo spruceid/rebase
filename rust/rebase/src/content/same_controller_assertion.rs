@@ -3,6 +3,7 @@ use crate::types::{
     enums::subject::Subjects,
     error::ContentError,
 };
+use async_trait::async_trait;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -20,6 +21,8 @@ pub struct SameControllerAssertionContent {
     pub signature2: String,
 }
 
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Content for SameControllerAssertionContent {
     fn context(&self) -> Result<serde_json::Value, ContentError> {
         Ok(json!([

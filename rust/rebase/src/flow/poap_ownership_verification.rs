@@ -93,7 +93,8 @@ struct PoapEventEntry {
     supply: u64,
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
@@ -107,10 +108,10 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
         })
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send + Clone>(
         &self,
-        stmt: &Stmt,
-        issuer: &I,
+        stmt: Stmt,
+        issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         self.sanity_check(&stmt.issued_at)?;
 
@@ -130,18 +131,19 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
         // of the challenge. This ensures that the expected address is the one making this
         // request and this request isn't being replayed from an interaction older than the
         // max_elapsed_minutes.
+        let f = issuer.sign(&s);
+        let sig = f.await?;
         Ok(StatementResponse {
-            statement: format!(
-                "{}{}{}",
-                s,
-                self.challenge_delimiter,
-                issuer.sign(&s).await?
-            ),
+            statement: format!("{}{}{}", s, self.challenge_delimiter, sig),
             delimiter: None,
         })
     }
 
-    async fn validate_proof<I: Issuer>(&self, proof: &Prf, issuer: &I) -> Result<Ctnt, FlowError> {
+    async fn validate_proof<I: Issuer + Send>(
+        &self,
+        proof: Prf,
+        issuer: I,
+    ) -> Result<Ctnt, FlowError> {
         self.sanity_check(&proof.statement.issued_at)?;
 
         let u = Url::parse(&format!(
@@ -162,15 +164,10 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
         headers.insert(hn, hv);
 
         let client = Client::new();
-        let res: Vec<PoapResEntry> = client
-            .get(u)
-            .headers(headers)
-            .send()
-            .await
-            .map_err(|e| FlowError::BadLookup(e.to_string()))?
-            .json()
-            .await
-            .map_err(|e| FlowError::BadLookup(e.to_string()))?;
+        let f = client.get(u).headers(headers).send();
+        let h = f.await.map_err(|e| FlowError::BadLookup(e.to_string()))?;
+        let f = h.json();
+        let res: Vec<PoapResEntry> = f.await.map_err(|e| FlowError::BadLookup(e.to_string()))?;
 
         let mut found = false;
         for entry in res {
@@ -188,6 +185,8 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
         }
 
         let s = proof.statement.generate_statement()?;
+        let f = issuer.sign(&s);
+        let sig = f.await?;
 
         proof
             .statement
@@ -197,12 +196,7 @@ impl Flow<Ctnt, Stmt, Prf> for PoapOwnershipVerificationFlow {
                 // then can recreate the statement by recreating the challenge.
                 // This is not vulnerable to replay attacks after the
                 // max_elapsed_minutes has elapsed.
-                &format!(
-                    "{}{}{}",
-                    s,
-                    &self.challenge_delimiter,
-                    issuer.sign(&s).await?
-                ),
+                &format!("{}{}{}", s, &self.challenge_delimiter, sig),
                 &proof.signature,
             )
             .await?;
@@ -236,7 +230,8 @@ mod tests {
         }
     }
 
-    #[async_trait(?Send)]
+    #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+    #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
     impl Flow<Ctnt, Stmt, Prf> for MockFlow {
         fn instructions(&self) -> Result<Instructions, FlowError> {
             Ok(Instructions {
@@ -248,10 +243,10 @@ mod tests {
             })
         }
 
-        async fn statement<I: Issuer>(
+        async fn statement<I: Issuer + Send + Clone>(
             &self,
-            statement: &Stmt,
-            _issuer: &I,
+            statement: Stmt,
+            _issuer: I,
         ) -> Result<StatementResponse, FlowError> {
             Ok(StatementResponse {
                 statement: statement.generate_statement()?,
@@ -259,10 +254,10 @@ mod tests {
             })
         }
 
-        async fn validate_proof<I: Issuer>(
+        async fn validate_proof<I: Issuer + Send>(
             &self,
-            proof: &Prf,
-            _issuer: &I,
+            proof: Prf,
+            _issuer: I,
         ) -> Result<Ctnt, FlowError> {
             proof
                 .statement
@@ -289,7 +284,7 @@ mod tests {
         };
 
         let i = MockIssuer {};
-        flow.unsigned_credential(&p, &test_eth_did(), &i)
+        flow.unsigned_credential(p, test_eth_did(), i)
             .await
             .unwrap();
     }

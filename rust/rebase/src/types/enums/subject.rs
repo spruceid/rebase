@@ -41,7 +41,8 @@ pub enum Web {
     Ed25519(Ed25519),
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Subject for Subjects {
     fn did(&self) -> Result<String, SubjectError> {
         match &self {

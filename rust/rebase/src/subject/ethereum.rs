@@ -22,7 +22,8 @@ pub struct Eip155 {
     pub chain_id: String,
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Subject for Eip155 {
     fn did(&self) -> Result<String, SubjectError> {
         Ok(format!("did:pkh:eip155:{}:{}", self.chain_id, self.address))

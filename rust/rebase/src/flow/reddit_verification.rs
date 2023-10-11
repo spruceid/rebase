@@ -38,7 +38,8 @@ pub struct RedditVerificationFlow {
     pub user_agent: String,
 }
 
-#[async_trait(?Send)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 impl Flow<Ctnt, Stmt, Stmt> for RedditVerificationFlow {
     fn instructions(&self) -> Result<Instructions, FlowError> {
         Ok(Instructions {
@@ -50,10 +51,10 @@ impl Flow<Ctnt, Stmt, Stmt> for RedditVerificationFlow {
         })
     }
 
-    async fn statement<I: Issuer>(
+    async fn statement<I: Issuer + Send + Clone>(
         &self,
-        statement: &Stmt,
-        _issuer: &I,
+        statement: Stmt,
+        _issuer: I,
     ) -> Result<StatementResponse, FlowError> {
         Ok(StatementResponse {
             statement: statement.generate_statement()?,
@@ -61,10 +62,10 @@ impl Flow<Ctnt, Stmt, Stmt> for RedditVerificationFlow {
         })
     }
 
-    async fn validate_proof<I: Issuer>(
+    async fn validate_proof<I: Issuer + Send>(
         &self,
-        proof: &Stmt,
-        _issuer: &I,
+        proof: Stmt,
+        _issuer: I,
     ) -> Result<Ctnt, FlowError> {
         let u = format!("https:/www.reddit.com/user/{}/about/.json", proof.handle);
         let client = Client::new();
@@ -119,7 +120,8 @@ mod tests {
         }
     }
 
-    #[async_trait(?Send)]
+    #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+    #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
     impl Flow<Ctnt, Stmt, Stmt> for MockFlow {
         fn instructions(&self) -> Result<Instructions, FlowError> {
             Ok(Instructions {
@@ -131,10 +133,10 @@ mod tests {
             })
         }
 
-        async fn statement<I: Issuer>(
+        async fn statement<I: Issuer + Send + Clone>(
             &self,
-            statement: &Stmt,
-            _issuer: &I,
+            statement: Stmt,
+            _issuer: I,
         ) -> Result<StatementResponse, FlowError> {
             Ok(StatementResponse {
                 statement: statement.generate_statement()?,
@@ -142,10 +144,10 @@ mod tests {
             })
         }
 
-        async fn validate_proof<I: Issuer>(
+        async fn validate_proof<I: Issuer + Send>(
             &self,
-            proof: &Stmt,
-            _issuer: &I,
+            proof: Stmt,
+            _issuer: I,
         ) -> Result<Ctnt, FlowError> {
             if self.statement != proof.generate_statement()? {
                 return Err(FlowError::BadLookup(format!(
@@ -177,7 +179,7 @@ mod tests {
             signature,
         };
         let i = MockIssuer {};
-        flow.unsigned_credential(&did, &test_eth_did(), &i)
+        flow.unsigned_credential(did.clone(), test_eth_did(), i.clone())
             .await
             .unwrap();
 
@@ -188,7 +190,7 @@ mod tests {
             statement,
             signature,
         };
-        flow.unsigned_credential(&did, &test_solana_did(), &i)
+        flow.unsigned_credential(did.clone(), test_solana_did(), i.clone())
             .await
             .unwrap();
     }
@@ -210,7 +212,7 @@ mod tests {
             signature,
         };
 
-        flow.unsigned_credential(&ver_stmt1, &subj1, &i)
+        flow.unsigned_credential(ver_stmt1.clone(), subj1.clone(), i.clone())
             .await
             .unwrap();
 
@@ -228,7 +230,7 @@ mod tests {
             signature,
         };
 
-        flow.unsigned_credential(&ver_stmt2, &subj2, &i)
+        flow.unsigned_credential(ver_stmt2.clone(), subj2.clone(), i.clone())
             .await
             .unwrap();
 
@@ -241,7 +243,7 @@ mod tests {
         };
 
         if flow
-            .unsigned_credential(&ver_stmt2, &subj2, &i)
+            .unsigned_credential(ver_stmt2.clone(), subj2.clone(), i.clone())
             .await
             .is_ok()
         {
